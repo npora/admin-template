@@ -1,5 +1,22 @@
 import { createApp } from 'vue'
-import './style.css'
+
 import App from './App.vue'
 
-createApp(App).mount('#app')
+import { setupDirectives } from './directives'
+import { setupRouter } from './router'
+import { pinia, setupStore } from './store'
+import { useAppStore } from './store/modules/app'
+
+import '@/assets/styles/index.scss'
+
+const app = createApp(App)
+
+setupStore(app)
+
+const appStore = useAppStore(pinia)
+appStore.setup()
+
+setupDirectives(app)
+setupRouter(app)
+
+app.mount('#app')

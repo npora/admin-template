@@ -1,0 +1,13 @@
+@use './variables.scss';
+@use './reset.scss';
+@use './scrollbar.scss';
+@use './element-plus.scss';
+@use './transition.scss';
+
+body {
+  color: var(--np-text-primary);
+  background-color: var(--np-bg-page);
+  transition:
+    color var(--np-transition-duration),
+    background-color var(--np-transition-duration);
+}

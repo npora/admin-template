@@ -1,7 +1,7 @@
 {
   "name": "admin-template",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,14 +9,24 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "vue": "^3.5.41"
+    "@npora/request": "^1.17.5",
+    "dayjs": "^1.11.23",
+    "element-plus": "^2.14.5",
+    "pinia": "^4.0.3",
+    "vue": "^3.5.41",
+    "vue-router": "^5.3.1"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",
     "@vitejs/plugin-vue": "^6.0.8",
     "@vue/tsconfig": "^0.9.1",
+    "rollup-plugin-visualizer": "^7.1.1",
+    "sass": "^1.104.0",
     "typescript": "~6.0.2",
+    "unplugin-auto-import": "^21.1.0",
+    "unplugin-vue-components": "^32.1.0",
     "vite": "^8.2.2",
+    "vite-plugin-compression2": "^2.5.3",
     "vue-tsc": "^3.3.11"
   }
 }

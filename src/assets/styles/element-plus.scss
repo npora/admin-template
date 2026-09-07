@@ -1,0 +1,34 @@
+@use 'element-plus/theme-chalk/dark/css-vars.css';
+
+:root {
+  --el-color-primary: var(--np-color-primary);
+  --el-color-success: var(--np-color-success);
+  --el-color-warning: var(--np-color-warning);
+  --el-color-danger: var(--np-color-danger);
+  --el-color-error: var(--np-color-danger);
+  --el-color-info: var(--np-color-info);
+
+  --el-bg-color-page: var(--np-bg-page);
+  --el-bg-color: var(--np-bg-container);
+  --el-bg-color-overlay: var(--np-bg-overlay);
+
+  --el-text-color-primary: var(--np-text-primary);
+  --el-text-color-regular: var(--np-text-regular);
+  --el-text-color-secondary: var(--np-text-secondary);
+  --el-text-color-placeholder: var(--np-text-placeholder);
+  --el-text-color-disabled: var(--np-text-disabled);
+
+  --el-border-color: var(--np-border-color);
+  --el-border-color-light: var(--np-border-color-light);
+  --el-border-color-lighter: var(--np-border-color-lighter);
+  --el-border-color-extra-light: var(--np-border-color-extra-light);
+
+  --el-fill-color: var(--np-fill-color);
+  --el-fill-color-light: var(--np-fill-color-light);
+  --el-fill-color-lighter: var(--np-fill-color-lighter);
+  --el-fill-color-extra-light: var(--np-fill-color-extra-light);
+
+  --el-border-radius-small: var(--np-radius-small);
+  --el-border-radius-base: var(--np-radius-base);
+  --el-border-radius-round: var(--np-radius-round);
+}

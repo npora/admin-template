@@ -1,0 +1,1 @@
+export { constantRoutes } from './constant'
