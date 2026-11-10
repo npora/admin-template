@@ -1,139 +1,100 @@
 # Npora Admin Template
 
-基于 Vue 3、TypeScript、Element Plus、Pinia 和 Vue Router 的后台管理模板，使用 Vite 构建、`@npora/request` 请求接口。
+基于 Vue 3、TypeScript、Element Plus、Pinia 和 Vue Router 的后台管理脚手架，使用 Vite 构建、`@npora/request` 请求接口。
 
-内置可配置的中英文切换，联动 Element Plus、Day.js、日期格式、菜单和标签标题，详见 [多语言配置](docs/i18n.md)。
-
-已实现动态路由、菜单、按钮权限、登录过期处理、主题与移动端布局、标签页与页面缓存，以及按 SQL 模型实现的用户多角色、角色管理、角色授权、部门树管理和菜单/按钮管理。首页按当前数据源提供实际汇总、最近用户、权限快捷入口和部门分布，支持浅色/深色与移动端布局。表格、下载与分步表单已提供完整前端示例，个人中心支持按账号保存本地资料和界面偏好。
+核心保留登录、动态菜单、按钮权限、用户/部门/角色/菜单管理、主题、移动端布局、标签页、页面缓存、公共表格分页，以及可配置的中英文和日期格式。演示页面与测试后端独立维护，不需要通过删除目录来使用脚手架。
 
 ## 在线演示
 
-展示网站：[Npora Admin 在线体验](https://admin-demo.npora.workers.dev)。无需下载项目，可直接打开体验。
+展示网站：[Npora Admin 在线体验](https://admin-demo.npora.workers.dev)。
 
-| 账号    | 密码     | 权限                                       |
-| ------- | -------- | ------------------------------------------ |
-| `admin` | `123456` | 超级管理员，可体验首页、系统管理与权限功能 |
+| 账号    | 密码     | 权限                                 |
+| ------- | -------- | ------------------------------------ |
+| `admin` | `123456` | 超级管理员，可体验系统管理和权限功能 |
 
-线上演示数据与本地 Mock 相互独立。以下快速开始中的账号表用于本地开发演示。
+这是展示站的演示账号，不是导入正式 SQL 后自动创建的账号。
 
-## 快速开始
+## 快速体验
 
-独立前端需要 Node.js 22.12+ 和 pnpm，包管理器版本由 `packageManager` 固定；保留 Worker 并运行其 SQLite 测试时需要 Node.js 22.13+。
+需要 Node.js 22.12+ 和项目指定版本的 pnpm。在仓库根目录执行：
 
 ```sh
 pnpm install
+pnpm dev:demo
+```
+
+开发地址默认 `http://localhost:3000`。展示模式加载 `examples/` 中的美化首页、表格、表单、下载与缓存示例，通过真实 HTTP 请求访问测试 API，需要网络。没有本地内存 Mock，也不会自动启动或部署测试后端。
+
+## 作为自己的后台脚手架使用
+
+在 `.env.development.local` 配置自己的后端地址：
+
+```dotenv
+VITE_API_URL=http://localhost:8080
+VITE_DEMO_ENABLED=false
+```
+
+然后运行：
+
+```sh
 pnpm dev
 ```
 
-默认地址为 `http://localhost:3000`，占用时 Vite 会选择下一个端口。开发模式开启 Mock，无需启动后端。
+核心模式不注册示例路由，首页只提供欢迎信息和获授权的系统管理入口。`examples/`、`workers/`、`deploy/` 均可留在仓库，不参与普通前端构建。后端按 [接口契约](docs/api.md) 实现认证、用户资料、动态路由和管理接口；更换响应格式时集中调整 `src/api/protocol/`。
 
-**不需要删除任何演示目录。** 模板默认通过 Mock 开箱即用；连接自己的后端时，保留 `mock/`、`workers/` 即可，两者不会进入普通前端生产构建。
+普通生产构建执行 `pnpm build`，产物为 `dist/`。生产环境通过站点服务器将 `/api` 转发至自己的后端；`VITE_API_URL` 仅用于开发代理。环境文件用途与覆盖顺序见 [开发说明](docs/development.md)。
 
-| 使用方式                 | 操作                                                                 |
-| ------------------------ | -------------------------------------------------------------------- |
-| 无后端体验模板           | `pnpm dev:mock`，强制使用 Mock，忽略本机 Mock 开关覆盖               |
-| 连接 Worker 或自己的后端 | 在 `.env.development.local` 设置 `VITE_API_URL`，执行 `pnpm dev:api` |
-| 按环境文件启动           | `pnpm dev`，遵循 `.env*` 中的开关                                    |
+## 正式权限 SQL
 
-`dev:api` 只切换到真实 HTTP，不会启动或部署 Worker。Worker 和自己的后端使用同一种接入方式，完整说明见 [后端切换与可选裁剪](docs/backend-replacement.md)。
+独立保存在 [database/mysql/](database/mysql/README.md)，适用 MySQL 8.0.16+：
 
-若本机已有 `.env.development.local`，其中配置会覆盖公共开发配置。五份环境文件各自的用途与优先级见 [环境配置说明](docs/development.md#为什么有多个-env-文件)；`.example` 仅供复制，不会自动加载。
+1. `01-schema.sql`：用户、部门、角色、菜单及两张关联表，含索引、外键和状态约束。
+2. `02-seed.sql`：基础角色、系统管理菜单、按钮权限及授权。
 
-以下是本地 Mock 的默认账号，线上 Worker 的账号以其初始化或维护结果为准。
-
-| 账号     | 密码     | 能力                                         |
-| -------- | -------- | -------------------------------------------- |
-| `admin`  | `123456` | 超级管理员：用户、部门、角色、菜单和授权管理 |
-| `viewer` | `123456` | 默认只读：首页与用户列表；写接口返回 403     |
-
-Mock 数据只保存在当前页面运行时内存，刷新浏览器后恢复。用户、角色、菜单和授权共用同一组关系数据；新建用户可使用初始密码登录，禁用或删除用户后原 Token 失效。初始账号权限也会随角色分配和授权变化。
-
-## 常用命令
-
-| 命令                 | 用途                             |
-| -------------------- | -------------------------------- |
-| `pnpm dev`           | 开发服务                         |
-| `pnpm dev:mock`      | 强制使用本地 Mock                |
-| `pnpm dev:api`       | 强制连接已配置的 HTTP 后端       |
-| `pnpm run format`    | 统一格式                         |
-| `pnpm run typecheck` | TypeScript 与 Vue 模板类型检查   |
-| `pnpm test`          | 全部集成回归检查，不监听本地端口 |
-| `pnpm run check`     | 格式、类型和全部回归检查         |
-| `pnpm build`         | 类型检查与生产构建               |
-| `pnpm preview`       | 预览生产产物，需要真实后端       |
-
-`pnpm run check:standalone` 会验证不包含 `mock/` 和 `workers/` 的独立前端副本，检查类型、核心测试和生产构建。
-
-原有 `check:session`、`check:views`、`check:errors`、`check:users` 命令保留，适合定向回归。
+在空数据库按顺序导入，不包含展示用户和示例菜单，不执行删表操作。管理员账号由自己的后端初始化，密码哈希采用该后端的算法。演示代码的移动或删除不影响正式 SQL。
 
 ## 项目结构
 
 ```text
-src/
-  api/              请求客户端、插件、业务接口与 DTO
-  assets/           图片、主题及全局样式
-  components/       跨业务复用组件、统一表格与分页、工具栏
-  composables/      组件使用的组合式逻辑
-  config/           应用配置与环境变量规范化
-  constants/        存储键、界面选项等常量
-  directives/       权限指令
-  icons/            图标注册表
-  layout/           布局及其专属组件
-  locales/          多语言资源、日期与数字格式
-  router/           路由、守卫、错误跳转与转换工具
-  services/         不依赖组件上下文的会话编排
-  startup/          主 JS 加载前的品牌加载动画与失败重试
-  store/            应用、用户、权限、标签和缓存状态
-  types/            环境类型和生成的组件声明
-  utils/            存储、权限判断等基础工具
-  views/
-    dashboard/      工作台、权限汇总与页面样式
-    error/          错误页
-    examples/       通用表格、分步表单、下载与缓存示例
-    profile/        个人资料与界面偏好
-    login/          登录
-    system/         系统管理业务页面
-  bootstrap.ts      应用初始化与资源清理
-  main.ts           应用入口
-
-tests/
-  helpers/          共用测试环境
-  integration/      独立前端的缓存、动画、多语言和基础能力回归
-mock/               可删除的开发 Mock、SQL 内存模型及其测试
-workers/api/        可选的独立测试后端，普通前端运行不依赖
-deploy/             可选部署辅助，普通构建无需使用
-public/             原样输出的静态资源，例如 favicon
-build/              构建辅助与可选 Mock 适配器
-scripts/            数据源启动命令、检查脚本与可选检查
-docs/               架构、开发、接口与数据库说明
+src/          脚手架核心与用户、部门、角色、菜单管理
+examples/     独立演示入口、页面、统计 API、示例数据与测试
+workers/api/  独立测试后端，供展示站及维护者使用
+database/    正式权限 SQL（与演示实现无关）
+deploy/       展示站的可选部署实现
+public/       网站图标等原样输出的静态资源
+build/        启动加载层和演示入口的构建辅助
+scripts/      开发、测试、独立前端验证等命令
+tests/       脚手架核心回归与共用测试辅助
+docs/        使用、接口、架构和目录说明
 ```
 
-完整的目录职责、各子目录说明和裁剪步骤见 [项目目录与裁剪说明](docs/project-structure.md)。
+完整职责见 [项目目录说明](docs/project-structure.md)。核心不直接导入演示文件：构建插件在核心模式提供空演示入口，在展示模式加载 `examples/index.ts`。
 
-| 裁剪对象              | 处理方式                                                             |
-| --------------------- | -------------------------------------------------------------------- |
-| `mock/`               | 可整体删除；建议设置 `VITE_API_MOCK=false` 并配置真实接口            |
-| `workers/`            | 可整体删除本地后端示例；需要另有可用的后端，已部署服务不会随文件删除 |
-| `dist/`               | 构建产物，可重新生成，不提交 Git                                     |
-| `src/views/examples/` | 先清理静态路由、动态菜单、页面清单及测试，再删除演示页面             |
+## 常用命令
 
-`src/api/`、`build/`、`scripts/` 仍属于前端基础能力，删除演示后端时保留。
+| 命令                        | 用途                                               |
+| --------------------------- | -------------------------------------------------- |
+| `pnpm dev`                  | 核心开发，连接配置的后端                           |
+| `pnpm dev:demo`             | 展示开发，使用独立演示页面和测试 API               |
+| `pnpm build`                | 类型检查并构建核心前端                             |
+| `pnpm build:demo`           | 类型检查并构建展示前端                             |
+| `pnpm preview`              | 预览最近生成的 `dist/`，仍需可用的 API 转发        |
+| `pnpm run check`            | 格式、类型与核心测试                               |
+| `pnpm run check:examples`   | 演示页面和路由测试                                 |
+| `pnpm run check:backend`    | 可选测试后端的构建与测试，需要 Node.js 22.13+      |
+| `pnpm run check:all`        | 完整仓库回归，包括核心、演示、后端和部署代理       |
+| `pnpm run check:standalone` | 验证不含演示页面、测试后端和部署实现的独立前端副本 |
 
-## 接入真实后端
+## 文档
 
-推荐保留 `mock/` 和 `workers/`，接入自己的后端只需配置地址并执行 `pnpm dev:api`，无需删除文件。Worker 是可选测试后端，不会被普通前端构建启动或部署；Mock 在真实 HTTP 模式下不加载。需要主动精简源码时仍可裁剪这些目录，详见 [后端切换与可选裁剪](docs/backend-replacement.md)。
-
-在 `.env.development.local` 设置 `VITE_API_MOCK=false` 和 `VITE_API_URL`，可让 `pnpm dev` 也默认连接自己的服务。API 请求前缀默认 `/api`，默认业务响应为 `{ code: 0, message: 'success', data }`。
-
-生产构建始终关闭 Mock。`VITE_API_URL` 仅用于开发代理；生产由部署服务器把 `VITE_API_PREFIX` 转发至后端。使用 HTML5 History 路由，需要将前端页面地址回退至 `index.html`，API 请求应单独转发。
-
-- [前端业务示例、复用组件与个人中心](docs/examples.md)
-- [多语言配置与新增词条](docs/i18n.md)
+- [项目目录与可选部分](docs/project-structure.md)
+- [接入自己的后端](docs/backend-replacement.md)
+- [开发与环境配置](docs/development.md)
 - [架构与模块职责](docs/architecture.md)
-- [完整目录用途与可删除范围](docs/project-structure.md)
-- [开发、环境变量与新增页面](docs/development.md)
-- [生产部署与发布检查](docs/deployment.md)
-- [浏览器验收结果与待验证项](docs/acceptance.md)
-- [接口契约与用户 CRUD](docs/api.md)
-- [数据库模型](docs/database/README.md)
-- [SQL 映射、RBAC 与权限生效规则](docs/rbac.md)
+- [正式数据库初始化](database/mysql/README.md)
+- [接口契约](docs/api.md)
+- [权限模型](docs/rbac.md)
+- [多语言](docs/i18n.md)
+- [演示页面与公共组件](docs/examples.md)
+- [通用生产部署](docs/deployment.md)
+- [验收记录](docs/acceptance.md)

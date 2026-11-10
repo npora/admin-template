@@ -30,7 +30,7 @@ HTTP 401，以及业务 code 为 `401`、`10002`（含字符串形式），表�
 | `GET /auth/user`    | 用户资料、`roles` 和实际授予的 `permissions`    |
 | `GET /auth/routes`  | 当前用户获准访问的 `DynamicRoute[]`             |
 
-完整类型见 `src/api/types/auth.ts` 与 `src/api/types/route.ts`，Mock 内存模型和种子节点见 `mock/rbac/database.ts`。
+完整类型见 `src/api/types/auth.ts` 与 `src/api/types/route.ts`；正式表与基础菜单见 `database/mysql/`。
 
 路由 `component` 相对于 `src/views`，例如 `system/user/index`，只允许页面入口，不允许内部 `components`。目录可嵌套多层 `children` 或提供 `redirect`。所有路由名称和完整路径必须唯一，不能覆盖静态路由。
 
@@ -49,7 +49,7 @@ HTTP 401，以及业务 code 为 `401`、`10002`（含字符串形式），表�
 
 列表接收 `page`、`pageSize`、`keyword`、`roleId`、`departmentId`、`status`，状态统一为 `0 | 1`。关键词匹配用户名、姓名、邮箱和手机号。`departmentId` 筛选所选部门及其全部未删除下级部门。新增需要 `username`、`password`、资料字段和 `roleIds`；更新不允许修改用户名、密码或超级管理员标记。资料字段包括 `departmentId`、`displayName`、`avatar`、`email`、`mobile`、`status`。可空字段用 `null`，`roleIds` 可为空数组。
 
-响应提供用户角色详情、部门名称、`isSuperAdmin`、最后登录时间和审计时间，不包含密码或哈希。创建时密码由 Mock 哈希存储；新建账号可登录。角色分配同时要求 `system:user:assign-roles`；只有资料编辑权限不能改变角色集合。超级管理员标记不依赖用户 ID 或角色编码，不能在此接口设置，禁止禁用或删除超级管理员。
+响应提供用户角色详情、部门名称、`isSuperAdmin`、最后登录时间和审计时间，不包含密码或哈希。创建时密码由后端哈希存储；新建账号可登录。角色分配同时要求 `system:user:assign-roles`；只有资料编辑权限不能改变角色集合。超级管理员标记不依赖用户 ID 或角色编码，不能在此接口设置，禁止禁用或删除超级管理员。
 
 ## 角色与授权
 
@@ -91,12 +91,12 @@ HTTP 401，以及业务 code 为 `401`、`10002`（含字符串形式），表�
 
 字段为 `parentId`、`name`、`code`、`leader`、`phone`、`email`、`sortOrder`、`status`，可空字段传 `null`。父级不得为自身或后代；部门编码在软删除后仍保留唯一性。筛选在完整树上进行并保留匹配节点的祖先。部门禁用不级联改变用户状态；新分配用户时不能选择禁用部门，编辑已有用户允许保留原部门。
 
-## 工作台概览
+## 展示工作台概览（核心可不实现）
 
-`GET /system/dashboard` 要求登录，返回当前账号、可访问页面数及 `capabilities`。仅具有对应查询权限时返回 `users`、`roles`、`departments` 汇总；用户汇总包含最近五位用户、启用/禁用人数和部门分布，不提供密码字段。统计来自当前 Mock 关系数据，排除软删除记录。返回类型见 `src/api/types/dashboard.ts`。
+`GET /system/dashboard` 要求登录，返回当前账号、可访问页面数及 `capabilities`。仅具有对应查询权限时返回 `users`、`roles`、`departments` 汇总；用户汇总包含最近五位用户、启用/禁用人数和部门分布，不提供密码字段。统计来自测试后端数据库，排除软删除记录。返回类型见 `examples/api/types.ts`。
 
-首页通过 `useDashboard` 加载数据，支持取消旧请求、刷新失败保留最近成功结果以及重试。页面、快捷入口和统计卡片均随当前权限展示，没有查询权限的汇总不会由 Mock 接口返回。
+展示首页通过 `examples/pages/dashboard/useDashboard.ts` 加载数据，支持取消旧请求、刷新失败保留最近成功结果以及重试。页面、快捷入口和统计卡片均随当前权限展示，没有查询权限的汇总不会由统计接口返回。
 
 ## 可选后端示例
 
-`workers/api/` 提供认证、会话、权限、首页和管理接口的参考实现，不参与普通前端构建。模板默认使用 Mock；接入任何符合接口契约的 HTTP 后端时，只需配置地址并执行 `pnpm dev:api`。具体目录用途见 [项目目录说明](project-structure.md)。
+`workers/api/` 提供认证、会话、权限、首页和管理接口的参考实现，不参与普通前端构建。核心与展示均使用真实 HTTP；接入自己的后端时配置地址并执行 `pnpm dev`，体验完整展示则执行 `pnpm dev:demo`。具体目录用途见 [项目目录说明](project-structure.md)。

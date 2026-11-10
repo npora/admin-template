@@ -11,6 +11,7 @@ try {
     'build',
     'scripts',
     'tests',
+    'database',
     'index.html',
     'vite.config.ts',
     'package.json',
@@ -31,7 +32,9 @@ try {
     if (process.exitCode) break
   }
   if (!process.exitCode)
-    console.log('通过：不包含 mock/ 与 workers/ 的独立前端通过类型、核心测试和生产构建。')
+    console.log(
+      '通过：不包含 examples/、workers/ 与 deploy/ 的独立前端通过类型、核心测试和生产构建。'
+    )
 } finally {
   await rm(directory, { recursive: true, force: true })
 }

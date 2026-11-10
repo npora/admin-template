@@ -1,5 +1,0 @@
-{
-  "extends": "../tsconfig.app.json",
-  "compilerOptions": { "tsBuildInfoFile": "../node_modules/.tmp/mock.tsbuildinfo" },
-  "include": ["**/*.ts", "../src/types/env.d.ts"]
-}

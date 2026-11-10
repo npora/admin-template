@@ -5,31 +5,41 @@ import { createTestServer } from '../helpers/environment.mjs'
 
 const server = await createTestServer()
 try {
-  const root = fileURLToPath(new URL('../../', import.meta.url))
-  const available = existsSync(new URL('../../mock/index.ts', import.meta.url))
   const { appConfig } = await server.ssrLoadModule('/src/config/app.ts')
-  assert.equal(appConfig.mockEnabled, available && server.config.env.VITE_API_MOCK === 'true')
+  assert.equal(appConfig.demoEnabled, false)
+  const { constantRoutes } = await server.ssrLoadModule('/src/router/routes/constant.ts')
+  assert.equal(
+    constantRoutes
+      .find((route) => route.name === 'Layout')
+      .children.some((route) => route.name === 'ExampleForm'),
+    false
+  )
+  const { transformDynamicRoutes } = await server.ssrLoadModule(
+    '/src/router/utils/dynamic-route.ts'
+  )
+  assert.equal(
+    transformDynamicRoutes([
+      { path: '/system/user', name: 'SystemUser', title: 'User', component: 'system/user/index' }
+    ]).length,
+    1
+  )
+  assert.throws(
+    () =>
+      transformDynamicRoutes([
+        { path: '/example', name: 'Example', title: 'Example', component: 'examples/table/index' }
+      ]),
+    /not found/
+  )
 
-  const { optionalMock } = await server.ssrLoadModule('/build/optional-mock.ts')
-  for (const [directory, enabled, expectedAvailable, expectedImport] of [
-    [root, true, available, available],
-    [root, false, available, false],
-    [
-      fileURLToPath(new URL('../../node_modules/.missing-backend', import.meta.url)),
-      true,
-      false,
-      false
-    ]
-  ]) {
-    const mock = optionalMock(directory, enabled)
-    assert.equal(mock.available, expectedAvailable)
-    const id = mock.plugin.resolveId('virtual:admin-mock')
-    assert.equal(mock.plugin.resolveId('unrelated-module'), undefined)
-    const source = mock.plugin.load(id)
-    assert.equal(source.includes('from "/mock/index.ts"'), expectedImport)
-    assert.equal(mock.plugin.load('unrelated-module'), undefined)
-  }
-  console.log('通过：Mock 开关、目录缺失自动回退、生产禁用适配器和可选模块解析。')
+  const { optionalExamples } = await server.ssrLoadModule('/build/optional-examples.ts')
+  const missing = fileURLToPath(new URL('../../node_modules/.missing-examples', import.meta.url))
+  const core = optionalExamples(missing, false)
+  assert.equal(core.enabled, false)
+  const id = core.plugin.resolveId('virtual:admin-examples')
+  assert.equal(core.plugin.load(id).includes('/examples/index.ts'), false)
+  assert.throws(() => optionalExamples(missing, true), /演示入口不存在/)
+  assert.equal(existsSync(new URL('../../database/mysql/01-schema.sql', import.meta.url)), true)
+  console.log('通过：核心路由不加载演示、系统管理保留、无演示目录仍可解析、正式 SQL 独立保留。')
 } finally {
   await server.close()
 }

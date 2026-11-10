@@ -4,7 +4,7 @@ import { createTestServer, installMemoryStorage } from '../helpers/environment.m
 
 test('business clients unwrap once over Fetch, preserve metadata and reject invalid protocols', async (t) => {
   installMemoryStorage()
-  const server = await createTestServer({ mock: false })
+  const server = await createTestServer()
   t.after(() => server.close())
   const originalFetch = globalThis.fetch
   t.after(() => {

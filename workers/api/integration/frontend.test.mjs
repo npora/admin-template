@@ -20,7 +20,7 @@ import {
 test('real frontend client/session round-trip against Worker HTTP handlers and SQLite', async (t) => {
   const f = await service(t)
   installMemoryStorage()
-  const server = await createTestServer({ mock: false })
+  const server = await createTestServer({ demo: true })
   t.after(() => server.close())
   const originalFetch = globalThis.fetch
   globalThis.fetch = (input, init) => {
@@ -33,7 +33,7 @@ test('real frontend client/session round-trip against Worker HTTP handlers and S
   })
   const load = (path) => server.ssrLoadModule(`/src/${path}`)
   const { appConfig } = await load('config/app.ts')
-  assert.equal(appConfig.mockEnabled, false)
+  assert.equal(appConfig.demoEnabled, true)
   const { constantRoutes } = await load('router/routes/constant.ts')
   const router = createStubRouter(constantRoutes)
   const { getSession } = await load('services/session.ts')
@@ -46,7 +46,7 @@ test('real frontend client/session round-trip against Worker HTTP handlers and S
   const roles = await load('api/modules/role.ts')
   const departments = await load('api/modules/department.ts')
   const menus = await load('api/modules/menu.ts')
-  const { getDashboardOverview } = await load('api/modules/dashboard.ts')
+  const { getDashboardOverview } = await server.ssrLoadModule('/examples/api/dashboard.ts')
   assert.equal((await getDashboardOverview()).users.total, 3)
   const created = await users.createUser(userInput())
   assert.equal((await users.getUsers({ page: 1, pageSize: 10, keyword: 'new_user' })).total, 1)

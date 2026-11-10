@@ -85,9 +85,9 @@ function handleLogout(): void {
     <div class="app-header__right">
       <LocaleSwitch />
       <span
-        v-if="!isMobile && appConfig.mockEnabled"
+        v-if="!isMobile && appConfig.demoEnabled"
         class="app-header__workspace"
-        :title="t('ui.localDemoDataResetsWhenThePageReloads')"
+        :title="t('ui.demoWorkspace')"
         >{{ t('ui.demoWorkspace') }}</span
       >
       <ElTooltip

@@ -1,12 +1,13 @@
 import type { RouteComponent, RouteMeta, RouteRecordRaw } from 'vue-router'
 import type { DynamicRoute } from '@/api/types/route'
 import { compareRouteOrder, joinRoutePath } from './path'
+import { demoViews } from 'virtual:admin-examples'
 
 // 只有页面入口可被后端引用，页面内部的表单等组件不参与动态路由。
-const viewModules = import.meta.glob<RouteComponent>([
-  '/src/views/**/index.vue',
-  '!/src/views/**/components/**'
-])
+const viewModules = {
+  ...import.meta.glob<RouteComponent>(['/src/views/**/index.vue', '!/src/views/**/components/**']),
+  ...demoViews
+}
 
 export function transformDynamicRoutes(routes: readonly DynamicRoute[]): RouteRecordRaw[] {
   return routes

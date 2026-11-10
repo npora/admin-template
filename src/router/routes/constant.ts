@@ -1,4 +1,5 @@
 import type { RouteRecordRaw } from 'vue-router'
+import { demoDashboard, demoRoutes } from 'virtual:admin-examples'
 
 export const constantRoutes: RouteRecordRaw[] = [
   {
@@ -21,7 +22,7 @@ export const constantRoutes: RouteRecordRaw[] = [
       {
         path: 'dashboard',
         name: 'Dashboard',
-        component: () => import('@/views/dashboard/index.vue'),
+        component: demoDashboard ?? (() => import('@/views/dashboard/index.vue')),
         meta: {
           title: '首页',
           icon: 'house',
@@ -29,12 +30,7 @@ export const constantRoutes: RouteRecordRaw[] = [
           order: 0
         }
       },
-      {
-        path: 'examples/form',
-        name: 'ExampleForm',
-        component: () => import('@/views/examples/form/index.vue'),
-        meta: { title: '表单示例', icon: 'edit', keepAlive: true, order: 20 }
-      },
+      ...demoRoutes,
       {
         path: 'profile',
         name: 'Profile',

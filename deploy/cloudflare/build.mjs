@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url'
 
 const result = spawnSync('pnpm', ['exec', 'vite', 'build'], {
   cwd: fileURLToPath(new URL('../../', import.meta.url)),
-  env: { ...process.env, NPORA_CLOUDFLARE_BUILD: 'true' },
+  env: { ...process.env, NPORA_CLOUDFLARE_BUILD: 'true', VITE_DEMO_ENABLED: 'true' },
   stdio: 'inherit'
 })
 process.exit(result.status ?? 1)

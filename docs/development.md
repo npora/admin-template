@@ -1,72 +1,65 @@
 # 开发约定
 
+## 启动与检查
+
+- `pnpm dev`：核心模式，连接自己的后端。
+- `pnpm dev:demo`：展示模式，加载独立演示模块并连接测试 API。
+- `pnpm run check`：格式、类型与核心回归。
+- `pnpm run check:examples`：演示页面测试。
+- `pnpm run check:backend`：可选后端构建与回归，需要 Node.js 22.13+。
+- `pnpm run check:all`：完整仓库维护检查。
+
+没有 Mock 模式或 Mock 开关；所有业务请求走同一 HTTP 客户端。页面内部的任务数据、表单草稿不属于后端模拟。
+
 ## 代码与目录
 
-目录职责与裁剪指南见 [项目目录与裁剪说明](project-structure.md)，包括 Mock、可选后端、示例页面与生成产物的区别。
+核心业务页放在 `src/views/<业务>/<页面>/index.vue`，局部组件放在同目录 `components/`，局部逻辑放在 `useXxx.ts`。演示内容放在 `examples/pages/`，不直接加入核心静态路由。跨业务组件放在 `src/components/`，布局专属组件放在 `src/layout/components/`。
 
-- 页面统一使用 `views/<业务>/<页面>/index.vue`；页面专属组件放在同目录 `components`，专属业务逻辑放在同目录的 `useXxx.ts`。
-- 只有跨业务使用的组件才放进 `src/components`。布局组件保留在 `layout/components`。
-- Vue、Vue Router、Pinia 和 Element Plus 的脚本 API 使用显式导入。Element Plus 的模板组件与指令由 `unplugin-vue-components` 按需注册。
-- Element Plus 服务函数若在新模块单独使用，需要同时确保其样式已加载。全局消息样式由路由初始化加载，用户管理单独加载确认框样式。
-- 统一使用 `@/` 指向 `src`。相邻小模块可用相对导入，不再维护重复别名。
-- `.editorconfig` 与 Prettier 统一编码、换行、引号和排版。修改完成后运行 `pnpm run check` 和 `pnpm build`。
-- `src/types/generated/components.d.ts` 由开发服务或 Vite 构建生成，应提交到版本控制；不要手动修改。新增组件后先运行开发服务或 Vite 构建更新声明。
+API 函数、DTO、协议分别位于 `src/api/modules/`、`src/api/types/`、`src/api/protocol/`。界面选项放在 `constants/`，基础逻辑放在 `utils/`；展示专属的统计 API 和 CSV 工具放在 `examples/`。
 
-## 环境变量
+使用 `@/` 指向 `src/`，组件脚本 API 显式导入；Element Plus 模板组件按需注册。`src/types/generated/components.d.ts` 由开发服务或构建生成并提交，勿手改。服务式消息/弹窗需要确保样式已导入。
 
-默认 `pnpm dev` 使用模板环境配置。也可以明确选择 `pnpm dev:mock` 或 `pnpm dev:api`：前者强制启用 Mock，后者强制关闭 Mock 并使用 `VITE_API_URL` 指定的后端；两者都无需删除 `mock/` 或 `workers/`，也不会改写环境文件。普通前端运行不会启动或部署 Worker。完整场景见 [后端切换与可选裁剪](backend-replacement.md)。
+完整目录职责见 [项目结构](project-structure.md)。正式 SQL 独立在 [database/](../database/README.md)。
 
-`.env` 提供通用默认值，`.env.development` 和 `.env.production` 按模式覆盖；个人配置使用被 Git 忽略的 `.env.local` 或 `.env.development.local`。前端 `VITE_` 变量会进入浏览器，不用于保存秘密。
+## 环境配置
 
 ### 为什么有多个 `.env` 文件
 
-| 文件                             | 是否提交 | 作用                                               |
-| -------------------------------- | -------- | -------------------------------------------------- |
-| `.env`                           | 是       | 所有模式共用的默认值，例如标题、API 前缀与存储方式 |
-| `.env.development`               | 是       | `pnpm dev` 的公共配置，模板默认启用 Mock           |
-| `.env.production`                | 是       | `pnpm build` 的公共配置，关闭 Mock                 |
-| `.env.development.local`         | 否       | 本机开发覆盖；连接个人 Worker 或自己的后端时使用   |
-| `.env.development.local.example` | 是       | 配置示例，不会自动加载；需要时复制为上一项         |
+| 文件                             | 用途                                                    | 提交 |
+| -------------------------------- | ------------------------------------------------------- | ---- |
+| `.env`                           | 应用标题、前缀、Token 存储、构建选项和核心/展示默认开关 | 是   |
+| `.env.development`               | 开发 API 代理目标，默认本机后端                         | 是   |
+| `.env.production`                | 生产模式说明；生产使用同源 API 转发                     | 是   |
+| `.env.development.local`         | 本机覆盖，连接个人服务或选择本机默认展示模式            | 否   |
+| `.env.development.local.example` | 本机配置样例，不自动加载                                | 是   |
 
-前三份是模板公共配置；后两份用于个人开发和提供复制示例，无需把同一组变量复制到所有文件。`.local` 不是额外一种运行环境。
+开发优先级从低到高：`.env`、可选 `.env.local`、`.env.development`、`.env.development.local`；生产替换为对应 production 文件。进程环境变量最高。修改后重启开发服务。
 
-开发配置从低到高依次是 `.env`、可选的 `.env.local`、`.env.development`、`.env.development.local`；生产模式改为 `.env.production` 和可选的 `.env.production.local`。同名变量由更高优先级覆盖，启动命令已经提供的环境变量优先于这些文件。
+| 变量                  | 用途                                       |
+| --------------------- | ------------------------------------------ |
+| `VITE_APP_TITLE`      | 应用标题，默认 `Npora Admin`               |
+| `VITE_API_PREFIX`     | 同源 API 前缀，默认 `/api`                 |
+| `VITE_API_URL`        | 仅开发代理的目标地址                       |
+| `VITE_DEMO_ENABLED`   | 默认 false；true 时加载 `examples/`        |
+| `VITE_TOKEN_STORAGE`  | `session`、`local`、`memory`，默认 session |
+| `VITE_BUILD_COMPRESS` | 默认 true，生成 gzip 产物                  |
+| `VITE_BUILD_ANALYZE`  | 默认 false，启用后输出体积报告             |
 
-因此 `.env.development` 中 Mock 为 `true`，本机 `.env.development.local` 中为 `false` 时，实际连接真实接口。需要回到 Mock 时，把本机覆盖文件改为 `VITE_API_MOCK=true`；若本机覆盖已无用途，也可移除该文件。修改环境文件后重启 Vite。开发覆盖文件不会被生产构建加载。
+`dev:demo` 和 `build:demo` 通过 `scripts/demo.mjs` 在进程环境开启展示功能，不改写环境文件。开发默认使用维护者的测试 API，可通过启动进程的 `VITE_API_URL` 覆盖。普通 `pnpm dev` 仍遵循本机配置；本机已有 `VITE_DEMO_ENABLED=true` 时会进入展示模式。
 
-应用层的多语言开关、支持语言和日期格式在 `src/config/i18n.ts` 与 `src/locales/` 维护，不需要再增加一套环境文件，详见 [多语言配置](i18n.md)。
+生产的 `VITE_API_URL` 不会创建反向代理。任何 `VITE_*` 值都不能用于保存密码或服务端密钥。语言、日期与 Element Plus 配置仍放在 `src/config/i18n.ts` 和 `src/locales/`，见 [多语言](i18n.md)。
 
-| 变量                  | 默认值 / 用途                                      |
-| --------------------- | -------------------------------------------------- |
-| `VITE_APP_TITLE`      | `Npora Admin`，应用标题                            |
-| `VITE_API_PREFIX`     | `/api`，站内非根路径前缀，尾部斜线自动移除         |
-| `VITE_API_URL`        | `http://localhost:8080`，仅开发代理的后端目标      |
-| `VITE_API_MOCK`       | 通用默认 false、开发默认 true，生产始终不加载 Mock |
-| `VITE_TOKEN_STORAGE`  | `session`，可选 `local`、`memory`                  |
-| `VITE_BUILD_COMPRESS` | true，额外生成 gzip 文件                           |
-| `VITE_BUILD_ANALYZE`  | false，启用后输出 `report.html`                    |
+## 新增页面
 
-本地设置按字段验证并与默认值合并；JSON 损坏时回到默认值。浏览器存储不可用或配额耗尽时，对应存储适配器退回当前页面内存，不具备跨刷新的持久化能力。
+1. 核心业务页放在 `src/views/`，演示页放在 `examples/pages/`。
+2. 定义 DTO 和 API 函数；页面不直接发请求或判断后端实现。
+3. 核心动态菜单的 `component` 相对于 `src/views/`，例如 `system/user/index`。演示模块保留 `examples/table/index` 等兼容标识，映射到独立示例目录。
+4. 后端返回唯一的路由名称及该账号的实际权限；界面用 `v-permission` 或 `usePermission` 控制，接口权限由后端执行。
+5. 按需设置 `keepAlive`、`fixedTab`、`hidden`、`activeMenu`、`routeQuery` 和 `order`。
+6. 复杂行为增加适当回归。核心检查不要求演示后端可用，完整联调使用隔离测试数据库。
 
-## 新增业务页面
+## 本地偏好与缓存
 
-1. 在 `src/views/<业务>/<页面>/index.vue` 添加页面。
-2. 在 `api/types` 定义 DTO，在 `api/modules` 封装请求。界面标签与选项放在 `constants`。
-3. 开发阶段通过菜单管理维护目录、页面和按钮，初始内存表位于 `mock/rbac/database.ts`；`component` 使用不带 `.vue` 的页面路径。需要新增模拟接口时在 `mock/modules` 实现并在 `mock/index.ts` 安装。
-4. 后端返回该账号获准的路由和权限码。页面路由应有唯一 `name`，按钮用 `v-permission` 或 `usePermission` 控制；接口授权仍由后端执行。
-5. 通过 `keepAlive`、`fixedTab`、`hidden`、`activeMenu`、`alwaysShow`、`routeQuery` 和 `order` 配置页面行为。未填写 `order` 的项排最后。
-6. 复杂状态转换在 `tests/integration` 增加回归检查；保留真实请求封装，避免只验证实现细节。
+界面设置按字段校验，损坏或不可用的浏览器存储会降级，不保证跨刷新的持久化。个人资料与表单草稿按账号隔离。
 
-## 验证与部署
-
-`pnpm run check` 依次执行格式、类型和全部集成检查；`pnpm build` 生成 `dist`。CI 执行同一组命令并使用锁文件安装。
-
-生产预览不启用 Mock，需要已配置后端转发。部署时同时配置前端 History 回退和 API 转发，不应把 API 404 回退成前端 HTML。gzip 产物需要部署服务器配置后才会被采用。
-
-Mock 密码演示使用 Web Crypto，开发时使用 localhost 或 HTTPS。角色、授权和菜单变更会立即影响 Mock 接口鉴权；当前前端菜单和按钮可通过用户菜单的“刷新权限”同步，刷新时会清理旧标签与页面缓存。
-
-## 开发依赖缓存失效
-
-若控制台出现 `504 (Outdated Optimize Dep)` 或 `Failed to fetch dynamically imported module`，且失败地址位于 `node_modules/.vite/deps`，应先检查 Vite 预构建缓存，而不是修改页面权限或路由地址。停止现有开发服务后执行 `pnpm dev --force`，再强制刷新浏览器即可重新获取依赖版本，参见 [Vite 缓存说明](https://vite.dev/guide/dep-pre-bundling#caching)。
-
-集成测试通过共用 helper 创建 Vite 服务，使用每次独立的临时缓存目录并禁用客户端依赖预构建；测试结束清理自己的临时目录，不应操作开发服务的 `node_modules/.vite`。首页 Skeleton 按需组件已加入开发预构建列表。
+遇到 `504 (Outdated Optimize Dep)` 或依赖目录下的动态模块加载失败时，停止开发服务，执行 `pnpm dev --force` 后强制刷新；这是依赖预构建问题，不应靠修改权限或页面路径解决。测试使用独立临时缓存，不覆盖开发服务的预构建目录。

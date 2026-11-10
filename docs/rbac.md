@@ -1,28 +1,28 @@
 # SQL 模型与 RBAC
 
-实现依据为 `docs/database/schema.sql`。本项目仍是前端模板：页面、DTO、请求封装和开发 Mock 按 SQL 契约组织，没有创建后端服务、连接 MySQL 或执行 SQL。真实后端需要实现同一接口和数据库约束。
+正式模型为 [建表 SQL](../database/mysql/01-schema.sql) 和 [基础权限 SQL](../database/mysql/02-seed.sql)，执行方法见 [数据库初始化说明](../database/mysql/README.md)。本项目以后台前端脚手架为主，页面、DTO 和请求封装按这一契约组织；前端运行不会自动连接 MySQL 或执行 SQL。真实后端需要实现同一接口和数据库约束，测试后端属于可选参考实现。
 
 ## 字段与数据源
 
-Mock 的 `mock/rbac/types.ts` 使用 SQL 列名；`database.ts` 保存六张表和种子数据，`access.ts` 负责转换 DTO 和计算权限。前端字段使用驼峰，不把表结构直接作为接口响应。
+正式 SQL 使用下划线列名；前端 DTO 使用驼峰字段，由后端完成映射。展示后端仅是参考实现，正式 SQL 不依赖它，也不预置演示用户。
 
-| SQL                                         | DTO / 用途                                              |
-| ------------------------------------------- | ------------------------------------------------------- |
-| `sys_user.department_id`                    | `departmentId`，可为 null；部门提供选择树               |
-| `display_name`、`last_login_at`             | `displayName`、`lastLoginAt`                            |
-| `password_hash`                             | 只留在 Mock 内部，从不返回；新增请求提交初始 `password` |
-| `is_super_admin`                            | 只读 `isSuperAdmin` 布尔标记；不通过普通用户接口设置    |
-| `sys_role.code/name/description/sort_order` | `code/name/description/sortOrder`                       |
-| `status`                                    | `0=禁用`、`1=启用`，不使用 enabled/disabled 字符串      |
-| `sys_menu.type`                             | `1=目录`、`2=页面`、`3=按钮权限`                        |
-| `parent_id`                                 | `parentId`，null 表示顶层                               |
-| `route_query/active_menu`                   | `routeQuery/activeMenu`                                 |
-| `visible/always_show/keep_alive/fixed_tab`  | 管理 DTO 为布尔值；动态路由 `hidden = !visible`         |
-| `sys_user_role`                             | 用户表单的 `roleIds`，多对多，不保存单个 role 字符串    |
-| `sys_role_menu`                             | 角色授权的 `menuIds`，关联目录、页面和按钮              |
-| `created_at/updated_at/deleted_at`          | DTO 返回前两个审计时间；删除在内部设置 `deleted_at`     |
+| SQL                                         | DTO / 用途                                            |
+| ------------------------------------------- | ----------------------------------------------------- |
+| `sys_user.department_id`                    | `departmentId`，可为 null；部门提供选择树             |
+| `display_name`、`last_login_at`             | `displayName`、`lastLoginAt`                          |
+| `password_hash`                             | 只留在后端内部，从不返回；新增请求提交初始 `password` |
+| `is_super_admin`                            | 只读 `isSuperAdmin` 布尔标记；不通过普通用户接口设置  |
+| `sys_role.code/name/description/sort_order` | `code/name/description/sortOrder`                     |
+| `status`                                    | `0=禁用`、`1=启用`，不使用 enabled/disabled 字符串    |
+| `sys_menu.type`                             | `1=目录`、`2=页面`、`3=按钮权限`                      |
+| `parent_id`                                 | `parentId`，null 表示顶层                             |
+| `route_query/active_menu`                   | `routeQuery/activeMenu`                               |
+| `visible/always_show/keep_alive/fixed_tab`  | 管理 DTO 为布尔值；动态路由 `hidden = !visible`       |
+| `sys_user_role`                             | 用户表单的 `roleIds`，多对多，不保存单个 role 字符串  |
+| `sys_role_menu`                             | 角色授权的 `menuIds`，关联目录、页面和按钮            |
+| `created_at/updated_at/deleted_at`          | DTO 返回前两个审计时间；删除在内部设置 `deleted_at`   |
 
-部门字段保留父级、编码、负责人、电话、邮箱、状态和排序。部门管理支持树形增删改查，禁止循环父级；存在未删除子部门或关联用户时不能删除。禁用部门不可用于新分配，已有用户编辑时可保留原关联。Mock ID 使用安全整数；真实后端若返回超出 JavaScript 安全整数范围的 BIGINT，应统一采用字符串 ID DTO。
+部门字段保留父级、编码、负责人、电话、邮箱、状态和排序。部门管理支持树形增删改查，禁止循环父级；存在未删除子部门或关联用户时不能删除。禁用部门不可用于新分配，已有用户编辑时可保留原关联。当前前端 ID 使用安全整数；后端若返回超出 JavaScript 安全整数范围的 BIGINT，应统一采用字符串 ID DTO。
 
 ## 授权计算
 
@@ -42,15 +42,15 @@ Mock 的 `mock/rbac/types.ts` 使用 SQL 列名；`database.ts` 保存六张表�
 - 角色管理支持增删改查、排序、禁用和授权。已有未删除用户关联的角色不能删除，应先调整关联。
 - 菜单管理覆盖目录、页面、按钮，以及 SQL 中的路由、显示和缓存字段。禁止父级循环、重定向循环、重复路由路径/名称与权限码；父节点有子节点时不能直接删除或改变类型。
 - 授权树采用独立勾选：选父节点不等于全选子节点，保存后自动补齐必要祖先。禁用节点仍可保留授权关系，重新启用后恢复有效权限。
-- 角色和菜单禁用、授权及用户角色变化会立即影响 Mock 接口鉴权。前端菜单、按钮和用户资料通过用户菜单的“刷新权限”或重新登录同步；刷新会清理旧标签与缓存，当前页面无权访问时回到首页。
+- 角色和菜单禁用、授权及用户角色变化应影响后端接口鉴权。前端菜单、按钮和用户资料通过用户菜单的“刷新权限”或重新登录同步；刷新会清理旧标签与缓存，当前页面无权访问时回到首页。
 - 删除采用 `deleted_at`，不移除 SQL 唯一索引中的值；不能复用已删除记录的唯一编码。软删除不等同于 SQL 外键的硬删除级联。
 
-## Mock 与真实后端
+## 后端与数据持久化
 
-初始 admin、viewer 和其他种子用户共用这套关系模型；修改 viewer 的角色或授权会改变其实际登录权限。新增用户可使用自己的初始密码登录。Mock 使用 Web Crypto 生成带盐密码哈希，需在 localhost 或 HTTPS 下运行；真实后端应独立管理密码哈希、Token 生命周期和事务。
+后端负责密码哈希、Token 生命周期、数据库唯一性、外键、事务和并发控制。浏览器不保存权限数据库，不根据本地角色模拟授权。
 
-数据只在当前页面运行时有效。刷新浏览器会重置种子数据，新增用户和授权修改不持久化。SQL 中的真实唯一索引、完整 MySQL 排序规则、外键、事务和并发控制仍由后端数据库负责。Mock 的验证用于开发演示和接口回归，不是数据库实现。
+正式初始化提供三种角色及核心菜单授权，不创建登录账号。后端创建管理员时写入适配自身算法的密码哈希、角色关系，以及需要时的独立超级管理员标记。展示站账号不代表导入 SQL 后自动存在的账号。
 
 ## 回归
 
-`pnpm run check:rbac` 覆盖六表映射、多角色合并、授权闭包、目录与按钮边界、角色/祖先禁用、软删除唯一性、超级管理员标记、新用户登录、接口拒绝越权和会话刷新。`pnpm run check` 包含该检查及部门树、工作台权限隔离、会话、请求、用户 CRUD 和缓存回归。
+`pnpm run check` 检查核心请求、路由、组件、语言与界面基础能力。`pnpm run check:backend` 使用隔离数据库验证认证、角色授权、接口越权和事务行为，并验证实际前端的会话、CRUD 与登录失效流程；`check:all` 包含完整仓库回归。

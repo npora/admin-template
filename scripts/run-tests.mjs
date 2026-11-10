@@ -3,14 +3,22 @@ import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
 const root = new URL('../', import.meta.url)
-const selector = process.argv[2]
-const files = [
-  'tests/integration',
-  'mock/tests',
+const args = process.argv.slice(2)
+const selector = args.find((arg) => !arg.startsWith('--'))
+const optional = [
+  'examples/tests',
   'workers/api/tests',
   'workers/api/integration',
   'deploy/cloudflare/tests'
-].flatMap((directory) => {
+]
+const directories = args.includes('--all')
+  ? ['tests/integration', ...optional]
+  : args.includes('--examples')
+    ? ['examples/tests']
+    : args.includes('--backend')
+      ? ['workers/api/tests', 'workers/api/integration']
+      : ['tests/integration']
+const files = directories.flatMap((directory) => {
   const path = new URL(`${directory}/`, root)
   return existsSync(path)
     ? readdirSync(path)

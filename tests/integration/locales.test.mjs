@@ -236,13 +236,16 @@ try {
     }
   }
   collectReferences(new URL('src/', root))
+  if (fs.existsSync(new URL('examples/', root))) collectReferences(new URL('examples/', root))
   assert.deepEqual(
     [...references].filter((key) => !(key in baseline.ui)),
     [],
     'Frontend references must exist'
   )
   assert.deepEqual(
-    Object.keys(baseline.ui).filter((key) => !references.has(key)),
+    fs.existsSync(new URL('examples/', root))
+      ? Object.keys(baseline.ui).filter((key) => !references.has(key))
+      : [],
     [],
     'Remove unused UI keys'
   )

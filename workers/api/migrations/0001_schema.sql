@@ -1,5 +1,5 @@
 -- D1 / SQLite: new empty test database only. Never drops existing tables.
--- Business columns follow docs/database/schema.sql; timestamps are UTC ISO strings.
+-- Business columns follow database/mysql/01-schema.sql; timestamps are UTC ISO strings.
 CREATE TABLE sys_department (
   id INTEGER PRIMARY KEY AUTOINCREMENT CHECK(id > 0),
   parent_id INTEGER REFERENCES sys_department(id) ON DELETE RESTRICT,

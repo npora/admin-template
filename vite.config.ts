@@ -1,6 +1,6 @@
 import { defineConfig, loadEnv, type PluginOption } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { optionalMock } from './build/optional-mock.ts'
+import { optionalExamples } from './build/optional-examples.ts'
 import { appLoading } from './build/app-loading.ts'
 import { normalizeApiPrefix } from './src/config/env.ts'
 import { fileURLToPath } from 'node:url'
@@ -17,7 +17,7 @@ export default defineConfig(async ({ command, mode }) => {
   const env = loadEnv(mode, root)
 
   const isBuild = command === 'build'
-  const mock = optionalMock(root, command === 'serve' && env.VITE_API_MOCK === 'true')
+  const examples = optionalExamples(root, env.VITE_DEMO_ENABLED === 'true')
   const isProd = mode === 'production'
   const cloudflarePlugin =
     process.env.NPORA_CLOUDFLARE_BUILD === 'true'
@@ -36,7 +36,7 @@ export default defineConfig(async ({ command, mode }) => {
   return {
     // 使用 Composition API，保留 JSON 词条所需的消息编译器。
     define: {
-      __MOCK_AVAILABLE__: mock.available,
+      __DEMO_ENABLED__: examples.enabled,
       __VUE_I18N_FULL_INSTALL__: true,
       __VUE_I18N_LEGACY_API__: false,
       __INTLIFY_PROD_DEVTOOLS__: false,
@@ -75,7 +75,7 @@ export default defineConfig(async ({ command, mode }) => {
     plugins: [
       cloudflarePlugin,
       appLoading(root, env.VITE_APP_TITLE?.trim() || 'Npora Admin'),
-      mock.plugin,
+      examples.plugin,
       vue(),
 
       Components({

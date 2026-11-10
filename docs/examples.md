@@ -1,6 +1,6 @@
 # 前端业务示例与个人中心
 
-这些页面使用前端数据，没有增加后端接口、数据库连接或 Mock 业务错误处理。
+示例页面已移到根目录 `examples/`，仅展示模式加载。表格任务、表单与下载使用页面自身的数据，展示首页通过真实 API 获取统计。普通核心构建不导入这些页面。启动和目录说明见 [演示模块](../examples/README.md)。
 
 ## 入口
 
@@ -11,7 +11,7 @@
 | 个人中心 | `/profile`，右上角用户菜单 → 个人中心                     | 所有已登录账号；账号、角色和权限只读             |
 | 文件下载 | `/system/operation/download`，操作示例 → 下载示例         | 页面授权及 `system:download:download`            |
 
-表格写操作权限为 `system:table:create`、`system:table:update`、`system:table:delete`；导出为 `system:table:export`。当前超级管理员拥有通配权限，可演示全部功能。普通账号需由菜单/按钮授权分配相应权限；页面和控制器都检查权限，隐藏按钮不代替操作校验。本轮未改变现有 Mock 种子权限。
+表格写操作权限为 `system:table:create`、`system:table:update`、`system:table:delete`；导出为 `system:table:export`。当前超级管理员拥有通配权限，可演示全部功能。普通账号需由菜单/按钮授权分配相应权限；页面和控制器都检查权限，隐藏按钮不代替操作校验。正式 SQL 不包含这些演示菜单，展示后端独立维护示例授权。
 
 ## 表格与可复用组件
 
@@ -19,7 +19,7 @@
 - `src/components/TableToolbar`：标题、摘要、刷新、密度、列显隐和业务操作插槽。必选列不能隐藏。已有用户、角色列表也复用标题/刷新工具栏。
 - `src/components/DataTable`：统一表格、加载状态、空数据提示和可选分页，首页、用户、角色、部门、菜单及表格示例均已接入。默认 `border=true`、`rowKey="id"`；业务列保留原生 `ElTableColumn` 插槽，不引入列配置 DSL。
 - `src/components/TablePagination`：`DataTable` 内部复用的分页基础组件，分页默认居中，窄屏溢出时从起点横向滚动。
-- `src/utils/csv.ts`：UTF-8 CSV、引号/换行转义、字符串公式防护与浏览器下载，不依赖额外导出库。
+- `examples/utils/csv.ts`：UTF-8 CSV、引号/换行转义、字符串公式防护与浏览器下载，不依赖额外导出库。
 
 分页列表示例（筛选、请求、翻页及末页回退仍由业务 composable 负责）：
 

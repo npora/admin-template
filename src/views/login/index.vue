@@ -32,7 +32,7 @@ const loading = ref(false)
 
 const appTitle = appConfig.title
 
-const mockEnabled = appConfig.mockEnabled
+const demoEnabled = appConfig.demoEnabled
 
 const appInitial = computed(() => appTitle.trim().charAt(0).toUpperCase())
 
@@ -177,8 +177,8 @@ async function handleSubmit(): Promise<void> {
             >
           </el-form>
 
-          <div v-if="mockEnabled" class="login-page__mock">
-            <span class="login-page__mock-label"> Mock </span>
+          <div v-if="demoEnabled" class="login-page__demo">
+            <span class="login-page__demo-label"> Demo </span>
 
             <span>{{ t('ui.demoCredentialsHint') }}</span>
           </div>
