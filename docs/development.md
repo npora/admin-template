@@ -2,7 +2,7 @@
 
 ## 代码与目录
 
-目录职责与裁剪指南见 [项目目录与裁剪说明](project-structure.md)，包括 Mock、Worker、Cloudflare 部署、示例页面与生成产物的区别。
+目录职责与裁剪指南见 [项目目录与裁剪说明](project-structure.md)，包括 Mock、可选后端、示例页面与生成产物的区别。
 
 - 页面统一使用 `views/<业务>/<页面>/index.vue`；页面专属组件放在同目录 `components`，专属业务逻辑放在同目录的 `useXxx.ts`。
 - 只有跨业务使用的组件才放进 `src/components`。布局组件保留在 `layout/components`。
@@ -13,6 +13,8 @@
 - `src/types/generated/components.d.ts` 由开发服务或 Vite 构建生成，应提交到版本控制；不要手动修改。新增组件后先运行开发服务或 Vite 构建更新声明。
 
 ## 环境变量
+
+默认 `pnpm dev` 使用模板环境配置。也可以明确选择 `pnpm dev:mock` 或 `pnpm dev:api`：前者强制启用 Mock，后者强制关闭 Mock 并使用 `VITE_API_URL` 指定的后端；两者都无需删除 `mock/` 或 `workers/`，也不会改写环境文件。普通前端运行不会启动或部署 Worker。完整场景见 [后端切换与可选裁剪](backend-replacement.md)。
 
 `.env` 提供通用默认值，`.env.development` 和 `.env.production` 按模式覆盖；个人配置使用被 Git 忽略的 `.env.local` 或 `.env.development.local`。前端 `VITE_` 变量会进入浏览器，不用于保存秘密。
 

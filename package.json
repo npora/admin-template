@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:mock": "node scripts/dev.mjs mock",
+    "dev:api": "node scripts/dev.mjs api",
     "build": "pnpm run typecheck && vite build",
     "preview": "vite preview",
     "typecheck": "vue-tsc -b",

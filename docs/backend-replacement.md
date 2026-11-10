@@ -1,6 +1,32 @@
-# 删除演示后端，接入自己的服务
+# 后端切换与可选裁剪
 
-所有目录的职责、演示页面裁剪和 Cloudflare 部署文件的配套清理步骤见 [项目目录与裁剪说明](project-structure.md)。本篇主要说明替换 API 后端。
+推荐保留 `mock/` 和 `workers/`，通过配置选择数据源。使用模板、连接 Worker 或接入自己的后端都不需要删除文件。
+
+## 不删除文件的使用方式
+
+| 场景                | 启动方式        | 需要准备的内容                                       |
+| ------------------- | --------------- | ---------------------------------------------------- |
+| 无后端开发或体验    | `pnpm dev:mock` | 安装前端依赖即可，默认账号 `admin / 123456`          |
+| 已有自己的后端      | `pnpm dev:api`  | 配置 `VITE_API_URL`，后端提供认证和业务接口          |
+| 使用已部署的 Worker | `pnpm dev:api`  | 将 `VITE_API_URL` 设为 Worker 地址，使用该服务的账号 |
+| 沿用项目环境配置    | `pnpm dev`      | 由 `VITE_API_MOCK` 决定使用 Mock 或 HTTP             |
+
+连接真实后端时，在 `.env.development.local` 中配置：
+
+```dotenv
+VITE_API_MOCK=false
+VITE_API_URL=http://localhost:8080
+```
+
+执行 `pnpm dev:api`。Worker 也使用同一配置，只需替换服务地址。`dev:mock` / `dev:api` 通过启动进程的环境变量覆盖 Mock 开关，不改写任何环境文件；其他配置仍由 Vite 加载。命令也支持 Vite 参数，例如 `pnpm dev:mock --host 127.0.0.1`。
+
+`mock/` 是仅在开发启用的适配器；`workers/api/` 是供有需要的人独立部署的参考后端。普通 `dev`、`build` 不启动、部署或访问本地 Worker 源码；真实 HTTP 模式不加载 Mock 实现。使用者可一直保留这两个目录。
+
+生产部署仍需要真实后端或测试 Worker；`pnpm build` 与 `pnpm preview` 不启用 Mock。根目录 `pnpm run check` 是模板维护者的全量检查，会检查仍然存在的可选模块；这不代表前端运行依赖这些模块。
+
+以下内容仅适用于希望缩小源码包的使用者。
+
+所有目录的职责和演示页面裁剪步骤见 [项目目录与裁剪说明](project-structure.md)。本篇主要说明替换 API 后端。
 
 前端的接口契约保留在 `src/api/types/` 与 `src/api/modules/`，请求配置位于 `src/api/client.ts`。业务页面不判断当前使用 Mock、Worker 还是自有服务。
 
@@ -9,18 +35,18 @@
                               └ 开发可选 Mock 适配器
 
 mock/          可删除的内存接口和相关测试
-workers/api/   可删除的独立 Cloudflare 服务示例及其测试
+workers/api/   可选的独立服务示例及其测试
 ```
 
 Worker 与 Mock 不互相依赖。前端没有到这两个目录的直接文件导入，根项目也没有它们的运行时依赖或强制构建步骤。`build/optional-mock.ts` 和前端中的虚拟模块声明是可选适配器的边界，保留即可，无需跟着删除。
 
-可以移除的是 `mock/` 与 `workers/` 中的演示实现，不是 `src/api/`。前端的 API 模块、类型、Token 管理与协议适配仍需保留或按自有后端调整。删除本地 Worker 目录不会删除远程服务；继续使用 Cloudflare 展示站时，还需检查 `cloudflare.config.ts` 中的 `API` 服务绑定是否仍指向需要使用的后端。
+可以移除的是 `mock/` 与 `workers/` 中的演示实现，不是 `src/api/`。前端的 API 模块、类型、Token 管理与协议适配仍需保留或按自有后端调整。删除本地后端示例不会删除远程服务，生产环境需配置实际可用的 API 转发。
 
 `@npora/request` 是请求客户端，不代替接口服务。已经连接 Worker 或自有后端时，设置 `VITE_API_MOCK=false` 即可停用 Mock；生产构建始终停用。保留 `mock/` 是为了让模板下载后可以离线演示和运行相关测试，不是请求库的必需依赖。
 
-## 切换步骤
+## 可选：移除演示后端
 
-1. 删除 `mock/` 与 `workers/` 中不需要的演示代码，可以一起删除，也可以只保留其中一个。
+1. 确认真实后端可以使用后，再按需删除 `mock/` 与 `workers/` 中的演示代码；这不是接入后端的必要步骤。
 2. 修改 `.env.development`；若存在 `.env.development.local`，优先修改该本机覆盖文件：
 
    ```dotenv

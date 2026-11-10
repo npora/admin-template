@@ -1,6 +1,8 @@
 # 可选的开发 Mock
 
-整个目录可以直接删除，前端会改走真实 HTTP 请求；不需要修改业务页面、路由或请求客户端。建议同时把 `.env.development` 的 `VITE_API_MOCK` 设置为 `false`，再配置 `VITE_API_URL`。
+推荐保留此目录。执行 `pnpm dev:mock` 即可使用内存演示；配置 `VITE_API_URL` 后执行 `pnpm dev:api` 即可停用 Mock、连接真实服务，无需删除文件。若要让 `pnpm dev` 也走真实接口，在 `.env.development.local` 设置 `VITE_API_MOCK=false`。
+
+仅在主动精简源码时，才需要考虑整体删除本目录；前端会自动回退到真实 HTTP，无需修改业务页面、路由或请求客户端。
 
 这里只删除 `mock/`；保留前端 `src/api/`、`build/optional-mock.ts` 和 `src/types/mock-adapter.d.ts`。使用 Worker 时无需启用 Mock。其他可选目录及演示页面的裁剪说明见 [项目目录与裁剪说明](../docs/project-structure.md)。
 
@@ -17,6 +19,6 @@ mock/
 
 Mock 只在开发模式、目录存在且 `VITE_API_MOCK=true` 时加载；生产构建不包含此实现。Vite 的 `build/optional-mock.ts` 提供可选适配器，前端只引用虚拟模块，不通过文件路径导入 Mock。
 
-依赖方向为 `mock/ → src/api/types 等前端契约和无状态工具`；Mock 不是独立后端，不用于部署。Worker 不依赖此目录。所有记录及账号均是内存演示数据，刷新后恢复，不与 D1 同步。
+依赖方向为 `mock/ → src/api/types 等前端契约和无状态工具`；Mock 不是独立后端，不用于部署。Worker 不依赖此目录。所有记录及账号均是内存演示数据，刷新后恢复，不与真实后端同步。
 
 根目录的 `pnpm run check` 在目录存在时检查 Mock 类型和测试；删除后自动跳过。替换步骤见 [接入自有后端](../docs/backend-replacement.md)。

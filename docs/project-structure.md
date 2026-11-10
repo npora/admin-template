@@ -1,26 +1,24 @@
 # 项目目录与裁剪说明
 
-本文说明当前仓库各目录的用途，以及接入自己的后端、移除演示功能时需要保留或同步调整的内容。这里只提供裁剪说明，不会自动删除任何目录。
+本文说明当前仓库各目录的用途，以及接入自己的后端、移除演示功能时需要保留或同步调整的内容。推荐保留 Mock 和 Worker，通过配置选择使用方式，不需要删除任何目录。`pnpm dev:mock` 强制使用演示数据；配置 `VITE_API_URL` 后，`pnpm dev:api` 强制连接 Worker 或自己的后端。以下删除说明仅供主动精简源码时参考，不会自动删除任何目录。
 
 ## 根目录
 
 | 目录            | 用途                                                      | 是否可以删除                                                   |
 | --------------- | --------------------------------------------------------- | -------------------------------------------------------------- |
 | `src/`          | Vue 前端源码，包含页面、请求、状态、权限与布局            | 核心目录，保留                                                 |
+| `deploy/`       | 可选部署辅助                                              | 普通前端使用无需配置；保留不影响普通构建                       |
 | `public/`       | 原样复制到构建产物的静态文件；当前包含网站图标和 SVG 资源 | 替换或移除引用后可裁剪；例如 `index.html` 引用了 `favicon.svg` |
 | `build/`        | Vite 构建辅助：启动加载层内联、可选 Mock 虚拟模块         | 保留；`vite.config.ts` 直接导入这里的插件                      |
-| `scripts/`      | 根项目测试收集、可选模块检查、独立前端验证                | 保留；`package.json` 的检查命令依赖它                          |
+| `scripts/`      | 数据源启动命令、测试收集、可选模块检查、独立前端验证      | 保留；`package.json` 的启动和检查命令依赖它                    |
 | `tests/`        | 不依赖演示后端的前端核心回归与测试辅助                    | 建议保留；不影响生产运行，删除需调整检查命令和其他测试引用     |
 | `mock/`         | 可选的浏览器内存接口，用于无后端开发和演示                | 可整体删除，详见下文                                           |
-| `workers/`      | 可选的独立 Worker + D1 测试后端，目前只有 `api/`          | 可整体删除；线上 API 需另行安排                                |
-| `deploy/`       | 展示站部署实现，目前只有 `cloudflare/`                    | 不采用该部署方案时可配套移除                                   |
+| `workers/`      | 可选的独立测试后端，目前只有 `api/`                       | 可整体删除；线上 API 需另行安排                                |
 | `docs/`         | 开发、架构、接口、数据库、部署与验收文档                  | 不参与运行；可以裁剪，但应同步修复 README 等文档链接           |
 | `.vscode/`      | VS Code 扩展推荐                                          | 可删除，不影响运行                                             |
 | `.idea/`        | 本机 JetBrains IDE 配置，已忽略提交                       | 可删除，不影响运行，IDE 可能重新生成                           |
 | `node_modules/` | 安装的依赖及部分工具缓存                                  | 可重新安装，不是源码；删除后执行 `pnpm install`                |
 | `dist/`         | 普通前端构建产物                                          | 可重新生成；不要提交 Git，`pnpm build` 生成                    |
-| `.cloudflare/`  | Cloudflare 构建和工具产物                                 | 可重新生成；部署前重新执行 `pnpm run build:cloudflare`         |
-| `.wrangler/`    | Cloudflare 工具的本地状态或缓存（使用相关工具时可能出现） | 确认不需要其中本地状态后可清理，不是业务源码                   |
 | `.git/`         | Git 历史、分支与版本控制元数据                            | 保留，不属于模板功能裁剪范围                                   |
 
 `coverage/`、`.pnpm-store/`、日志目录等若由本地工具生成，属于报告或缓存，不作为应用源码维护。清理缓存前停止相关开发进程；报告需要时重新运行对应工具。
@@ -99,27 +97,25 @@
 
 ## 可选后端、部署与测试目录
 
-| 目录                            | 用途                                                           | 删除条件                                                                                 |
-| ------------------------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `mock/modules/`                 | 登录、路由及各管理接口的内存处理器                             | 随整个 `mock/` 删除最简单                                                                |
-| `mock/rbac/`                    | SQL 风格内存表、种子、DTO 与权限计算                           | Mock 处理器依赖它，勿单独删除后继续启用 Mock                                             |
-| `mock/tests/`                   | 依赖 Mock 的会话、错误、权限与 CRUD 集成测试                   | 随 `mock/` 删除后，根测试自动跳过                                                        |
-| `workers/api/src/`              | Worker 运行时源码，HTTP 分发与统一响应                         | 随后端示例整体移除，或复制为独立项目                                                     |
-| `workers/api/src/config/`       | 后端允许引用的前端页面入口清单                                 | 删除前端页面时，保留 Worker 的项目需同步维护该清单                                       |
-| `workers/api/src/modules/`      | 认证、首页与管理接口处理、输入校验和 DTO                       | 保留 Worker 时保留                                                                       |
-| `workers/api/src/repositories/` | D1 参数化查询与事务批处理                                      | 保留 Worker 时保留                                                                       |
-| `workers/api/src/security/`     | 密码、会话授权、限流与路由生成                                 | 保留 Worker 时保留                                                                       |
-| `workers/api/migrations/`       | SQLite 建表、种子和增量迁移                                    | 保留 Worker 时保留，不要当作缓存清理                                                     |
-| `workers/api/scripts/`          | 初始化本机凭据、生成一次性 SQL 和单文件构建                    | Worker 工具命令依赖                                                                      |
-| `workers/api/tests/`            | Worker 单元和 SQLite 集成测试；`helpers/` 是测试服务与数据辅助 | 随 Worker 移除                                                                           |
-| `workers/api/integration/`      | 完整仓库中，真实前端请求客户端对接 Worker 的联调测试           | 随 Worker 移除，不属于独立 Worker 包的测试入口                                           |
-| `workers/api/.local/`           | 本机账号凭据、`AUTH_PEPPER` 和初始化 SQL，忽略提交             | **不是可随意清理的缓存**；已有测试库仍需这些资料时应妥善保留，不要重建 pepper 来重置密码 |
-| `workers/api/dist/`             | 可粘贴到控制台的 `worker.js` 打包产物                          | 可重新构建，不提交 Git                                                                   |
-| `deploy/cloudflare/`            | 前端静态站构建与 `/api` 服务绑定代理，不是业务 API 后端        | 不用该部署方案时配套移除                                                                 |
-| `deploy/cloudflare/tests/`      | 服务绑定代理的路径边界、转发和错误回归                         | 随部署实现移除后，根测试自动跳过                                                         |
-| `tests/helpers/`                | Vite 转换环境、内存存储和测试路由辅助                          | 核心测试与部分 Mock/Worker 联调测试共同引用，建议保留                                    |
-| `tests/integration/`            | 独立前端的请求、路由、动画、加载、多语言、组件等回归           | 建议保留；裁剪页面后同步调整相关测试                                                     |
-| `docs/database/`                | SQL 结构设计与模型说明，供实现后端参考                         | 文档与设计参考，不会自动执行；Worker 实际迁移另在 `workers/api/migrations/`              |
+| 目录                            | 用途                                                           | 删除条件                                                                                         |
+| ------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `mock/modules/`                 | 登录、路由及各管理接口的内存处理器                             | 随整个 `mock/` 删除最简单                                                                        |
+| `mock/rbac/`                    | SQL 风格内存表、种子、DTO 与权限计算                           | Mock 处理器依赖它，勿单独删除后继续启用 Mock                                                     |
+| `mock/tests/`                   | 依赖 Mock 的会话、错误、权限与 CRUD 集成测试                   | 随 `mock/` 删除后，根测试自动跳过                                                                |
+| `workers/api/src/`              | Worker 运行时源码，HTTP 分发与统一响应                         | 随后端示例整体移除，或复制为独立项目                                                             |
+| `workers/api/src/config/`       | 后端允许引用的前端页面入口清单                                 | 删除前端页面时，保留 Worker 的项目需同步维护该清单                                               |
+| `workers/api/src/modules/`      | 认证、首页与管理接口处理、输入校验和 DTO                       | 保留 Worker 时保留                                                                               |
+| `workers/api/src/repositories/` | 数据库参数化查询与事务批处理                                   | 保留 Worker 时保留                                                                               |
+| `workers/api/src/security/`     | 密码、会话授权、限流与路由生成                                 | 保留 Worker 时保留                                                                               |
+| `workers/api/migrations/`       | SQLite 建表、种子和增量迁移                                    | 保留 Worker 时保留，不要当作缓存清理                                                             |
+| `workers/api/scripts/`          | 初始化本机凭据、生成一次性 SQL 和单文件构建                    | Worker 工具命令依赖                                                                              |
+| `workers/api/tests/`            | Worker 单元和 SQLite 集成测试；`helpers/` 是测试服务与数据辅助 | 随 Worker 移除                                                                                   |
+| `workers/api/integration/`      | 完整仓库中，真实前端请求客户端对接 Worker 的联调测试           | 随 Worker 移除，不属于独立 Worker 包的测试入口                                                   |
+| `workers/api/.local/`           | 本机测试凭据和初始化 SQL，忽略提交                             | **不是可随意清理的缓存**；已有测试库仍需这些资料时应妥善保留，不要通过重新初始化来重置已有数据库 |
+| `workers/api/dist/`             | 可粘贴到控制台的 `worker.js` 打包产物                          | 可重新构建，不提交 Git                                                                           |
+| `tests/helpers/`                | Vite 转换环境、内存存储和测试路由辅助                          | 核心测试与部分 Mock/Worker 联调测试共同引用，建议保留                                            |
+| `tests/integration/`            | 独立前端的请求、路由、动画、加载、多语言、组件等回归           | 建议保留；裁剪页面后同步调整相关测试                                                             |
+| `docs/database/`                | SQL 结构设计与模型说明，供实现后端参考                         | 文档与设计参考，不会自动执行；Worker 实际迁移另在 `workers/api/migrations/`                      |
 
 表中未单独标注删除条件的 Worker 源码子目录均由其入口引用，不能在继续使用 Worker 时随意删除。
 
@@ -135,19 +131,7 @@
 
 可以整体删除 `mock/`、`workers/`，保留 `src/api/`，按自己的接口调整 API 模块、DTO 和响应协议。开发代理、生产代理与认证契约的完整步骤见 [接入自有后端](backend-replacement.md)。
 
-删除本地目录不会删除或停用已经部署在 Cloudflare 上的 Worker、D1 或服务绑定。若前端仍部署在 Cloudflare，必须让 `cloudflare.config.ts` 中的 `API` 服务绑定指向实际可用的后端，或相应替换代理实现；删除 Worker 示例源码不会自动替换远程服务。
-
-### 不使用 Cloudflare 部署前端
-
-可以配套删除 `deploy/cloudflare/` 与根目录 `cloudflare.config.ts`，然后：
-
-1. 从 `package.json` 移除 `build:cloudflare`、`check:cloudflare`、`deploy:cloudflare` 三个命令。
-2. 从 `vite.config.ts` 移除 `NPORA_CLOUDFLARE_BUILD` 条件导入及 `cloudflarePlugin` 插件项。
-3. 若后续没有其他用途，可移除根开发依赖 `cf`、`@cloudflare/vite-plugin`，并用包管理器更新锁文件。
-4. 从 `tsconfig.node.json` 的 `include` 移除 `cloudflare.config.ts`，清理 `.env*` 中不再使用的 Cloudflare 专用配置及文档链接。
-5. 在自己的服务器配置 API 转发和 History 页面回退，执行 `pnpm run check`、`pnpm build`。
-
-`build/` 与 `scripts/` 仍供普通 Vite 构建和检查使用，应保留。`pnpm-workspace.yaml` 还包含其他依赖的构建许可，不应因为移除 Cloudflare 就直接整份删除。
+删除本地目录不会删除或停用远程服务。生产环境仍需配置实际可用的 API 转发。
 
 ### 移除表格、表单、下载等演示页面
 
@@ -164,7 +148,6 @@
 | `.env.development.local.example`                                     | 本机配置样例，不会被 Vite 自动加载；可随相关接入说明裁剪                                      |
 | `package.json`、`pnpm-lock.yaml`、`pnpm-workspace.yaml`              | 项目命令、依赖与锁定结果、依赖构建许可；正常开发保留                                          |
 | `vite.config.ts`、`tsconfig*.json`、`index.html`                     | 构建、类型检查与 HTML 入口；保留或随整体技术方案调整                                          |
-| `cloudflare.config.ts`                                               | 可选前端 Cloudflare 部署配置，需按上述步骤配套移除                                            |
 | `.gitignore`、`.editorconfig`、`.prettierrc.json`、`.prettierignore` | Git 忽略规则、编辑和格式约定；建议保留                                                        |
 | `report.html`                                                        | 开启构建分析后生成的体积报告，可删除，不提交 Git                                              |
 
@@ -180,6 +163,4 @@ pnpm build
 pnpm run check:standalone
 ```
 
-`check:standalone` 在临时目录中复制前端，明确排除 `mock/`、`workers/`、`deploy/` 和 `cloudflare.config.ts`，验证类型、核心测试及普通构建，不会删除工作区文件，也不会验证真实后端可用性。
-
-根检查脚本按目录存在性发现 Mock、Worker、Cloudflare 代理的检查与测试。若裁剪了业务页面，应同步更新相关测试，并实际验证登录、菜单、直接访问页面和退出流程。继续使用 Cloudflare 部署时，另执行 `pnpm run build:cloudflare` 与 `pnpm run check:cloudflare`。
+`check:standalone` 在临时目录中验证不含演示后端与可选部署实现的前端，不会删除工作区文件或验证真实后端可用性。根检查会按目录存在性收集可选测试。裁剪业务页面后，应同步更新相关测试，并验证登录、菜单、直接访问页面与退出流程。

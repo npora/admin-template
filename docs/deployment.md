@@ -2,10 +2,6 @@
 
 模板默认从站点根路径 `/` 提供页面，使用 HTML5 History 路由。构建产物为纯静态前端；生产 Mock 关闭，管理数据需要独立后端。下面是部署说明和配置示例，本仓库未自动发布网站或修改服务器。
 
-Cloudflare Workers 展示站另有专用的静态资源和 API 转发构建，面板填写方式见 [Cloudflare 部署说明](../deploy/cloudflare/README.md)。普通静态部署继续使用下文的 `pnpm build`。
-
-本项目已部署的演示地址为 [admin-demo.npora.workers.dev](https://admin-demo.npora.workers.dev)，使用独立测试 API。更改展示地址或绑定自定义域名的步骤见 [展示地址说明](../deploy/cloudflare/README.md#更改展示地址)，线上检查范围见 [验收记录](acceptance.md#线上展示站-http-检查)。
-
 ## 构建
 
 ```sh
@@ -77,7 +73,7 @@ API 路径不要回退前端 HTML，也不要为 API 配置静态资源缓存。
 
 保留 `src/api/` 的请求与 DTO 契约，将开发代理目标改为自己的服务，生产配置对应的 `/api` 转发。可删除 `mock/` 和 `workers/`；步骤和独立前端验证见 [后端替换说明](backend-replacement.md)。
 
-新部署的 Worker 使用其自身初始化流程和账号；README 中 `admin / 123456`、`viewer / 123456` 是开发 Mock 的默认账号，不代表所有 Worker 实例的凭据。前端环境文件不存密码或 `AUTH_PEPPER`。
+实际后端使用自身的账号体系；README 中的账号只用于本地 Mock。前端环境文件不保存密码或服务端密钥。
 
 ## 发布前逐项确认
 

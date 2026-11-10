@@ -8,9 +8,13 @@
 
 ## 在线演示
 
-展示地址：[https://admin-demo.npora.workers.dev](https://admin-demo.npora.workers.dev)。当前演示账号：`admin`，密码：`123456`。
+展示网站：[Npora Admin 在线体验](https://admin-demo.npora.workers.dev)。无需下载项目，可直接打开体验。
 
-线上展示站通过服务绑定连接独立的 Worker + D1 测试 API，数据与本地 Mock 独立。部署命令、访问地址和自定义域名配置见 [Cloudflare 展示站部署](deploy/cloudflare/README.md)。
+| 账号    | 密码     | 权限                                       |
+| ------- | -------- | ------------------------------------------ |
+| `admin` | `123456` | 超级管理员，可体验首页、系统管理与权限功能 |
+
+线上演示数据与本地 Mock 相互独立。以下快速开始中的账号表用于本地开发演示。
 
 ## 快速开始
 
@@ -22,6 +26,16 @@ pnpm dev
 ```
 
 默认地址为 `http://localhost:3000`，占用时 Vite 会选择下一个端口。开发模式开启 Mock，无需启动后端。
+
+**不需要删除任何演示目录。** 模板默认通过 Mock 开箱即用；连接自己的后端时，保留 `mock/`、`workers/` 即可，两者不会进入普通前端生产构建。
+
+| 使用方式                 | 操作                                                                 |
+| ------------------------ | -------------------------------------------------------------------- |
+| 无后端体验模板           | `pnpm dev:mock`，强制使用 Mock，忽略本机 Mock 开关覆盖               |
+| 连接 Worker 或自己的后端 | 在 `.env.development.local` 设置 `VITE_API_URL`，执行 `pnpm dev:api` |
+| 按环境文件启动           | `pnpm dev`，遵循 `.env*` 中的开关                                    |
+
+`dev:api` 只切换到真实 HTTP，不会启动或部署 Worker。Worker 和自己的后端使用同一种接入方式，完整说明见 [后端切换与可选裁剪](docs/backend-replacement.md)。
 
 若本机已有 `.env.development.local`，其中配置会覆盖公共开发配置。五份环境文件各自的用途与优先级见 [环境配置说明](docs/development.md#为什么有多个-env-文件)；`.example` 仅供复制，不会自动加载。
 
@@ -39,6 +53,8 @@ Mock 数据只保存在当前页面运行时内存，刷新浏览器后恢复。
 | 命令                 | 用途                             |
 | -------------------- | -------------------------------- |
 | `pnpm dev`           | 开发服务                         |
+| `pnpm dev:mock`      | 强制使用本地 Mock                |
+| `pnpm dev:api`       | 强制连接已配置的 HTTP 后端       |
 | `pnpm run format`    | 统一格式                         |
 | `pnpm run typecheck` | TypeScript 与 Vue 模板类型检查   |
 | `pnpm test`          | 全部集成回归检查，不监听本地端口 |
@@ -84,31 +100,30 @@ tests/
   helpers/          共用测试环境
   integration/      独立前端的缓存、动画、多语言和基础能力回归
 mock/               可删除的开发 Mock、SQL 内存模型及其测试
-workers/api/        可删除的独立 Cloudflare 测试 API（认证、会话与权限）
-deploy/cloudflare/  可选的前端 Cloudflare 展示站部署与 API 代理
+workers/api/        可选的独立测试后端，普通前端运行不依赖
+deploy/             可选部署辅助，普通构建无需使用
 public/             原样输出的静态资源，例如 favicon
 build/              构建辅助与可选 Mock 适配器
-scripts/            检查脚本；按目录存在性运行可选检查
+scripts/            数据源启动命令、检查脚本与可选检查
 docs/               架构、开发、接口与数据库说明
 ```
 
 完整的目录职责、各子目录说明和裁剪步骤见 [项目目录与裁剪说明](docs/project-structure.md)。
 
-| 裁剪对象                | 处理方式                                                                  |
-| ----------------------- | ------------------------------------------------------------------------- |
-| `mock/`                 | 可整体删除；建议设置 `VITE_API_MOCK=false` 并配置真实接口                 |
-| `workers/`              | 可整体删除本地后端示例；需要另有可用的后端，远程 Worker/D1 不会随文件删除 |
-| `deploy/cloudflare/`    | 不用 Cloudflare 展示站时，可连同配置、部署命令和插件配套移除              |
-| `src/views/examples/`   | 先清理静态路由、动态菜单、页面清单及测试，再删除演示页面                  |
-| `dist/`、`.cloudflare/` | 构建产物，可重新生成，不提交 Git                                          |
+| 裁剪对象              | 处理方式                                                             |
+| --------------------- | -------------------------------------------------------------------- |
+| `mock/`               | 可整体删除；建议设置 `VITE_API_MOCK=false` 并配置真实接口            |
+| `workers/`            | 可整体删除本地后端示例；需要另有可用的后端，已部署服务不会随文件删除 |
+| `dist/`               | 构建产物，可重新生成，不提交 Git                                     |
+| `src/views/examples/` | 先清理静态路由、动态菜单、页面清单及测试，再删除演示页面             |
 
 `src/api/`、`build/`、`scripts/` 仍属于前端基础能力，删除演示后端时保留。
 
 ## 接入真实后端
 
-`mock/` 和 `workers/` 都是可选演示目录，可以整体删除。前端无需修改导入；Mock 目录不存在时自动回退到真实请求，相关检查也会自动跳过。Worker 已实现 D1 认证、权限、首页汇总及四个管理模块，可作为独立测试后端。连接个人测试服务时建议使用不提交的 `.env.development.local` 覆盖配置，模板默认仍保留 Mock。具体步骤见 [删除演示代码与接入自有后端](docs/backend-replacement.md)。
+推荐保留 `mock/` 和 `workers/`，接入自己的后端只需配置地址并执行 `pnpm dev:api`，无需删除文件。Worker 是可选测试后端，不会被普通前端构建启动或部署；Mock 在真实 HTTP 模式下不加载。需要主动精简源码时仍可裁剪这些目录，详见 [后端切换与可选裁剪](docs/backend-replacement.md)。
 
-将 `.env.development` 的 `VITE_API_MOCK` 改为 `false`，并通过 `VITE_API_URL` 设置开发代理目标。API 请求前缀默认 `/api`，默认业务响应为 `{ code: 0, message: 'success', data }`。
+在 `.env.development.local` 设置 `VITE_API_MOCK=false` 和 `VITE_API_URL`，可让 `pnpm dev` 也默认连接自己的服务。API 请求前缀默认 `/api`，默认业务响应为 `{ code: 0, message: 'success', data }`。
 
 生产构建始终关闭 Mock。`VITE_API_URL` 仅用于开发代理；生产由部署服务器把 `VITE_API_PREFIX` 转发至后端。使用 HTML5 History 路由，需要将前端页面地址回退至 `index.html`，API 请求应单独转发。
 
@@ -118,7 +133,6 @@ docs/               架构、开发、接口与数据库说明
 - [完整目录用途与可删除范围](docs/project-structure.md)
 - [开发、环境变量与新增页面](docs/development.md)
 - [生产部署与发布检查](docs/deployment.md)
-- [Cloudflare 展示站部署](deploy/cloudflare/README.md)
 - [浏览器验收结果与待验证项](docs/acceptance.md)
 - [接口契约与用户 CRUD](docs/api.md)
 - [数据库模型](docs/database/README.md)
