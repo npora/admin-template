@@ -8,7 +8,7 @@
 
 | 项目              | 值                                                                                                       |
 | ----------------- | -------------------------------------------------------------------------------------------------------- |
-| 项目名称          | `admin-dome`，与 `cloudflare.config.ts` 的默认名称一致                                                   |
+| 项目名称          | `admin-demo`，与 `cloudflare.config.ts` 的默认名称一致                                                   |
 | 构建命令          | `pnpm run build:cloudflare`                                                                              |
 | 部署命令          | `pnpm run deploy:cloudflare`                                                                             |
 | 预览构建          | 首次配置关闭；本方案尚未配置分支预览构建                                                                 |
@@ -37,7 +37,7 @@ Cloudflare CLI 要求 Node.js 22.18 或更新版本，使用 Node.js 24 也可�
 
 ## 调整名称与 API 服务
 
-默认名称与用户当前创建的 `admin-dome` 保持一致。若在面板改成 `admin-demo`，构建环境中添加 `CLOUDFLARE_WORKER_NAME=admin-demo`，或修改根配置默认值，确保配置和面板名称相同。
+默认名称为 `admin-demo`，与当前 Cloudflare 项目一致。若在面板使用其他名称，构建环境中添加 `CLOUDFLARE_WORKER_NAME=实际项目名`，或修改根配置默认值，确保配置和面板名称相同。名称不一致会出现 Worker 未找到的部署错误。
 
 `CLOUDFLARE_API_WORKER` 可覆盖默认 API Worker 名称 `npora-admin-api-test`，目标必须存在于同一账户。它是服务名称，不是 URL，不含密码或令牌。`VITE_API_PREFIX` 可调整前缀；前端和部署配置从同一环境值读取。
 

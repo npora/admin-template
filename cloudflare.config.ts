@@ -7,7 +7,7 @@ export default defineConfig(({ mode }) => {
   const prefix = normalizeApiPrefix(env.VITE_API_PREFIX)
   return {
     worker: {
-      name: env.CLOUDFLARE_WORKER_NAME?.trim() || 'admin-dome',
+      name: env.CLOUDFLARE_WORKER_NAME?.trim() || 'admin-demo',
       entrypoint: './deploy/cloudflare/worker.mjs',
       compatibilityDate: '2026-11-10',
       workersDev: true,
