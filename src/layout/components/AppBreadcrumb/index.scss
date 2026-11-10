@@ -1,0 +1,33 @@
+.app-breadcrumb {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  line-height: 1.5;
+  margin-left: 12px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+:deep(.el-breadcrumb__item) {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+:deep(.el-breadcrumb__separator) {
+  flex-shrink: 0;
+}
+:deep(.el-breadcrumb__inner) {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 400;
+  color: var(--np-text-regular);
+}
+
+:deep(.el-breadcrumb__item:last-child .el-breadcrumb__inner) {
+  color: var(--np-text-primary);
+  cursor: default;
+}

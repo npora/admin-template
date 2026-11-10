@@ -1,0 +1,12 @@
+{
+  "failed": "The operation failed. Try again later.",
+  "timeout": "The request timed out. Try again later.",
+  "network": "Could not connect. Check your network.",
+  "invalidResponse": "The server returned an invalid response.",
+  "unauthorized": "Authentication failed. Check your credentials.",
+  "forbidden": "You do not have permission for this action.",
+  "notFound": "The requested endpoint does not exist.",
+  "rateLimited": "Too many requests. Try again later.",
+  "unavailable": "The server is temporarily unavailable. Try again later.",
+  "expired": "Your session expired. Sign in again."
+}

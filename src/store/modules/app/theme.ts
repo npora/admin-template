@@ -1,59 +1,20 @@
+import { matchesMedia, watchMedia } from '@/utils/media-query'
 import type { ThemeMode } from './types'
 
-const DARK_MEDIA_QUERY =
-  '(prefers-color-scheme: dark)'
+const DARK_MEDIA_QUERY = '(prefers-color-scheme: dark)'
 
 export function getSystemDarkMode(): boolean {
-  return window.matchMedia(
-    DARK_MEDIA_QUERY
-  ).matches
+  return matchesMedia(DARK_MEDIA_QUERY)
 }
 
-export function resolveDarkMode(
-  mode: ThemeMode
-): boolean {
-  if (mode === 'dark') {
-    return true
-  }
-
-  if (mode === 'light') {
-    return false
-  }
-
-  return getSystemDarkMode()
+export function resolveDarkMode(mode: ThemeMode, systemDark: boolean): boolean {
+  return mode === 'system' ? systemDark : mode === 'dark'
 }
 
-export function applyDarkMode(
-  dark: boolean
-): void {
-  document.documentElement.classList.toggle(
-    'dark',
-    dark
-  )
+export function applyDarkMode(dark: boolean): void {
+  if (typeof document !== 'undefined') document.documentElement.classList.toggle('dark', dark)
 }
 
-export function watchSystemTheme(
-  callback: (dark: boolean) => void
-): () => void {
-  const media = window.matchMedia(
-    DARK_MEDIA_QUERY
-  )
-
-  const listener = (
-    event: MediaQueryListEvent
-  ) => {
-    callback(event.matches)
-  }
-
-  media.addEventListener(
-    'change',
-    listener
-  )
-
-  return () => {
-    media.removeEventListener(
-      'change',
-      listener
-    )
-  }
+export function watchSystemTheme(callback: (dark: boolean) => void): () => void {
+  return watchMedia(DARK_MEDIA_QUERY, callback)
 }

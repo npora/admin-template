@@ -1,6 +1,8 @@
 @use 'element-plus/theme-chalk/dark/css-vars.css';
 
-:root {
+// Match Element Plus's html.dark specificity so shared tokens also win in dark mode.
+:root,
+html.dark {
   --el-color-primary: var(--np-color-primary);
   --el-color-success: var(--np-color-success);
   --el-color-warning: var(--np-color-warning);
@@ -27,8 +29,195 @@
   --el-fill-color-light: var(--np-fill-color-light);
   --el-fill-color-lighter: var(--np-fill-color-lighter);
   --el-fill-color-extra-light: var(--np-fill-color-extra-light);
+  --el-fill-color-blank: var(--np-bg-container);
 
   --el-border-radius-small: var(--np-radius-small);
   --el-border-radius-base: var(--np-radius-base);
   --el-border-radius-round: var(--np-radius-round);
+}
+
+:root {
+  --el-color-primary-light-3: #7c91f3;
+  --el-color-primary-light-5: #a1b0f7;
+  --el-color-primary-light-7: #c7d0fa;
+  --el-color-primary-light-8: #d9dffc;
+  --el-color-primary-light-9: #edf0fe;
+  --el-color-primary-dark-2: #354ebe;
+  --el-font-size-base: 13px;
+  --el-box-shadow-light: var(--np-shadow-base);
+}
+html.dark {
+  --el-color-primary-light-3: #667bc2;
+  --el-color-primary-light-5: #4c5d95;
+  --el-color-primary-light-7: #34436b;
+  --el-color-primary-light-8: #2b3858;
+  --el-color-primary-light-9: #24304a;
+  --el-color-primary-dark-2: #a2b3ff;
+  .el-button--primary:not(.is-link):not(.is-text):not(.is-plain) {
+    --el-button-text-color: #132147;
+    --el-button-hover-text-color: #132147;
+    --el-button-active-text-color: #132147;
+  }
+}
+.el-button {
+  font-weight: 500;
+  transition:
+    color 0.15s,
+    background-color 0.15s,
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.el-button--primary:not(.is-link):not(.is-text):not(.is-plain) {
+  box-shadow: 0 3px 8px rgb(67 97 238 / 14%);
+}
+.el-button:focus-visible {
+  outline: 2px solid var(--np-color-primary);
+  outline-offset: 3px;
+}
+.el-input__wrapper,
+.el-select__wrapper {
+  min-height: 36px;
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px var(--np-border-color) inset;
+}
+.el-input.is-disabled .el-input__wrapper {
+  box-shadow: 0 0 0 1px var(--np-border-color-light) inset;
+}
+.el-form-item__label {
+  font-size: 12px;
+  color: var(--np-text-regular);
+  font-weight: 500;
+}
+.el-dialog {
+  --el-dialog-border-radius: 16px;
+  --el-dialog-padding-primary: 24px;
+  box-shadow: var(--np-shadow-large);
+}
+.el-dialog__header {
+  margin: 0;
+  padding: 0 32px 18px 0;
+  border-bottom: 1px solid var(--np-border-color-light);
+}
+.el-dialog__title {
+  font-size: 17px;
+  font-weight: 600;
+}
+.el-dialog__body {
+  padding-top: 20px;
+  max-height: calc(100dvh - 220px);
+  overflow: auto;
+}
+.el-dialog__footer {
+  padding-top: 20px;
+  margin-top: 4px;
+  border-top: 1px solid var(--np-border-color-light);
+}
+.el-dialog__headerbtn {
+  right: 14px;
+  top: 13px;
+}
+.el-drawer__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--np-text-primary);
+}
+.el-message-box {
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: var(--np-shadow-large);
+}
+.el-tag {
+  border-radius: 5px;
+  font-size: 11px;
+}
+.el-alert {
+  border-radius: 9px;
+  --el-alert-padding: 12px 15px;
+}
+.el-alert__title {
+  font-size: 12px;
+  line-height: 1.7;
+}
+.el-empty__description p {
+  color: var(--np-text-secondary);
+  font-size: 12px;
+}
+.dialog-description {
+  color: var(--np-text-secondary);
+  margin-bottom: 20px;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.dialog-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 16px;
+}
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 5px;
+  background: var(--np-tone-teal-bg);
+  color: var(--np-tone-teal);
+  font-size: 11px;
+  white-space: nowrap;
+  i {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  &.is-disabled {
+    color: var(--np-text-secondary);
+    background: var(--np-fill-color-light);
+  }
+}
+@media (max-width: 767px) {
+  .el-dialog {
+    --el-dialog-padding-primary: 18px;
+    margin-top: 5vh;
+  }
+  .el-dialog__body {
+    max-height: calc(100dvh - 190px);
+  }
+  .dialog-field-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+// 表单与弹窗允许长翻译自然换行，校验提示参与布局以免覆盖下一个字段。
+.el-dialog .el-form-item__label {
+  height: auto;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.el-dialog .el-form-item__error {
+  position: static;
+  flex-basis: 100%;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.el-dialog__footer {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  .el-button {
+    max-width: 100%;
+    height: auto;
+    min-height: 32px;
+    padding-block: 7px;
+    white-space: normal;
+    line-height: 1.5;
+  }
+  .el-button + .el-button {
+    margin-left: 0;
+  }
+}
+.el-dialog__title,
+.el-message-box__message,
+.el-alert__title {
+  overflow-wrap: anywhere;
 }

@@ -1,0 +1,15 @@
+{
+  "Login": "登录",
+  "Dashboard": "首页",
+  "System": "系统管理",
+  "SystemUser": "用户管理",
+  "SystemRole": "角色管理",
+  "SystemMenu": "菜单管理",
+  "SystemDepartment": "部门管理",
+  "Examples": "操作示例",
+  "SystemTable": "表格示例",
+  "SystemDownload": "下载示例",
+  "ExampleCache": "页面缓存示例",
+  "ExampleForm": "表单示例",
+  "Profile": "个人中心"
+}

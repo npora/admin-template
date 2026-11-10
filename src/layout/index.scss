@@ -1,0 +1,27 @@
+.app-layout {
+  position: relative;
+  display: flex;
+  width: 100%;
+  min-width: 0;
+
+  height: 100vh;
+  height: 100dvh;
+
+  overflow: hidden;
+  background-color: var(--np-bg-page);
+}
+
+.app-layout__container {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+}
+
+.app-layout__mask {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--np-z-index-sidebar) - 1);
+  background-color: rgb(0 0 0 / 45%);
+}

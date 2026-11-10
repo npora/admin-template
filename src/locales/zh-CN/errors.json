@@ -1,0 +1,12 @@
+{
+  "failed": "操作失败，请稍后重试",
+  "timeout": "请求超时，请稍后重试",
+  "network": "网络连接失败，请检查网络",
+  "invalidResponse": "服务器返回的数据格式异常",
+  "unauthorized": "身份验证失败，请检查登录信息",
+  "forbidden": "没有执行此操作的权限",
+  "notFound": "请求的接口不存在",
+  "rateLimited": "请求过于频繁，请稍后重试",
+  "unavailable": "服务器暂时不可用，请稍后重试",
+  "expired": "登录状态已失效，请重新登录"
+}

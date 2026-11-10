@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local analysis and test artifacts
+report.html
+coverage/
+tests/integration/.check-app-main-*.ts
+.pnpm-store/

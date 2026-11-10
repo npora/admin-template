@@ -1,14 +1,8 @@
-export type PermissionValue =
-  | string
-  | readonly string[]
+export type PermissionValue = string | readonly string[]
 
-export type PermissionMode =
-  | 'any'
-  | 'all'
+export type PermissionMode = 'any' | 'all'
 
-function normalizePermission(
-  value: PermissionValue
-): string[] {
+function normalizePermission(value: PermissionValue): string[] {
   if (typeof value === 'string') {
     return value ? [value] : []
   }
@@ -27,13 +21,13 @@ export function checkPermission(
     return false
   }
 
-  if (mode === 'all') {
-    return required.every(permission =>
-      permissions.includes(permission)
-    )
+  if (permissions.includes('*')) {
+    return true
   }
 
-  return required.some(permission =>
-    permissions.includes(permission)
-  )
+  if (mode === 'all') {
+    return required.every((permission) => permissions.includes(permission))
+  }
+
+  return required.some((permission) => permissions.includes(permission))
 }

@@ -1,91 +1,43 @@
-import {
-  effectScope,
-  watchEffect,
-  type Directive,
-  type DirectiveBinding,
-  type EffectScope
-} from 'vue'
+import { effectScope, shallowRef, watchEffect, type Directive } from 'vue'
 
 import { pinia } from '@/store'
 import { usePermissionStore } from '@/store/modules/permission'
-import {
-  checkPermission,
-  type PermissionMode,
-  type PermissionValue
-} from '@/utils/permission'
+import { checkPermission, type PermissionMode, type PermissionValue } from '@/utils/permission'
 
-interface PermissionElement extends HTMLElement {
-  __npPermissionScope__?: EffectScope
-  __npPermissionDisplay__?: string
+interface PermissionState {
+  stop: () => void
+  update: (value: PermissionValue, mode: PermissionMode) => void
 }
+const states = new WeakMap<HTMLElement, PermissionState>()
 
-function resolveMode(
-  binding: DirectiveBinding<PermissionValue>
-): PermissionMode {
-  return binding.modifiers.all
-    ? 'all'
-    : 'any'
-}
-
-function setupPermission(
-  el: PermissionElement,
-  binding: DirectiveBinding<PermissionValue>
-): void {
-  el.__npPermissionScope__?.stop()
-
-  if (el.__npPermissionDisplay__ === undefined) {
-    el.__npPermissionDisplay__ = el.style.display
-  }
-
-  const permissionStore =
-    usePermissionStore(pinia)
-
-  const scope = effectScope()
-
-  scope.run(() => {
-    watchEffect(() => {
-      if (!permissionStore.ready) {
-        el.style.display = 'none'
-        return
+export const permission: Directive<HTMLElement, PermissionValue> = {
+  beforeMount(el, binding) {
+    const store = usePermissionStore(pinia)
+    const display = el.style.display
+    const value = shallowRef(binding.value)
+    const mode = shallowRef<PermissionMode>(binding.modifiers.all ? 'all' : 'any')
+    const scope = effectScope(true)
+    scope.run(() =>
+      watchEffect(() => {
+        el.style.display =
+          store.ready && checkPermission(store.permissions, value.value, mode.value)
+            ? display
+            : 'none'
+      })
+    )
+    states.set(el, {
+      stop: () => scope.stop(),
+      update: (nextValue, nextMode) => {
+        value.value = nextValue
+        mode.value = nextMode
       }
-
-      const allowed = checkPermission(
-        permissionStore.permissions,
-        binding.value,
-        resolveMode(binding)
-      )
-
-      el.style.display = allowed
-        ? el.__npPermissionDisplay__ ?? ''
-        : 'none'
     })
-  })
-
-  el.__npPermissionScope__ = scope
-}
-
-function cleanupPermission(
-  el: PermissionElement
-): void {
-  el.__npPermissionScope__?.stop()
-
-  delete el.__npPermissionScope__
-  delete el.__npPermissionDisplay__
-}
-
-export const permission: Directive<
-  PermissionElement,
-  PermissionValue
-> = {
-  mounted(el, binding) {
-    setupPermission(el, binding)
   },
-
   updated(el, binding) {
-    setupPermission(el, binding)
+    states.get(el)?.update(binding.value, binding.modifiers.all ? 'all' : 'any')
   },
-
   beforeUnmount(el) {
-    cleanupPermission(el)
+    states.get(el)?.stop()
+    states.delete(el)
   }
 }

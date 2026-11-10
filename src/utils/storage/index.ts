@@ -4,21 +4,12 @@ import { localStorageAdapter } from './local'
 import { memoryStorageAdapter } from './memory'
 import { sessionStorageAdapter } from './session'
 
-import type {
-  StorageAdapter,
-  StorageService
-} from './types'
+import type { StorageAdapter, StorageService } from './types'
 
-function createStorage(
-  adapter: StorageAdapter,
-  prefix = STORAGE_PREFIX
-): StorageService {
+function createStorage(adapter: StorageAdapter, prefix = STORAGE_PREFIX): StorageService {
   const getStorageKey = (key: string) => `${prefix}${key}`
 
-  function get<T>(
-    key: string,
-    defaultValue: T | null = null
-  ): T | null {
+  function get<T>(key: string, defaultValue: T | null = null): T | null {
     const value = adapter.getItem(getStorageKey(key))
 
     if (value === null) {
@@ -33,10 +24,7 @@ function createStorage(
   }
 
   function set<T>(key: string, value: T): void {
-    adapter.setItem(
-      getStorageKey(key),
-      JSON.stringify(value)
-    )
+    adapter.setItem(getStorageKey(key), JSON.stringify(value))
   }
 
   function remove(key: string): void {
@@ -66,18 +54,12 @@ function createStorage(
   }
 }
 
-export const localStorageService =
-  createStorage(localStorageAdapter)
+export const localStorageService = createStorage(localStorageAdapter)
 
-export const sessionStorageService =
-  createStorage(sessionStorageAdapter)
+export const sessionStorageService = createStorage(sessionStorageAdapter)
 
-export const memoryStorageService =
-  createStorage(memoryStorageAdapter)
+export const memoryStorageService = createStorage(memoryStorageAdapter)
 
 export { createStorage }
 
-export type {
-  StorageAdapter,
-  StorageService
-}
+export type { StorageAdapter, StorageService }

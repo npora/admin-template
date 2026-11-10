@@ -1,0 +1,15 @@
+{
+  "Login": "Sign in",
+  "Dashboard": "Dashboard",
+  "System": "System management",
+  "SystemUser": "Users",
+  "SystemRole": "Roles",
+  "SystemMenu": "Menus",
+  "SystemDepartment": "Departments",
+  "Examples": "Examples",
+  "SystemTable": "Table example",
+  "SystemDownload": "Downloads",
+  "ExampleCache": "Page cache",
+  "ExampleForm": "Form example",
+  "Profile": "Profile"
+}

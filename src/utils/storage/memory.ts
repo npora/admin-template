@@ -1,6 +1,6 @@
 import type { StorageAdapter } from './types'
 
-class MemoryStorageAdapter implements StorageAdapter {
+export class MemoryStorageAdapter implements StorageAdapter {
   private readonly store = new Map<string, string>()
 
   getItem(key: string): string | null {

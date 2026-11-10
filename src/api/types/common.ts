@@ -1,7 +1,7 @@
 export interface DefaultApiResponse<T = unknown> {
   code: number
   message: string
-  data: T
+  data: T | null
 }
 
 export interface PageParams {

@@ -1,14 +1,8 @@
 import type { DefaultApiResponse } from '../types/common'
 
-import {
-  createApiUnwrap,
-  type ApiProtocol
-} from './index'
+import { createApiUnwrap, type ApiProtocol } from './index'
 
-const defaultApiProtocol: ApiProtocol<
-  DefaultApiResponse<unknown>,
-  unknown
-> = {
+const defaultApiProtocol: ApiProtocol<DefaultApiResponse<unknown>, unknown> = {
   isSuccess(response: DefaultApiResponse<unknown>) {
     return response.code === 0
   },
@@ -28,8 +22,6 @@ const defaultApiProtocol: ApiProtocol<
 
 const unwrap = createApiUnwrap(defaultApiProtocol)
 
-export function unwrapApiResponse<T>(
-  response: DefaultApiResponse<T>
-): T {
+export function unwrapApiResponse<T>(response: DefaultApiResponse<T>): T {
   return unwrap(response) as T
 }

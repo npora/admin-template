@@ -1,0 +1,39 @@
+.app-logo {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  height: var(--np-header-height);
+  padding: 0 22px;
+  white-space: nowrap;
+  overflow: hidden;
+  &.is-collapsed {
+    padding: 0;
+    justify-content: center;
+  }
+}
+.app-logo__mark {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 38px;
+  flex-shrink: 0;
+  color: white;
+  background: linear-gradient(140deg, #6481fc, #4361ee);
+  border-radius: 11px;
+  box-shadow: 0 4px 10px rgb(67 97 238 / 19%);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+.app-logo__copy {
+  min-width: 0;
+  strong {
+    display: block;
+    font-size: 16px;
+    font-weight: 650;
+    letter-spacing: -0.3px;
+    color: var(--np-text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

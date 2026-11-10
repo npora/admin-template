@@ -18,8 +18,6 @@ export class ApiError<T = unknown> extends Error {
   }
 }
 
-export function isApiError(
-  error: unknown
-): error is ApiError {
+export function isApiError(error: unknown): error is ApiError {
   return error instanceof ApiError
 }

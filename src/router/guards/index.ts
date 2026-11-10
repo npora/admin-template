@@ -1,14 +1,13 @@
 import type { Router } from 'vue-router'
 
-export function setupRouterGuards(
-  router: Router
-): void {
-  router.beforeEach(to => {
-    const appTitle =
-      import.meta.env.VITE_APP_TITLE
+import { setupAuthGuard } from './auth'
+import { setupTitleGuard } from './title'
 
-    document.title = to.meta.title
-      ? `${to.meta.title} - ${appTitle}`
-      : appTitle
-  })
+export function setupRouterGuards(router: Router): () => void {
+  const stopTitle = setupTitleGuard(router)
+  const stopAuth = setupAuthGuard(router)
+  return () => {
+    stopAuth()
+    stopTitle()
+  }
 }

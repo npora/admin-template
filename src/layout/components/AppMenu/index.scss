@@ -1,0 +1,67 @@
+.app-menu {
+  width: 100%;
+  border-right: 0;
+  background: transparent;
+  --el-menu-bg-color: transparent;
+  --el-menu-text-color: var(--np-text-regular);
+  --el-menu-active-color: var(--np-color-primary);
+  --el-menu-hover-bg-color: var(--np-fill-color-light);
+  &:not(.el-menu--collapse) {
+    width: 100%;
+  }
+}
+:deep(.el-menu-item),
+:deep(.el-sub-menu__title) {
+  position: relative;
+  height: 42px;
+  line-height: 42px;
+  border-radius: 8px;
+  margin: 3px 0;
+  font-size: 13px;
+  transition:
+    background-color var(--np-transition-duration-fast),
+    color var(--np-transition-duration-fast);
+  &:focus-visible {
+    outline: 2px solid var(--np-primary-border);
+    outline-offset: -2px;
+  }
+}
+:deep(.el-menu-item.is-active) {
+  background: var(--np-primary-soft);
+  color: var(--np-color-primary);
+  font-weight: 600;
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 13px;
+    width: 3px;
+    height: 16px;
+    border-radius: 0 3px 3px 0;
+    background: currentColor;
+    pointer-events: none;
+  }
+}
+:deep(.el-sub-menu.is-active > .el-sub-menu__title) {
+  color: var(--np-text-primary);
+  font-weight: 500;
+}
+:deep(.el-menu--inline) {
+  background: transparent;
+}
+:deep(.el-menu--collapse) {
+  width: 52px;
+}
+:deep(.el-menu--collapse > .el-menu-item),
+:deep(.el-menu--collapse > .el-sub-menu > .el-sub-menu__title) {
+  padding: 0 16px !important;
+}
+:deep(.el-menu-item .el-menu-tooltip__trigger) {
+  padding: 0 16px !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  :deep(.el-menu-item),
+  :deep(.el-sub-menu__title) {
+    transition: none;
+  }
+}

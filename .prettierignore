@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.pnpm-store/
+pnpm-lock.yaml
+src/types/generated/
+docs/database/schema.sql
+report.html
+coverage/
+
+**/.local/

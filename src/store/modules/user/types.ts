@@ -1,2 +1,3 @@
-export type UserInfo =
-  Record<string, unknown>
+import type { UserInfoResult } from '@/api/types/auth'
+
+export type UserInfo = UserInfoResult

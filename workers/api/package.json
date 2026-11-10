@@ -1,0 +1,19 @@
+{
+  "name": "@npora/admin-demo-api",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "build": "node scripts/build.mjs",
+    "bootstrap": "node scripts/bootstrap.mjs",
+    "smoke": "node scripts/smoke.mjs",
+    "smoke:management": "node scripts/management-smoke.mjs"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "devDependencies": {
+    "vite": "^8.3.3"
+  }
+}

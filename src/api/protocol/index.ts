@@ -10,9 +10,7 @@ export interface ApiProtocol<TResponse, TData> {
   getMessage(response: TResponse): string
 }
 
-export function createApiUnwrap<TResponse, TData>(
-  protocol: ApiProtocol<TResponse, TData>
-) {
+export function createApiUnwrap<TResponse, TData>(protocol: ApiProtocol<TResponse, TData>) {
   return (response: TResponse): TData => {
     if (!protocol.isSuccess(response)) {
       throw new ApiError<TData>({

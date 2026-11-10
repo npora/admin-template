@@ -1,0 +1,26 @@
+:deep(.el-menu-item),
+:deep(.el-sub-menu__title) {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.app-menu-item__icon {
+  flex-shrink: 0;
+  margin-right: 8px;
+  font-size: 18px;
+}
+
+/* Element Plus SubMenu 右侧展开箭头 */
+:deep(.el-sub-menu__icon-arrow) {
+  flex-shrink: 0;
+  margin-right: 0;
+  margin-left: auto;
+}
+
+.app-menu-item__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

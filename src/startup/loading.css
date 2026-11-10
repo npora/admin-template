@@ -1,0 +1,131 @@
+#app-loading {
+  --startup-bg: #f5f7fb;
+  --startup-text: #24324b;
+  --startup-muted: #8b97aa;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--np-bg-page, var(--startup-bg));
+  color: var(--np-text-primary, var(--startup-text));
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  transition: opacity 180ms ease;
+}
+html.dark #app-loading {
+  --startup-bg: #101725;
+  --startup-text: #e4ebf7;
+  --startup-muted: #8c99ae;
+}
+#app-loading .startup-content {
+  width: min(320px, 100%);
+  text-align: center;
+}
+#app-loading .startup-logo {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 20px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #6c83ff, #4361ee);
+  color: #fff;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 10px 28px rgb(67 97 238 / 18%);
+  animation: np-startup-breathe 2s ease-in-out infinite;
+}
+#app-loading .startup-title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: -0.3px;
+  overflow-wrap: anywhere;
+}
+#app-loading .startup-message {
+  min-height: 24px;
+  margin: 9px 0 0;
+  color: var(--np-text-secondary, var(--startup-muted));
+  font-size: 13px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+#app-loading .startup-progress {
+  width: 168px;
+  height: 3px;
+  margin: 22px auto 0;
+  overflow: hidden;
+  border-radius: 8px;
+  background: rgb(67 97 238 / 12%);
+}
+#app-loading .startup-progress span {
+  display: block;
+  width: 45%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #a7b7ff, #4361ee);
+  animation: np-startup-flow 1.4s ease-in-out infinite;
+}
+#app-loading .startup-retry {
+  margin-top: 22px;
+  padding: 9px 18px;
+  border: 1px solid rgb(67 97 238 / 24%);
+  border-radius: 8px;
+  background: transparent;
+  color: #617bff;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+#app-loading .startup-retry:hover {
+  background: rgb(67 97 238 / 8%);
+}
+#app-loading .startup-retry:focus-visible {
+  outline: 2px solid #4361ee;
+  outline-offset: 3px;
+}
+#app-loading [hidden] {
+  display: none !important;
+}
+#app-loading.is-leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+#app-loading.is-failed .startup-logo,
+#app-loading.is-failed .startup-progress span {
+  animation: none;
+}
+#app-loading.is-failed .startup-progress span {
+  width: 100%;
+  opacity: 0.35;
+}
+@keyframes np-startup-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.035);
+  }
+}
+@keyframes np-startup-flow {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(350%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #app-loading {
+    transition: none;
+  }
+  #app-loading .startup-logo,
+  #app-loading .startup-progress span {
+    animation: none;
+  }
+}

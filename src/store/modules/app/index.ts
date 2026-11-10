@@ -1,72 +1,80 @@
+import { computed, ref } from 'vue'
+import { defineStore } from 'pinia'
+
 import { STORAGE_KEYS } from '@/constants/storage'
 import { localStorageService } from '@/utils/storage'
 
-import { DEFAULT_APP_SETTINGS } from './config'
-import {
-  applyDarkMode,
-  resolveDarkMode,
-  watchSystemTheme
-} from './theme'
+import { createDefaultSettings, resolveAppSettings } from './config'
+import { getDevice, watchDevice } from './responsive'
+import { applyDarkMode, getSystemDarkMode, resolveDarkMode, watchSystemTheme } from './theme'
 
-import type {
-  AppSettings,
-  DeviceType,
-  ThemeMode
-} from './types'
+import type { AppSettings, AppSettingsPatch, DeviceType, ThemeMode } from './types'
 
 export const useAppStore = defineStore('app', () => {
-  const device = ref<DeviceType>('desktop')
-  const sidebarOpened = ref(true)
+  const device = ref<DeviceType>(getDevice())
 
-  const settings = ref<AppSettings>({
-    theme: {
-      ...DEFAULT_APP_SETTINGS.theme
-    },
-    layout: {
-      ...DEFAULT_APP_SETTINGS.layout
-    }
-  })
+  const desktopSidebarCollapsed = ref(false)
+
+  const mobileSidebarOpened = ref(false)
+
+  const systemDark = ref(getSystemDarkMode())
+
+  const settings = ref<AppSettings>(createDefaultSettings())
 
   let initialized = false
 
-  let stopSystemThemeWatcher:
-    | (() => void)
-    | undefined
+  let stopSystemThemeWatcher: (() => void) | undefined
 
-  const isMobile = computed(
-    () => device.value === 'mobile'
+  let stopDeviceWatcher: (() => void) | undefined
+
+  const isMobile = computed(() => device.value === 'mobile')
+
+  const sidebarOpened = computed(() =>
+    isMobile.value ? mobileSidebarOpened.value : !desktopSidebarCollapsed.value
   )
 
-  const isDark = computed(() =>
-    resolveDarkMode(settings.value.theme.mode)
-  )
+  const isDark = computed(() => resolveDarkMode(settings.value.theme.mode, systemDark.value))
 
   function setDevice(value: DeviceType): void {
     device.value = value
   }
 
   function toggleSidebar(): void {
-    sidebarOpened.value = !sidebarOpened.value
+    if (isMobile.value) {
+      mobileSidebarOpened.value = !mobileSidebarOpened.value
+
+      return
+    }
+
+    desktopSidebarCollapsed.value = !desktopSidebarCollapsed.value
   }
 
   function openSidebar(): void {
-    sidebarOpened.value = true
+    if (isMobile.value) {
+      mobileSidebarOpened.value = true
+      return
+    }
+
+    desktopSidebarCollapsed.value = false
   }
 
   function closeSidebar(): void {
-    sidebarOpened.value = false
+    if (isMobile.value) {
+      mobileSidebarOpened.value = false
+      return
+    }
+
+    desktopSidebarCollapsed.value = true
   }
 
   function setTheme(mode: ThemeMode): void {
     settings.value.theme.mode = mode
 
-    syncTheme()
+    applyTheme()
     saveSettings()
   }
 
-  function updateSettings(
-    value: Partial<AppSettings>
-  ): void {
+  function updateSettings(value: AppSettingsPatch): void {
     if (value.theme) {
       settings.value.theme = {
         ...settings.value.theme,
@@ -81,64 +89,64 @@ export const useAppStore = defineStore('app', () => {
       }
     }
 
-    syncTheme()
+    if (value.componentSize) {
+      settings.value.componentSize = value.componentSize
+    }
+
+    applyTheme()
     saveSettings()
   }
 
-  function syncTheme(): void {
-    stopSystemThemeWatcher?.()
-    stopSystemThemeWatcher = undefined
-
+  function applyTheme(): void {
     applyDarkMode(isDark.value)
+  }
 
-    if (settings.value.theme.mode === 'system') {
-      stopSystemThemeWatcher =
-        watchSystemTheme(applyDarkMode)
-    }
+  function setupSystemThemeWatcher(): void {
+    stopSystemThemeWatcher?.()
+
+    stopSystemThemeWatcher = watchSystemTheme((dark) => {
+      systemDark.value = dark
+
+      if (settings.value.theme.mode === 'system') {
+        applyTheme()
+      }
+    })
+  }
+
+  function setupDeviceWatcher(): void {
+    stopDeviceWatcher?.()
+
+    stopDeviceWatcher = watchDevice((value) => {
+      if (device.value === value) {
+        return
+      }
+
+      device.value = value
+
+      if (value === 'mobile') {
+        mobileSidebarOpened.value = false
+      }
+    })
   }
 
   function saveSettings(): void {
-    localStorageService.set(
-      STORAGE_KEYS.APP_SETTINGS,
-      settings.value
-    )
+    localStorageService.set(STORAGE_KEYS.APP_SETTINGS, settings.value)
   }
 
   function restoreSettings(): void {
-    const saved =
-      localStorageService.get<Partial<AppSettings>>(
-        STORAGE_KEYS.APP_SETTINGS
-      )
+    const saved = localStorageService.get<unknown>(STORAGE_KEYS.APP_SETTINGS)
 
-    settings.value = {
-      theme: {
-        ...DEFAULT_APP_SETTINGS.theme,
-        ...saved?.theme
-      },
-      layout: {
-        ...DEFAULT_APP_SETTINGS.layout,
-        ...saved?.layout
-      }
-    }
+    settings.value = resolveAppSettings(saved)
 
-    syncTheme()
+    applyTheme()
   }
 
   function resetSettings(): void {
-    settings.value = {
-      theme: {
-        ...DEFAULT_APP_SETTINGS.theme
-      },
-      layout: {
-        ...DEFAULT_APP_SETTINGS.layout
-      }
-    }
+    settings.value = createDefaultSettings()
 
-    localStorageService.remove(
-      STORAGE_KEYS.APP_SETTINGS
-    )
+    localStorageService.remove(STORAGE_KEYS.APP_SETTINGS)
 
-    syncTheme()
+    applyTheme()
   }
 
   function setup(): void {
@@ -148,12 +156,24 @@ export const useAppStore = defineStore('app', () => {
 
     initialized = true
 
+    device.value = getDevice()
+
+    systemDark.value = getSystemDarkMode()
+
+    mobileSidebarOpened.value = false
+
     restoreSettings()
+
+    setupSystemThemeWatcher()
+    setupDeviceWatcher()
   }
 
   function dispose(): void {
     stopSystemThemeWatcher?.()
     stopSystemThemeWatcher = undefined
+
+    stopDeviceWatcher?.()
+    stopDeviceWatcher = undefined
 
     initialized = false
   }
@@ -161,6 +181,9 @@ export const useAppStore = defineStore('app', () => {
   return {
     device,
     sidebarOpened,
+    desktopSidebarCollapsed,
+    mobileSidebarOpened,
+    systemDark,
     settings,
 
     isMobile,

@@ -1,16 +1,14 @@
 import type { App } from 'vue'
-import {
-  createRouter,
-  createWebHistory
-} from 'vue-router'
+import { ElMessage } from 'element-plus'
+import 'element-plus/es/components/message/style/css'
+import { createRouter, createWebHistory } from 'vue-router'
 
+import { setupRequestErrorHandling } from './request-errors'
 import { setupRouterGuards } from './guards'
 import { constantRoutes } from './routes'
 
 export const router = createRouter({
-  history: createWebHistory(
-    import.meta.env.BASE_URL
-  ),
+  history: createWebHistory(import.meta.env.BASE_URL),
 
   routes: constantRoutes,
 
@@ -22,8 +20,15 @@ export const router = createRouter({
   }
 })
 
-export function setupRouter(app: App): void {
-  setupRouterGuards(router)
+export function setupRouter(app: App): () => void {
+  const stopErrors = setupRequestErrorHandling(router, (message) => {
+    ElMessage.error({ message, grouping: true })
+  })
+  const stopGuards = setupRouterGuards(router)
 
   app.use(router)
+  return () => {
+    stopGuards()
+    stopErrors()
+  }
 }
