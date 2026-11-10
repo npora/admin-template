@@ -8,7 +8,8 @@ const files = [
   'tests/integration',
   'mock/tests',
   'workers/api/tests',
-  'workers/api/integration'
+  'workers/api/integration',
+  'deploy/cloudflare/tests'
 ].flatMap((directory) => {
   const path = new URL(`${directory}/`, root)
   return existsSync(path)

@@ -2,6 +2,8 @@
 
 模板默认从站点根路径 `/` 提供页面，使用 HTML5 History 路由。构建产物为纯静态前端；生产 Mock 关闭，管理数据需要独立后端。下面是部署说明和配置示例，本仓库未自动发布网站或修改服务器。
 
+Cloudflare Workers 展示站另有专用的静态资源和 API 转发构建，面板填写方式见 [Cloudflare 部署说明](../deploy/cloudflare/README.md)。普通静态部署继续使用下文的 `pnpm build`。
+
 ## 构建
 
 ```sh

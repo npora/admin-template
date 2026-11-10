@@ -12,13 +12,17 @@ import { visualizer } from 'rollup-plugin-visualizer'
 
 const resolvePath = (path: string) => fileURLToPath(new URL(path, import.meta.url))
 
-export default defineConfig(({ command, mode }) => {
+export default defineConfig(async ({ command, mode }) => {
   const root = resolvePath('./')
   const env = loadEnv(mode, root)
 
   const isBuild = command === 'build'
   const mock = optionalMock(root, command === 'serve' && env.VITE_API_MOCK === 'true')
   const isProd = mode === 'production'
+  const cloudflarePlugin =
+    process.env.NPORA_CLOUDFLARE_BUILD === 'true'
+      ? (await import('@cloudflare/vite-plugin')).cloudflare()
+      : undefined
 
   // .env: API 请求前缀
   const apiPrefix = normalizeApiPrefix(env.VITE_API_PREFIX)
@@ -62,13 +66,14 @@ export default defineConfig(({ command, mode }) => {
 
           changeOrigin: true,
 
-          rewrite: (path) =>
+          rewrite: (path: string) =>
             path.startsWith(apiPrefix) ? path.slice(apiPrefix.length) || '/' : path
         }
       }
     },
 
     plugins: [
+      cloudflarePlugin,
       appLoading(root, env.VITE_APP_TITLE?.trim() || 'Npora Admin'),
       mock.plugin,
       vue(),

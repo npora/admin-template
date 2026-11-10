@@ -19,7 +19,10 @@
     "check:rbac": "node scripts/run-tests.mjs rbac",
     "check:locales": "node --test tests/integration/locales.test.mjs",
     "check:examples": "node --test tests/integration/examples.test.mjs",
-    "check:standalone": "node scripts/check-standalone.mjs"
+    "check:standalone": "node scripts/check-standalone.mjs",
+    "build:cloudflare": "pnpm run typecheck && node deploy/cloudflare/build.mjs",
+    "check:cloudflare": "cf deploy --prebuilt --dry-run",
+    "deploy:cloudflare": "cf deploy --prebuilt"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
@@ -32,9 +35,11 @@
     "vue-router": "^5.3.1"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "2.0.0-beta.v.12",
     "@types/node": "^24.13.3",
     "@vitejs/plugin-vue": "^6.0.8",
     "@vue/tsconfig": "^0.9.1",
+    "cf": "1.0.0-beta.28",
     "prettier": "^3.9.10",
     "rollup-plugin-visualizer": "^7.1.1",
     "sass": "^1.104.0",

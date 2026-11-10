@@ -93,6 +93,7 @@ docs/               架构、开发、接口与数据库说明
 - [架构与模块职责](docs/architecture.md)
 - [开发、环境变量与新增页面](docs/development.md)
 - [生产部署与发布检查](docs/deployment.md)
+- [Cloudflare 展示站部署](deploy/cloudflare/README.md)
 - [浏览器验收结果与待验证项](docs/acceptance.md)
 - [接口契约与用户 CRUD](docs/api.md)
 - [数据库模型](docs/database/README.md)
