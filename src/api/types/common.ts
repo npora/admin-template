@@ -1,5 +1,5 @@
 export interface DefaultApiResponse<T = unknown> {
-  code: number
+  code: number | string
   message: string
   data: T | null
 }

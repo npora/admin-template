@@ -1,5 +1,7 @@
 # 删除演示后端，接入自己的服务
 
+所有目录的职责、演示页面裁剪和 Cloudflare 部署文件的配套清理步骤见 [项目目录与裁剪说明](project-structure.md)。本篇主要说明替换 API 后端。
+
 前端的接口契约保留在 `src/api/types/` 与 `src/api/modules/`，请求配置位于 `src/api/client.ts`。业务页面不判断当前使用 Mock、Worker 还是自有服务。
 
 ```text
@@ -11,6 +13,10 @@ workers/api/   可删除的独立 Cloudflare 服务示例及其测试
 ```
 
 Worker 与 Mock 不互相依赖。前端没有到这两个目录的直接文件导入，根项目也没有它们的运行时依赖或强制构建步骤。`build/optional-mock.ts` 和前端中的虚拟模块声明是可选适配器的边界，保留即可，无需跟着删除。
+
+可以移除的是 `mock/` 与 `workers/` 中的演示实现，不是 `src/api/`。前端的 API 模块、类型、Token 管理与协议适配仍需保留或按自有后端调整。删除本地 Worker 目录不会删除远程服务；继续使用 Cloudflare 展示站时，还需检查 `cloudflare.config.ts` 中的 `API` 服务绑定是否仍指向需要使用的后端。
+
+`@npora/request` 是请求客户端，不代替接口服务。已经连接 Worker 或自有后端时，设置 `VITE_API_MOCK=false` 即可停用 Mock；生产构建始终停用。保留 `mock/` 是为了让模板下载后可以离线演示和运行相关测试，不是请求库的必需依赖。
 
 ## 切换步骤
 

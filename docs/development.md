@@ -2,6 +2,8 @@
 
 ## 代码与目录
 
+目录职责与裁剪指南见 [项目目录与裁剪说明](project-structure.md)，包括 Mock、Worker、Cloudflare 部署、示例页面与生成产物的区别。
+
 - 页面统一使用 `views/<业务>/<页面>/index.vue`；页面专属组件放在同目录 `components`，专属业务逻辑放在同目录的 `useXxx.ts`。
 - 只有跨业务使用的组件才放进 `src/components`。布局组件保留在 `layout/components`。
 - Vue、Vue Router、Pinia 和 Element Plus 的脚本 API 使用显式导入。Element Plus 的模板组件与指令由 `unplugin-vue-components` 按需注册。

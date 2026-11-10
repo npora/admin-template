@@ -134,9 +134,11 @@ try {
   session.clearSession()
   tokenStorage.set('npora-mock-access-token')
   mockAdapter.resetHandlers()
-  mockAdapter
-    .onGet('/auth/user')
-    .reply(200, { code: 0, data: { id: 1, displayName: 'Admin', roles: [], permissions: [] } })
+  mockAdapter.onGet('/auth/user').reply(200, {
+    code: 0,
+    message: 'success',
+    data: { id: 1, displayName: 'Admin', roles: [], permissions: [] }
+  })
   let release
   let calls = 0
   mockAdapter.onGet('/auth/routes').reply(async () => {
@@ -162,9 +164,11 @@ try {
 
   // 用户信息成功、路由接口失败时，也必须清理整个会话。
   mockAdapter.resetHandlers()
-  mockAdapter
-    .onGet('/auth/user')
-    .reply(200, { code: 0, data: { id: 1, displayName: 'Admin', roles: [], permissions: [] } })
+  mockAdapter.onGet('/auth/user').reply(200, {
+    code: 0,
+    message: 'success',
+    data: { id: 1, displayName: 'Admin', roles: [], permissions: [] }
+  })
   mockAdapter
     .onGet('/auth/routes')
     .reply(200, { code: 10002, message: '路由权限已失效', data: null })

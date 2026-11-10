@@ -100,7 +100,7 @@ try {
   const recovered = await request.get('/recover', {
     extensions: { retry: { delay: 0, jitter: false } }
   })
-  assert.equal(recovered.data.ok, true)
+  assert.equal(recovered.ok, true)
   assert.equal(mockAdapter.history.filter((item) => item.url === '/recover').length, 2)
   assert.equal(notices.length, 0)
   mockAdapter.onGet('/failure').reply(503, {})

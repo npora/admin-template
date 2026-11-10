@@ -190,12 +190,20 @@ try {
       })
       return {
         status: 200,
-        data: { code: 0, data: { list: [{ ...first.list[0], displayName: '旧结果' }], total: 1 } }
+        data: {
+          code: 0,
+          message: 'success',
+          data: { list: [{ ...first.list[0], displayName: '旧结果' }], total: 1 }
+        }
       }
     }
     return {
       status: 200,
-      data: { code: 0, data: { list: [{ ...first.list[0], displayName: '新结果' }], total: 1 } }
+      data: {
+        code: 0,
+        message: 'success',
+        data: { list: [{ ...first.list[0], displayName: '新结果' }], total: 1 }
+      }
     }
   })
   model.filters.keyword = 'old'
@@ -214,7 +222,9 @@ try {
   mockAdapter
     .onGet('/system/users')
     .replyOnce(200, { code: 10001, message: '列表暂时不可用', data: null })
-  mockAdapter.onGet('/system/users').reply(200, { code: 0, data: { list: [], total: 0 } })
+  mockAdapter
+    .onGet('/system/users')
+    .reply(200, { code: 0, message: 'success', data: { list: [], total: 0 } })
   await model.load()
   assert.equal(model.loadFailed.value, true)
   assert.equal(model.loading.value, false)
@@ -229,7 +239,11 @@ try {
     })
     return {
       status: 200,
-      data: { code: 0, data: { ...input, id: 99, createdAt: new Date().toISOString() } }
+      data: {
+        code: 0,
+        message: 'success',
+        data: { ...input, id: 99, createdAt: new Date().toISOString() }
+      }
     }
   })
   const saving = model.save(input)
@@ -249,7 +263,10 @@ try {
     await new Promise((resolve) => {
       releaseDisposed = resolve
     })
-    return { status: 200, data: { code: 0, data: { list: first.list, total: first.total } } }
+    return {
+      status: 200,
+      data: { code: 0, message: 'success', data: { list: first.list, total: first.total } }
+    }
   })
   const { scope, model: disposedModel } = newController()
   const loading = disposedModel.load()

@@ -4,6 +4,8 @@
 
 Cloudflare Workers 展示站另有专用的静态资源和 API 转发构建，面板填写方式见 [Cloudflare 部署说明](../deploy/cloudflare/README.md)。普通静态部署继续使用下文的 `pnpm build`。
 
+本项目已部署的演示地址为 [admin-demo.npora.workers.dev](https://admin-demo.npora.workers.dev)，使用独立测试 API。更改展示地址或绑定自定义域名的步骤见 [展示地址说明](../deploy/cloudflare/README.md#更改展示地址)，线上检查范围见 [验收记录](acceptance.md#线上展示站-http-检查)。
+
 ## 构建
 
 ```sh

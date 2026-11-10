@@ -2,6 +2,8 @@
 
 整个目录可以直接删除，前端会改走真实 HTTP 请求；不需要修改业务页面、路由或请求客户端。建议同时把 `.env.development` 的 `VITE_API_MOCK` 设置为 `false`，再配置 `VITE_API_URL`。
 
+这里只删除 `mock/`；保留前端 `src/api/`、`build/optional-mock.ts` 和 `src/types/mock-adapter.d.ts`。使用 Worker 时无需启用 Mock。其他可选目录及演示页面的裁剪说明见 [项目目录与裁剪说明](../docs/project-structure.md)。
+
 ```text
 mock/
   index.ts       Mock 适配器入口

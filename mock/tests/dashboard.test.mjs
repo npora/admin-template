@@ -73,7 +73,7 @@ try {
   mockAdapter
     .onGet('/system/dashboard')
     .replyOnce(200, { code: 10001, message: '概览暂不可用', data: null })
-  mockAdapter.onGet('/system/dashboard').reply(200, { code: 0, data: overview })
+  mockAdapter.onGet('/system/dashboard').reply(200, { code: 0, message: 'success', data: overview })
   await model.load()
   assert.equal(model.failed.value, true)
   assert.equal(model.overview.value, previous)
@@ -95,7 +95,10 @@ try {
         releaseFirst = resolve
       })
     }
-    return { status: 200, data: { code: 0, data: { ...overview, accessiblePages: value } } }
+    return {
+      status: 200,
+      data: { code: 0, message: 'success', data: { ...overview, accessiblePages: value } }
+    }
   })
   const first = model.load()
   await waitFor(() => firstStarted)

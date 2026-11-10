@@ -2,6 +2,34 @@
 
 此目录只负责托管前端和转发 API，不含测试 API 的业务实现、数据库迁移或密码。删除 `mock/`、`workers/` 不影响前端构建；若改用自己的后端，也需要把部署目标切换为自己的服务。
 
+不采用此部署方式时，应配套移除 `deploy/cloudflare/`、根目录 `cloudflare.config.ts`、部署命令和 Vite 中的 Cloudflare 插件入口，不能只删本目录后继续执行原部署命令。完整步骤见 [项目目录与裁剪说明](../../docs/project-structure.md#不使用-cloudflare-部署前端)。
+
+## 当前线上地址
+
+- 展示站：[https://admin-demo.npora.workers.dev](https://admin-demo.npora.workers.dev)。
+- 前端 Worker：`admin-demo`。
+- API 服务绑定：`API` → `npora-admin-api-test`。
+- 当前演示账号：`admin` / `123456`；不要把其他实例的私有凭据、Token 或 Secret 写入文档。
+
+2026-11-10 已完成部署并通过线上 HTTP 检查：页面、入口 JS、深层页面路径、API 健康检查、认证、动态路由、首页汇总和用户列表均可访问；退出后旧 Token 返回 401。实际浏览器交互的完成范围见 [验收记录](../../docs/acceptance.md)。
+
+若部署成功后概览仍显示“未启用任何 URL”，进入该 Worker 的“设置 → 域和路由”检查 `workers.dev` 是否启用，启用后刷新概览。构建成功、部署成功与域名可访问应分别核对。
+
+## 更改展示地址
+
+推荐为现有前端 Worker 绑定自定义域名，保持项目名和 API 服务绑定不变：
+
+1. 准备当前 Cloudflare 账户下状态为 Active 的域名。
+2. 打开 `admin-demo` → 设置 → 域和路由 → 添加 → 自定义域。
+3. 输入实际域名，例如 `admin.example.com`，确认绑定并等待 DNS 与证书就绪。Cloudflare 会管理对应记录和证书；已有同名 CNAME 时先处理冲突，不要直接覆盖其他站点记录。
+4. 用新域名验证登录、深层页面刷新和 `/api/health`，再更新本 README 与根 README 的展示链接。
+
+前端继续请求同源 `/api`，现有服务绑定继续调用测试 API，仅增加展示域名不需要修改 `VITE_API_URL` 或重新初始化 D1。换域名后浏览器存储按新来源隔离，需要重新登录。
+
+自定义域设置依据 [Cloudflare 官方说明](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/)。文档中的 `admin.example.com` 只是示例，目前尚未绑定自定义域名。
+
+如果需要改变 `workers.dev` 地址的 Worker 名称部分，先确定新项目名，再同步面板 Worker、Git 构建关联与下文 `CLOUDFLARE_WORKER_NAME`。只改配置默认值不会自动重命名现有云端项目。账户级的 `npora` 子域不是单个展示站的名称，不要为改一个站点随意调整。
+
 ## 在 Workers 和 Pages 页面连接 GitHub
 
 选择仓库 `npora/admin-template`，使用下面的设置：

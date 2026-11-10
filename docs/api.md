@@ -4,6 +4,19 @@
 
 默认响应为 `{ code: 0, message: 'success', data }`，`code === 0` 表示业务成功。分页响应的 `data` 为 `{ list, total }`。公共类型位于 `src/api/types/common.ts`；其他后端协议可通过 `api/protocol` 适配。
 
+项目使用 `@npora/request` 1.22.3 的 data-first API：`src/api/client.ts` 中的两个业务客户端会在 `onResponse` 中统一校验并解包响应。API 模块的泛型填写 `data` 的类型，调用方直接得到业务数据，不再读取 `.data` 或重复调用 `unwrapApiResponse`：
+
+```ts
+return request.get<PageResult<ManagedUser>>('/system/users', {
+  query: { ...query },
+  signal
+})
+
+return request.post<ManagedUser>('/system/users', { json: input })
+```
+
+需要状态码或响应头时使用 `request.getResponse<T>()`，其 `.data` 仍是解包后的业务数据，`.raw` 保留原始响应。默认客户端面向上述 JSON 协议；外部第三方接口、文件和流应另建客户端。类型泛型不会校验 DTO 内部字段；当前运行时只校验外层协议的 `code`、`message` 和 `data`。无效协议会抛出 `API_RESPONSE_INVALID`，不会重试。
+
 HTTP 401，以及业务 code 为 `401`、`10002`（含字符串形式），表示登录失效，映射位于 `api/errors/handling.ts`。403 表示权限不足，保留当前会话。取消请求不通知，失败重试结束后才显示最终错误。
 
 页面应 catch 异常以完成本地 loading 等状态清理；同一错误再次交给 `handleRequestError` 不会重复提示。请求配置 `context: { silentError: true }` 可关闭自动通知，但仍抛出异常，并保留过期清理与跳转。

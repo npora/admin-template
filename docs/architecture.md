@@ -1,5 +1,7 @@
 # 架构与模块职责
 
+各文件夹的完整用途、可删除范围与配套清理步骤见 [项目目录与裁剪说明](project-structure.md)。
+
 ## 依赖方向
 
 `views` 和 `layout` 负责渲染与交互，通过 composable、store、API 或会话服务获取能力。`api` 负责传输、协议与接口 DTO，不导入 Router、Pinia 或 Element Plus。`services/session.ts` 编排用户资料、权限、动态路由和会话清理；`useSession` 只负责在组件中获取当前 Router 的服务。
@@ -24,7 +26,7 @@
 
 ## 请求与错误
 
-`publicRequest` 处理公共接口，`request` 注入 Token、执行受控重试。错误插件验证默认业务协议，在最终请求结束后通知由路由层注入的处理器。请求层与 UI 保持分离。
+`publicRequest` 处理公共接口，`request` 注入 Token、执行受控重试。两者使用 `@npora/request/core` 与独立 auth/retry 插件入口。错误插件在 `onResponse` 中验证并统一解包默认业务协议，API 模块只声明业务数据类型；在最终请求结束后通知由路由层注入的处理器。请求层与 UI 保持分离。请求用法和协议边界见 [接口契约](api.md)。
 
 HTTP 401 或默认业务失效码会清理会话并回到登录页。并发失效通过 Token 版本去重；已经重新登录后，迟到的旧请求不影响新会话。403 不清理会话，取消请求不提示，静默选项只关闭通知。当前不支持 refresh-token 接口；用户菜单的“刷新权限”会重新获取资料与路由，不是自动刷新 Token。
 
