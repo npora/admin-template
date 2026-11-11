@@ -1,17 +1,17 @@
 {
   "name": "admin-template",
   "private": true,
-  "version": "0.0.1",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "pnpm run typecheck && vite build",
+    "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "vue-tsc -b",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "node scripts/run-tests.mjs",
-    "check": "pnpm run format:check && pnpm run typecheck && pnpm test",
+    "check": "prettier --check . && vue-tsc -b && node scripts/run-tests.mjs",
     "check:views": "node tests/integration/views.test.mjs",
     "check:locales": "node --test tests/integration/locales.test.mjs"
   },
@@ -40,6 +40,5 @@
   },
   "engines": {
     "node": ">=22.12.0"
-  },
-  "packageManager": "pnpm@12.3.4"
+  }
 }

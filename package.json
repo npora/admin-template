@@ -5,24 +5,24 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "pnpm run typecheck && vite build",
+    "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "vue-tsc -b",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "node scripts/run-tests.mjs",
-    "check": "pnpm run format:check && pnpm run typecheck && pnpm test",
+    "check": "prettier --check . && vue-tsc -b && node scripts/run-tests.mjs",
     "check:views": "node tests/integration/views.test.mjs",
     "check:locales": "node --test tests/integration/locales.test.mjs",
     "check:examples": "node scripts/run-tests.mjs --examples",
     "check:standalone": "node scripts/check-standalone.mjs",
-    "build:cloudflare": "pnpm run typecheck:demo && node deploy/cloudflare/build.mjs",
+    "build:cloudflare": "vue-tsc -p tsconfig.demo.json --noEmit && vue-tsc -p tsconfig.node.json --noEmit && node deploy/cloudflare/build.mjs",
     "check:cloudflare": "cf deploy --prebuilt --dry-run",
     "deploy:cloudflare": "cf deploy --prebuilt",
     "dev:demo": "node scripts/demo.mjs",
-    "build:demo": "pnpm run typecheck:demo && node scripts/demo.mjs build",
+    "build:demo": "vue-tsc -p tsconfig.demo.json --noEmit && vue-tsc -p tsconfig.node.json --noEmit && node scripts/demo.mjs build",
     "check:backend": "node scripts/check-backend.mjs",
-    "check:all": "pnpm run format:check && pnpm run typecheck:demo && node scripts/run-tests.mjs --all",
+    "check:all": "prettier --check . && vue-tsc -p tsconfig.demo.json --noEmit && vue-tsc -p tsconfig.node.json --noEmit && node scripts/run-tests.mjs --all",
     "typecheck:demo": "vue-tsc -p tsconfig.demo.json --noEmit && vue-tsc -p tsconfig.node.json --noEmit",
     "update:presets": "node scripts/update-presets.mjs",
     "check:presets": "node scripts/check-presets.mjs"
@@ -54,6 +54,5 @@
   },
   "engines": {
     "node": ">=22.12.0"
-  },
-  "packageManager": "pnpm@12.3.4"
+  }
 }

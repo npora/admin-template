@@ -62,7 +62,6 @@ declare module 'vue' {
     ElTreeSelect: typeof import('element-plus/es')['ElTreeSelect']
     ElUpload: typeof import('element-plus/es')['ElUpload']
     LocaleSwitch: typeof import('./../../components/LocaleSwitch/index.vue')['default']
-    PagePlaceholder: typeof import('./../../components/PagePlaceholder/index.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     TablePagination: typeof import('./../../components/TablePagination/index.vue')['default']

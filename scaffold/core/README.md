@@ -4,16 +4,16 @@ Vue 3 + TypeScript + Element Plus + Pinia 后台脚手架，保留登录页、�
 
 ## 开始开发
 
-需要 Node.js 22.12+ 和 `package.json` 指定的 pnpm。
+需要 Node.js 22.12+，可使用 npm、pnpm 或 Yarn，不限制包管理器版本。
 
 ```sh
-pnpm install
-pnpm dev
+npm install
+npm run dev
 ```
 
 开发地址默认 http://localhost:3000。在 `.env.development.local` 配置自己的 `VITE_API_URL`，按 [接口契约](docs/api.md) 实现后端后即可登录。本项目不使用本地 Mock，不预置登录账号。
 
-`pnpm build` 类型检查并构建到 `dist/`。生产服务器应把 `/api` 转发给自己的后端；开发代理配置不会进入生产产物。
+`npm run build` 类型检查并构建到 `dist/`。生产服务器应把 `/api` 转发给自己的后端；开发代理配置不会进入生产产物。
 
 ## 在线体验
 
@@ -38,4 +38,8 @@ pnpm dev
 
 ## 验证
 
-`pnpm run check` 执行格式、类型和核心测试。`pnpm run check:views` 检查页面，`pnpm run check:locales` 检查词条。`pnpm preview` 预览构建产物，API 转发仍需自行提供。
+`npm run check` 执行格式、类型和核心测试。`npm run check:views` 检查页面，`npm run check:locales` 检查词条。`npm run preview` 预览构建产物，API 转发仍需自行提供。
+
+## 包管理器
+
+命令以 npm 为例，使用 pnpm 或 Yarn 时调用同名脚本即可，例如 `pnpm run dev`、`yarn dev`。项目不指定 `packageManager`，也不校验包管理器版本。仓库中的 `pnpm-lock.yaml` 与 `pnpm-workspace.yaml` 只服务于 pnpm；npm 和 Yarn 可直接安装并生成自己的锁文件，无需先删除其他文件。实际业务仓库建议只维护所选工具的锁文件。

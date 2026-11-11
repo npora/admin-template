@@ -1,8 +1,8 @@
 import { request } from '../client'
 import type { DepartmentInput, DepartmentOption, ManagedDepartment } from '../types/department'
 
-export async function getDepartmentOptions(): Promise<DepartmentOption[]> {
-  return request.get<DepartmentOption[]>('/system/departments/options')
+export async function getDepartmentOptions(signal?: AbortSignal): Promise<DepartmentOption[]> {
+  return request.get<DepartmentOption[]>('/system/departments/options', { signal })
 }
 export async function getDepartments(signal?: AbortSignal): Promise<ManagedDepartment[]> {
   return request.get<ManagedDepartment[]>('/system/departments', { signal })

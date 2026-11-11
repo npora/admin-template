@@ -1,6 +1,6 @@
 # 项目目录与裁剪说明
 
-核心、独立展示和正式 SQL 分开维护。`pnpm dev` / `pnpm build` 使用核心模式，`pnpm dev:demo` / `pnpm build:demo` 使用展示模式。使用者无需删除任何目录；以下裁剪说明仅供主动精简源码时参考。
+核心、独立展示和正式 SQL 分开维护。`npm run dev` / `npm run build` 使用核心模式，`npm run dev:demo` / `npm run build:demo` 使用展示模式。使用者无需删除任何目录；以下裁剪说明仅供主动精简源码时参考。
 
 生成器提供 `starter`（默认纯净）、`worker`（核心加独立后端）、`demo`（完整演示）三个预设。纯净版不会生成可选目录、相关依赖与命令；本说明描述完整源码仓库。生成项目会获得与预设匹配的目录说明。
 
@@ -23,8 +23,8 @@
 | `docs/`         | 开发、架构、接口、数据库、部署与验收文档                  | 不参与运行；可以裁剪，但应同步修复 README 等文档链接           |
 | `.vscode/`      | VS Code 扩展推荐                                          | 可删除，不影响运行                                             |
 | `.idea/`        | 本机 JetBrains IDE 配置，已忽略提交                       | 可删除，不影响运行，IDE 可能重新生成                           |
-| `node_modules/` | 安装的依赖及部分工具缓存                                  | 可重新安装，不是源码；删除后执行 `pnpm install`                |
-| `dist/`         | 普通前端构建产物                                          | 可重新生成；不要提交 Git，`pnpm build` 生成                    |
+| `node_modules/` | 安装的依赖及部分工具缓存                                  | 可重新安装，不是源码；删除后执行 `npm install`                 |
+| `dist/`         | 普通前端构建产物                                          | 可重新生成；不要提交 Git，`npm run build` 生成                 |
 | `.git/`         | Git 历史、分支与版本控制元数据                            | 保留，不属于模板功能裁剪范围                                   |
 
 `coverage/`、`.pnpm-store/`、日志目录等若由本地工具生成，属于报告或缓存，不作为应用源码维护。清理缓存前停止相关开发进程；报告需要时重新运行对应工具。
@@ -48,7 +48,6 @@
 | `components/TablePagination/`      | 默认居中的分页，供表格复用                                                                                                                                                                                          |
 | `components/TableToolbar/`         | 表格标题、刷新、密度、列显隐及操作插槽                                                                                                                                                                              |
 | `components/LocaleSwitch/`         | 多语言切换图标与选择入口                                                                                                                                                                                            |
-| `components/PagePlaceholder/`      | 占位说明组件，当前缓存示例使用                                                                                                                                                                                      |
 | `composables/`                     | Vue 组合式逻辑，例如分页查询、会话使用入口                                                                                                                                                                          |
 | `config/`                          | 应用配置、环境变量读取及 API 前缀规范化                                                                                                                                                                             |
 | `constants/`                       | 存储键、组件尺寸和界面选项等常量                                                                                                                                                                                    |
@@ -134,7 +133,7 @@
 
 ## 使用与可选裁剪
 
-推荐保留可选目录。接入自己的后端时，设置 `VITE_DEMO_ENABLED=false` 和 `VITE_API_URL`，执行 `pnpm dev` 即可；正式 SQL 与核心代码均保留。
+推荐保留可选目录。接入自己的后端时，设置 `VITE_DEMO_ENABLED=false` 和 `VITE_API_URL`，执行 `npm run dev` 即可；正式 SQL 与核心代码均保留。
 
 若主动精简源码，可以省略 `examples/`、`workers/` 和不使用的部署实现；不再执行相应的展示、后端或部署命令。普通前端仍需要 `build/`、`scripts/`、类型声明与 Vite 配置，不能把这些目录当作演示代码删除。删除本地后端目录不会删除远程服务。
 
@@ -147,7 +146,7 @@
 | `.env`、`.env.development`、`.env.production`                        | 公共、开发与生产配置，保留；用途和覆盖关系见 [环境配置](development.md#为什么有多个-env-文件) |
 | `.env.development.local`                                             | 本机覆盖配置，忽略提交；删除后恢复公共配置，需重启开发服务                                    |
 | `.env.development.local.example`                                     | 本机配置样例，不会被 Vite 自动加载；可随相关接入说明裁剪                                      |
-| `package.json`、`pnpm-lock.yaml`、`pnpm-workspace.yaml`              | 项目命令、依赖与锁定结果、依赖构建许可；正常开发保留                                          |
+| `package.json`、`pnpm-lock.yaml`、`pnpm-workspace.yaml`              | 项目命令、pnpm 可选锁文件及依赖构建许可；使用 npm/Yarn 时不参与安装                           |
 | `vite.config.ts`、`tsconfig*.json`、`index.html`                     | 构建、类型检查与 HTML 入口；保留或随整体技术方案调整                                          |
 | `.gitignore`、`.editorconfig`、`.prettierrc.json`、`.prettierignore` | Git 忽略规则、编辑和格式约定；建议保留                                                        |
 | `report.html`                                                        | 开启构建分析后生成的体积报告，可删除，不提交 Git                                              |
@@ -159,9 +158,9 @@
 省略演示页面、测试后端和部署实现时，可运行：
 
 ```sh
-pnpm run check
-pnpm build
-pnpm run check:standalone
+npm run check
+npm run build
+npm run check:standalone
 ```
 
 `check:standalone` 在临时目录中验证不含演示后端与可选部署实现的前端，不会删除工作区文件或验证真实后端可用性。默认检查仅收集核心测试，`check:all` 按目录存在性收集完整仓库测试。裁剪业务页面后，应同步更新相关测试，并验证登录、菜单、直接访问页面与退出流程。
@@ -169,3 +168,7 @@ pnpm run check:standalone
 ## 字典模块
 
 `src/views/system/dict/` 保存类型列表、数据抽屉、编辑表单和管理逻辑；`src/api/modules/dict.ts` 与 `src/api/types/dict.ts` 定义接口契约；`src/store/modules/dict/` 管理会话内缓存，`src/composables/useDict.ts` 提供业务选项，`src/components/DictTag/` 负责标签显示。它们均为核心模块，三个预设都会保留。独立 SQL、权限与使用示例见 [字典管理](dictionaries.md)。
+
+用户、角色与字典共用 `composables/useManagementTable.ts`，页面适配层只负责 API 和字典缓存失效；不要把树形管理和演示排序强行放入同一个 CRUD 抽象。`scripts/lib/vite.mjs` 统一启动当前项目安装的 Vite，开发、展示和构建入口不依赖特定包管理器。
+
+缓存演示专属的占位组件位于 `examples/components/PagePlaceholder/`，不进入纯净版的公共组件目录。

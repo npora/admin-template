@@ -30,3 +30,5 @@
 `node_modules/`、`dist/`、`report.html` 可以重新生成，不提交版本控制。不要删除正式 SQL 或本机密钥资料。添加业务页面时使用 `src/views/`，后端菜单的 `component` 必须对应已存在的页面入口。
 
 字典页面在 `src/views/system/dict/`，请求与 DTO 在 `src/api/modules/dict.ts`、`src/api/types/dict.ts`，业务读取使用 `src/composables/useDict.ts`、`src/store/modules/dict/` 和 `src/components/DictTag/`。这些均为核心内容，详见 [字典管理](dictionaries.md)。
+
+用户、角色、字典分页列表复用 `src/composables/useManagementTable.ts`，业务适配器位于各页面目录。模板不指定 `packageManager`；pnpm 配置和锁文件是可选工具文件，npm/Yarn 使用者无需删除它们即可安装运行。

@@ -13,8 +13,8 @@
    VITE_DEMO_ENABLED=false
    ```
 
-4. 执行 `pnpm dev`。请求默认以 `/api` 开头，开发代理移除该前缀后转发至后端；修改配置后重启开发服务。
-5. 执行 `pnpm run check`、`pnpm build`，并验证实际登录、权限与管理接口。
+4. 执行 `npm run dev`。请求默认以 `/api` 开头，开发代理移除该前缀后转发至后端；修改配置后重启开发服务。
+5. 执行 `npm run check`、`npm run build`，并验证实际登录、权限与管理接口。
 
 前端 API 模块位于 `src/api/modules/`，DTO 位于 `src/api/types/`，默认响应是 `{ code: 0, message, data }`。两个业务客户端统一解包，只返回 `data`；其他协议集中在 `src/api/protocol/` 适配。Token 默认通过 Bearer 头传递。
 
@@ -31,11 +31,11 @@
 - `workers/api/`：展示网站的独立后端，不在普通前端开发或构建时启动、部署。
 - `deploy/`：可选部署实现，普通静态构建无需使用。
 
-测试后端的种子包含演示菜单；正式 SQL 不含演示菜单。核心模式应连接返回核心页面的后端，`pnpm dev:demo` 则用于完整体验测试服务。核心路由不会静默接受未注册的演示页面。
+测试后端的种子包含演示菜单；正式 SQL 不含演示菜单。核心模式应连接返回核心页面的后端，`npm run dev:demo` 则用于完整体验测试服务。核心路由不会静默接受未注册的演示页面。
 
 ## 生产部署
 
-`pnpm build` 默认只输出核心前端，`pnpm build:demo` 输出展示前端。生产均请求相对的 `/api`，需要站点服务器转发至实际后端；开发用的 `VITE_API_URL` 不会创建生产代理。History 页面回退与 API 转发应分开配置，详见 [通用部署说明](deployment.md)。
+`npm run build` 默认只输出核心前端，`npm run build:demo` 输出展示前端。生产均请求相对的 `/api`，需要站点服务器转发至实际后端；开发用的 `VITE_API_URL` 不会创建生产代理。History 页面回退与 API 转发应分开配置，详见 [通用部署说明](deployment.md)。
 
 前端环境变量会进入浏览器，不保存密码或服务端密钥。展示账号不代表实际后端初始化账号。
 
@@ -43,4 +43,4 @@
 
 不需要。未开启展示模式时，普通构建不导入演示页面。仅在主动精简源码时，可以移除 `examples/`、`workers/` 等可选目录；保留 `src/`、`database/`、`build/`、`scripts/` 和所需配置。
 
-运行 `pnpm run check:standalone` 会在临时副本中验证不包含演示页面、测试后端和部署实现的核心前端，不会删除工作区文件或连接远程服务。
+运行 `npm run check:standalone` 会在临时副本中验证不包含演示页面、测试后端和部署实现的核心前端，不会删除工作区文件或连接远程服务。

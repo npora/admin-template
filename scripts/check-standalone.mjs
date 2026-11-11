@@ -26,8 +26,12 @@ try {
     await cp(join(root, name), join(directory, name), { recursive: true })
   }
   await symlink(join(root, 'node_modules'), join(directory, 'node_modules'), 'dir')
-  for (const args of [['run', 'typecheck'], ['test'], ['exec', 'vite', 'build']]) {
-    const result = spawnSync('pnpm', args, { cwd: directory, stdio: 'inherit' })
+  for (const args of [
+    ['node_modules/vue-tsc/bin/vue-tsc.js', '-b'],
+    ['scripts/run-tests.mjs'],
+    ['node_modules/vite/bin/vite.js', 'build']
+  ]) {
+    const result = spawnSync(process.execPath, args, { cwd: directory, stdio: 'inherit' })
     if (result.status !== 0) process.exitCode = result.status ?? 1
     if (process.exitCode) break
   }

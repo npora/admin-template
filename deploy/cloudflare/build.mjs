@@ -1,9 +1,3 @@
-import { spawnSync } from 'node:child_process'
-import { fileURLToPath } from 'node:url'
+import { runVite } from '../../scripts/lib/vite.mjs'
 
-const result = spawnSync('pnpm', ['exec', 'vite', 'build'], {
-  cwd: fileURLToPath(new URL('../../', import.meta.url)),
-  env: { ...process.env, NPORA_CLOUDFLARE_BUILD: 'true', VITE_DEMO_ENABLED: 'true' },
-  stdio: 'inherit'
-})
-process.exit(result.status ?? 1)
+runVite(['build'], { NPORA_CLOUDFLARE_BUILD: 'true', VITE_DEMO_ENABLED: 'true' })

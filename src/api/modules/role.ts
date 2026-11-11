@@ -12,8 +12,8 @@ export async function getRoles(
     signal
   })
 }
-export async function getRoleOptions(): Promise<RoleOption[]> {
-  return request.get<RoleOption[]>('/system/roles/options')
+export async function getRoleOptions(signal?: AbortSignal): Promise<RoleOption[]> {
+  return request.get<RoleOption[]>('/system/roles/options', { signal })
 }
 export async function createRole(input: RoleInput): Promise<ManagedRole> {
   return request.post<ManagedRole>('/system/roles', { json: input })

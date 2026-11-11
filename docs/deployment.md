@@ -5,13 +5,13 @@
 ## 构建
 
 ```sh
-pnpm install --frozen-lockfile
-pnpm run check
-pnpm build
-pnpm run check:standalone
+npm install
+npm run check
+npm run build
+npm run check:standalone
 ```
 
-将 `dist/` 的内容上传到静态站点目录。`pnpm preview` 只用于本地检查构建产物，不作为线上服务；参见 [Vite 静态部署说明](https://vite.dev/guide/static-deploy.html)。
+将 `dist/` 的内容上传到静态站点目录。`npm run preview` 只用于本地检查构建产物，不作为线上服务；参见 [Vite 静态部署说明](https://vite.dev/guide/static-deploy.html)。
 
 构建默认加载 `.env`、可选的 `.env.local`、`.env.production` 和可选的 `.env.production.local`，不会加载 `.env.development.local`。环境值在构建时确定，部署后改服务器上的 `.env` 不会改变已有 JS，需要重新构建。具体规则见 [Vite 环境配置](https://vite.dev/guide/env-and-mode.html)。
 
@@ -77,7 +77,7 @@ API 路径不要回退前端 HTML，也不要为 API 配置静态资源缓存。
 
 ## 发布前逐项确认
 
-- `pnpm run check` 和 `pnpm build` 通过。
+- `npm run check` 和 `npm run build` 通过。
 - 深层页面直接访问和刷新正常，缺失 JS/CSS 返回 404，API 响应不被替换成 HTML。
 - 登录、退出、权限刷新和只读账号的按钮及直接地址访问符合预期。
 - API 转发目标与前缀正确，线上请求没有落到本机或个人开发服务。

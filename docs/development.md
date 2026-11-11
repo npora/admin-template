@@ -2,12 +2,12 @@
 
 ## 启动与检查
 
-- `pnpm dev`：核心模式，连接自己的后端。
-- `pnpm dev:demo`：展示模式，加载独立演示模块并连接测试 API。
-- `pnpm run check`：格式、类型与核心回归。
-- `pnpm run check:examples`：演示页面测试。
-- `pnpm run check:backend`：可选后端构建与回归，需要 Node.js 22.13+。
-- `pnpm run check:all`：完整仓库维护检查。
+- `npm run dev`：核心模式，连接自己的后端。
+- `npm run dev:demo`：展示模式，加载独立演示模块并连接测试 API。
+- `npm run check`：格式、类型与核心回归。
+- `npm run check:examples`：演示页面测试。
+- `npm run check:backend`：可选后端构建与回归，需要 Node.js 22.13+。
+- `npm run check:all`：完整仓库维护检查。
 
 没有 Mock 模式或 Mock 开关；所有业务请求走同一 HTTP 客户端。页面内部的任务数据、表单草稿不属于后端模拟。
 
@@ -45,7 +45,7 @@ API 函数、DTO、协议分别位于 `src/api/modules/`、`src/api/types/`、`s
 | `VITE_BUILD_COMPRESS` | 默认 true，生成 gzip 产物                  |
 | `VITE_BUILD_ANALYZE`  | 默认 false，启用后输出体积报告             |
 
-`dev:demo` 和 `build:demo` 通过 `scripts/demo.mjs` 在进程环境开启展示功能，不改写环境文件。开发默认使用维护者的测试 API，可通过启动进程的 `VITE_API_URL` 覆盖。普通 `pnpm dev` 仍遵循本机配置；本机已有 `VITE_DEMO_ENABLED=true` 时会进入展示模式。
+`dev:demo` 和 `build:demo` 通过 `scripts/demo.mjs` 在进程环境开启展示功能，不改写环境文件。开发默认使用维护者的测试 API，可通过启动进程的 `VITE_API_URL` 覆盖。普通 `npm run dev` 仍遵循本机配置；本机已有 `VITE_DEMO_ENABLED=true` 时会进入展示模式。
 
 生产的 `VITE_API_URL` 不会创建反向代理。任何 `VITE_*` 值都不能用于保存密码或服务端密钥。语言、日期与 Element Plus 配置仍放在 `src/config/i18n.ts` 和 `src/locales/`，见 [多语言](i18n.md)。
 
@@ -62,4 +62,8 @@ API 函数、DTO、协议分别位于 `src/api/modules/`、`src/api/types/`、`s
 
 界面设置按字段校验，损坏或不可用的浏览器存储会降级，不保证跨刷新的持久化。个人资料与表单草稿按账号隔离。
 
-遇到 `504 (Outdated Optimize Dep)` 或依赖目录下的动态模块加载失败时，停止开发服务，执行 `pnpm dev --force` 后强制刷新；这是依赖预构建问题，不应靠修改权限或页面路径解决。测试使用独立临时缓存，不覆盖开发服务的预构建目录。
+遇到 `504 (Outdated Optimize Dep)` 或依赖目录下的动态模块加载失败时，停止开发服务，执行 `npm run dev --force` 后强制刷新；这是依赖预构建问题，不应靠修改权限或页面路径解决。测试使用独立临时缓存，不覆盖开发服务的预构建目录。
+
+## 公共列表逻辑
+
+`src/composables/useManagementTable.ts` 管理带关键词、状态与分页的权限列表，统一查询取消、过期响应隔离、末页回退以及保存和删除互斥。角色页面只配置 API，用户页面保留账号字段过滤、超级管理员删除保护及角色/部门选项加载；字典页面通过 `useDictionaryTable.ts` 补充字典缓存失效回调。树形菜单、部门继续保留业务专属逻辑；用户筛选通过筛选工厂扩展。演示用的 `usePaginatedTable.ts` 支持本地数据、排序和自定义筛选，职责不同，不耦合系统权限。

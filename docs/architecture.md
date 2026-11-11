@@ -54,7 +54,7 @@ HTTP 401 或默认业务失效码会清理会话并回到登录页。并发失�
 
 ## 刷新时的启动加载层
 
-`src/startup/loading.html`、`loading.css`、`loading.js` 由 `build/app-loading.ts` 内联到 HTML，在 Vue 主模块加载前显示品牌标识、呼吸效果与不定进度光带，不依赖业务 JS 或后端。首屏恢复保存的明暗主题，主模块启动后使用当前 i18n 文案；HTML 的中文提示只作为模块尚未就绪时的兜底。
+`src/startup/loading.html`、`loading.css`、`loading.js` 由 `build/app-loading.ts` 内联到 HTML，在 Vue 主模块加载前显示共用的横向海浪动画与品牌文案，不依赖业务 JS 或后端。首屏恢复保存的明暗主题，主模块启动后使用当前 i18n 文案；HTML 的中文提示只作为模块尚未就绪时的兜底。
 
 `main.ts` 保留加载层直到 `router.isReady()` 与下一次 DOM 更新完成，覆盖登录恢复、动态路由和首个页面模块的等待时间，然后淡出并释放键盘交互、计时器和错误监听。页面内数据请求继续使用各自的 skeleton/loading，不人为延长启动动画。
 

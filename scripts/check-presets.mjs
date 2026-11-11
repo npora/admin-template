@@ -9,22 +9,25 @@ import { spawnSync } from 'node:child_process'
 const root = fileURLToPath(new URL('../', import.meta.url))
 const args = process.argv.slice(2).filter((arg) => arg !== '--')
 const install = args.includes('--install')
+const manager = args.find((arg) => arg.startsWith('--manager='))?.slice(10) ?? 'npm'
+assert.ok(['npm', 'pnpm', 'yarn'].includes(manager), 'Use --manager=npm, pnpm or yarn')
 const positional = args.filter((arg) => !arg.startsWith('--'))
 assert.ok(
-  args.every((arg) => !arg.startsWith('--') || arg === '--install'),
+  args.every((arg) => !arg.startsWith('--') || arg === '--install' || arg.startsWith('--manager=')),
   'Unknown preset check option'
 )
 assert.ok(positional.length <= 1, 'Provide at most one generator directory')
 const cli = resolve(positional[0] || join(root, '../create-nova-admin'))
 const { createProject } = await import(pathToFileURL(join(cli, 'src/create-project.js')).href)
 const temporary = await mkdtemp(join(tmpdir(), 'nova-presets-check-'))
-function run(directory, script, args = []) {
-  const result = spawnSync(process.execPath, [join(directory, script), ...args], {
+function run(directory, args) {
+  const result = spawnSync(manager, args, {
     cwd: directory,
     stdio: 'inherit',
+    shell: process.platform === 'win32',
     env: { ...process.env, VITE_DEMO_ENABLED: 'false', NPORA_CLOUDFLARE_BUILD: 'false' }
   })
-  assert.equal(result.status, 0, `Failed: ${script} in ${directory}`)
+  assert.equal(result.status, 0, `Failed: ${manager} ${args.join(' ')} in ${directory}`)
 }
 async function checkMarkdownLinks(file) {
   const content = await readFile(file, 'utf8')
@@ -53,6 +56,13 @@ try {
       preset
     })
     const pkg = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'))
+    assert.equal(pkg.packageManager, undefined, 'Generated projects must not pin a manager')
+    for (const command of Object.values(pkg.scripts))
+      assert.doesNotMatch(
+        command,
+        /\b(?:pnpm|npm|yarn)\b/,
+        'Scripts must not nest a package manager'
+      )
     assert.equal(pkg.scripts['update:presets'], undefined)
     assert.equal(pkg.scripts['check:presets'], undefined)
     for (const entry of [
@@ -75,6 +85,15 @@ try {
     ])
       assert.ok(existsSync(join(directory, entry)), `${preset} must retain ${entry}`)
     assert.equal(existsSync(join(directory, 'scaffold')), false)
+    assert.equal(
+      existsSync(join(directory, 'AGENTS.md')),
+      false,
+      'Local assistant rules must not leak'
+    )
+    if (preset !== 'demo') {
+      assert.equal(existsSync(join(directory, 'scripts/lib')), false)
+      assert.doesNotMatch(await readFile(join(directory, '.env'), 'utf8'), /VITE_DEMO_ENABLED/)
+    }
     assert.equal(existsSync(join(directory, '.github/workflows/presets.yml')), false)
     const workflow = await readFile(join(directory, '.github/workflows/ci.yml'), 'utf8')
     assert.doesNotMatch(workflow, /check:presets|repository: (?:npora|ni9542)\//)
@@ -111,31 +130,14 @@ try {
     await checkLinks(join(directory, 'database'))
     if (install) {
       console.log(`Installing independent preset: ${preset}`)
-      const result = spawnSync('pnpm', ['install', '--frozen-lockfile'], {
-        cwd: directory,
-        stdio: 'inherit'
-      })
-      assert.equal(result.status, 0, `Frozen-lock installation failed: ${preset}`)
+      run(directory, manager === 'pnpm' ? ['install', '--frozen-lockfile'] : ['install'])
     } else {
       // Fast local check; CI uses --install to verify each preset's own dependencies.
       await symlink(join(root, 'node_modules'), join(directory, 'node_modules'), 'dir')
     }
-    run(directory, 'node_modules/vue-tsc/bin/vue-tsc.js', ['-b'])
-    if (preset === 'demo')
-      run(directory, 'node_modules/vue-tsc/bin/vue-tsc.js', [
-        '-p',
-        'tsconfig.demo.json',
-        '--noEmit'
-      ])
-    run(directory, 'node_modules/prettier/bin/prettier.cjs', ['--check', '.'])
-    run(directory, 'scripts/run-tests.mjs', preset === 'demo' ? ['--all'] : [])
-    run(directory, preset === 'demo' ? 'scripts/demo.mjs' : 'node_modules/vite/bin/vite.js', [
-      'build'
-    ])
-    if (preset === 'worker') {
-      run(directory, 'workers/api/scripts/build.mjs')
-      run(directory, 'scripts/run-tests.mjs', ['--backend'])
-    }
+    run(directory, ['run', preset === 'demo' ? 'check:all' : 'check'])
+    run(directory, ['run', preset === 'demo' ? 'build:demo' : 'build'])
+    if (preset === 'worker') run(directory, ['run', 'check:backend'])
     console.log(`Passed generated preset: ${preset}`)
   }
 } finally {

@@ -37,8 +37,8 @@ npx @niping9542/create-nova-admin@latest
 ```sh
 npx @niping9542/create-nova-admin@latest my-admin --preset starter
 cd my-admin
-pnpm install
-pnpm dev
+npm install
+npm run dev
 ```
 
 其他选项使用 `--preset worker` 或 `--preset demo`；原 `--demo` 等同 `--preset demo`。`--yes` 可跳过交互，未指定预设时使用纯净版。各预设按需生成目录、依赖和命令，无需创建后再删除演示文件。
@@ -58,13 +58,13 @@ pnpm dev
 
 ## 直接运行本仓库
 
-需要 Node.js 22.12.0+，后端检查需要 Node.js 22.13.0+。使用 `package.json` 指定版本的 pnpm。
+需要 Node.js 22.12.0+，后端检查需要 Node.js 22.13.0+。包管理器可选择 npm、pnpm 或 Yarn，不指定 `packageManager`。下面以 npm 为例。
 
 ### 体验完整演示
 
 ```sh
-pnpm install
-pnpm dev:demo
+npm install
+npm run dev:demo
 ```
 
 开发地址默认 `http://localhost:3000`，端口以终端实际输出为准。该命令加载 `examples/` 中的美化首页、表格、表单、下载与缓存示例，通过真实 HTTP 连接测试 API，需要网络；不会自动启动或部署本地后端。
@@ -81,7 +81,7 @@ VITE_DEMO_ENABLED=false
 然后启动自己的后端并运行：
 
 ```sh
-pnpm dev
+npm run dev
 ```
 
 登录页和首页保存在 `src/views/login/`、`src/views/dashboard/`。核心首页展示欢迎信息与当前账号有权访问的系统管理入口，不请求演示统计接口。核心模式不注册示例路由，完整仓库的可选目录可保留，不参与核心页面构建。
@@ -95,10 +95,10 @@ API 定义、DTO 和统一协议分别位于 `src/api/modules/`、`src/api/types
 `VITE_API_URL` 用于开发代理，默认请求前缀为 `/api`。开发代理移除前缀后转发；生产需要站点服务器将 `/api` 转发到实际后端，环境文件不会自动创建生产反向代理。
 
 ```sh
-pnpm build
+npm run build
 ```
 
-普通构建类型检查并输出核心前端到 `dist/`。完整演示使用 `pnpm build:demo`。构建产物不提交 Git，`pnpm preview` 只预览静态产物，API 转发仍需自行提供。
+普通构建类型检查并输出核心前端到 `dist/`。完整演示使用 `npm run build:demo`。构建产物不提交 Git，`npm run preview` 只预览静态产物，API 转发仍需自行提供。
 
 环境文件用途与覆盖顺序见 [开发说明](docs/development.md)，后端切换见 [接入自己的后端](docs/backend-replacement.md)。
 
@@ -137,22 +137,22 @@ pnpm build
 
 以下命令以本仓库为准；生成项目只包含所选预设对应的命令。
 
-| 命令                        | 用途                                         |
-| --------------------------- | -------------------------------------------- |
-| `pnpm dev`                  | 按本机配置启动前端，默认核心模式             |
-| `pnpm dev:demo`             | 展示开发，启用独立演示页面并默认连接测试 API |
-| `pnpm build`                | 类型检查并构建核心前端                       |
-| `pnpm build:demo`           | 类型检查并构建完整演示                       |
-| `pnpm preview`              | 预览最近生成的 `dist/`                       |
-| `pnpm run check`            | 格式、类型与核心测试                         |
-| `pnpm run check:views`      | 页面检查                                     |
-| `pnpm run check:locales`    | 多语言检查                                   |
-| `pnpm run check:examples`   | 演示页面和路由测试                           |
-| `pnpm run check:backend`    | 独立后端构建与回归                           |
-| `pnpm run check:all`        | 完整仓库回归，包括核心、演示、后端与代理     |
-| `pnpm run check:standalone` | 验证不包含演示、后端与部署目录的独立前端副本 |
-| `pnpm run update:presets`   | 同步纯净版依赖清单和锁文件快照               |
-| `pnpm run check:presets`    | 通过相邻的生成器检查三个实际生成项目         |
+| 命令                       | 用途                                         |
+| -------------------------- | -------------------------------------------- |
+| `npm run dev`              | 按本机配置启动前端，默认核心模式             |
+| `npm run dev:demo`         | 展示开发，启用独立演示页面并默认连接测试 API |
+| `npm run build`            | 类型检查并构建核心前端                       |
+| `npm run build:demo`       | 类型检查并构建完整演示                       |
+| `npm run preview`          | 预览最近生成的 `dist/`                       |
+| `npm run check`            | 格式、类型与核心测试                         |
+| `npm run check:views`      | 页面检查                                     |
+| `npm run check:locales`    | 多语言检查                                   |
+| `npm run check:examples`   | 演示页面和路由测试                           |
+| `npm run check:backend`    | 独立后端构建与回归                           |
+| `npm run check:all`        | 完整仓库回归，包括核心、演示、后端与代理     |
+| `npm run check:standalone` | 验证不包含演示、后端与部署目录的独立前端副本 |
+| `npm run update:presets`   | 同步纯净版依赖清单和锁文件快照               |
+| `npm run check:presets`    | 通过相邻的生成器检查三个实际生成项目         |
 
 ## 自动检查
 
@@ -163,7 +163,7 @@ pnpm build
 本机使用已有依赖快速验证：
 
 ```sh
-pnpm run check:presets
+npm run check:presets
 ```
 
 按 CI 的方式独立安装三个项目的依赖：
@@ -176,7 +176,7 @@ node scripts/check-presets.mjs ../create-nova-admin --install
 
 核心代码在 `src/`，演示代码在 `examples/`，不复制维护三套业务页面。差异文件说明见 [scaffold/README.md](scaffold/README.md)。
 
-修改依赖或核心命令后，在本仓库执行 `pnpm run update:presets` 并提交更新的快照。修改核心菜单或页面时，同时检查 Worker 预设的种子和页面白名单。若生成器位于相邻的 `../create-nova-admin` 且已安装自身依赖，可运行 `pnpm run check:presets` 验证三种生成结果。
+修改依赖或核心命令后，在本仓库执行 `npm run update:presets` 并提交更新的快照。修改核心菜单或页面时，同时检查 Worker 预设的种子和页面白名单。若生成器位于相邻的 `../create-nova-admin` 且已安装自身依赖，可运行 `npm run check:presets` 验证三种生成结果。
 
 模板内容推送到对应分支后，新创建的项目会获取该分支内容；已经生成的项目不会自动更新。生成器的参数、组合逻辑和 npm README 由生成器仓库维护并单独手动发布，推送 Git 不会自动发布 npm。
 
@@ -193,3 +193,7 @@ node scripts/check-presets.mjs ../create-nova-admin --install
 - [演示页面与公共组件](docs/examples.md)
 - [通用生产部署](docs/deployment.md)
 - [验收记录](docs/acceptance.md)
+
+## 包管理器
+
+命令以 npm 为例，使用 pnpm 或 Yarn 时调用同名脚本即可，例如 `pnpm run dev`、`yarn dev`。项目不指定 `packageManager`，也不校验包管理器版本。仓库中的 `pnpm-lock.yaml` 与 `pnpm-workspace.yaml` 只服务于 pnpm；npm 和 Yarn 可直接安装并生成自己的锁文件，无需先删除其他文件。实际业务仓库建议只维护所选工具的锁文件。

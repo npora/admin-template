@@ -99,7 +99,7 @@ HTTP 401，以及业务 code 为 `401`、`10002`（含字符串形式），表�
 
 ## 可选后端示例
 
-Worker 预设的 `workers/api/` 提供独立后端，不参与普通前端构建。所有预设均使用真实 HTTP；接入自己的后端时配置地址并执行 `pnpm dev`。具体目录用途见 [项目目录说明](project-structure.md)。
+Worker 预设的 `workers/api/` 提供独立后端，不参与普通前端构建。所有预设均使用真实 HTTP；接入自己的后端时配置地址并执行 `npm run dev`。具体目录用途见 [项目目录说明](project-structure.md)。
 
 ## 字典
 

@@ -10,7 +10,7 @@
 
 所有预设保留登录页、首页、系统管理、请求封装与正式 SQL。生成器默认 `starter`；`worker` 在相同核心上附加后端；`demo` 保留完整仓库的演示与展示实现。生成结果不包含本目录、仓库维护用的预设更新/验证脚本、本机资料、构建缓存和 Git 历史。
 
-修改根目录依赖或核心命令后执行 `pnpm run update:presets`，同步 `core/package.json` 和裁剪后的锁文件。此命令仅在维护时执行，使用已缓存依赖离线更新锁文件；生成项目不需要执行它。生成器会拒绝依赖规格过期的快照。
+修改根目录依赖或核心命令后执行 `npm run update:presets`，同步 `core/package.json` 和裁剪后的锁文件。此命令仅在维护时执行，使用维护仓库选用的 pnpm 和已缓存依赖离线更新锁文件（仅此维护命令需要 pnpm）；生成项目不需要执行它。生成器会拒绝依赖规格过期的快照。
 
 `core/.github/workflows/ci.yml` 是纯净版与 Worker 版的应用检查流程；生成器移除仓库专用的预设维护工作流，避免生成项目调用维护命令。
 
@@ -19,10 +19,12 @@
 修改后运行：
 
 ```sh
-pnpm run check:all
+npm run check:all
 node scripts/check-presets.mjs ../create-nova-admin
 ```
 
 后一个命令在临时目录生成并检查三个真实项目，包括前端类型、测试、生产构建、文档链接和 Worker 回归。需要先安装生成器自身依赖；生成器不会执行远程发布。
 
 CI 使用 `node scripts/check-presets.mjs ../create-nova-admin --install` 独立安装三个预设的依赖，验证锁文件及依赖边界；不加 `--install` 时复用本机依赖以加快日常检查。两种方式都会验证文档链接、核心页面保留情况和生成项目的 CI 范围。
+
+预设验收默认使用 npm 执行生成项目的真实检查和构建命令。`--manager=pnpm` 或 `--manager=yarn` 可切换验收工具，配合 `--install` 验证独立安装；工具需预先安装。仓库 CI 分别用 npm 和 pnpm 验证，Yarn 安装不在当前 CI 矩阵中。

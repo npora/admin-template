@@ -14,7 +14,7 @@
 | `utils/`           | 示例使用的 CSV 导出工具                        |
 | `tests/`           | 演示控制器、数据模型与路由隔离测试             |
 
-启动：`pnpm dev:demo`。构建：`pnpm build:demo`。测试：`pnpm run check:examples`。
+启动：`npm run dev:demo`。构建：`npm run build:demo`。测试：`npm run check:examples`。
 
 展示模式使用真实 HTTP API，没有本地接口模拟。登录、系统管理和首页统计来自测试后端；表格任务与表单草稿是页面自身的数据示例，不是接口 Mock。测试后端仅供体验，接入实际业务应使用自己的服务。
 

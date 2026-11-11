@@ -2,7 +2,7 @@
 
 此目录保存项目的可选部署实现及代理测试，不包含业务接口或数据库模型。
 
-普通前端使用无需配置此目录：执行 `pnpm dev:demo` 体验展示，或配置后端地址后执行 `pnpm dev`。生产静态文件使用 `pnpm build` 生成。
+普通前端使用无需配置此目录：执行 `npm run dev:demo` 体验展示，或配置后端地址后执行 `npm run dev`。生产静态文件使用 `npm run build` 生成。
 
 - `build.mjs`：专用构建入口，普通构建不调用。
 - `worker.mjs`：静态页面与 API 转发实现。
