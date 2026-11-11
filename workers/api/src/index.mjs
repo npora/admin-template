@@ -4,6 +4,7 @@ import { users } from './modules/users.mjs'
 import { roles } from './modules/roles.mjs'
 import { menus } from './modules/menus.mjs'
 import { departments } from './modules/departments.mjs'
+import { dictionaryRoute } from './modules/dictionaries.mjs'
 import { dashboard } from './modules/dashboard.mjs'
 
 async function health(_request, env) {
@@ -63,7 +64,7 @@ export default {
       cors = corsHeaders(request, env)
       const rawPath = new URL(request.url).pathname
       const path = rawPath.startsWith('/api/') ? rawPath.slice(4) : rawPath
-      const endpoint = endpoints.get(path) || managementRoute(path)
+      const endpoint = endpoints.get(path) || dictionaryRoute(path) || managementRoute(path)
       if (!endpoint) throw new HttpError(404, 'Not found')
       if (request.method === 'OPTIONS') response = new Response(null, { status: 204 })
       else {

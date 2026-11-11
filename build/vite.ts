@@ -2,7 +2,9 @@ import type { ConfigEnv, PluginOption, UserConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { appLoading } from './app-loading.ts'
 import { normalizeApiPrefix } from '../src/config/env.ts'
-import { resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
+import { existsSync, readdirSync } from 'node:fs'
+import { createRequire } from 'node:module'
 
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
@@ -26,6 +28,14 @@ export function coreConfig(
 
   // .env: VITE_BUILD_ANALYZE=true 可生成构建体积分析报告
   const shouldAnalyze = isBuild && env.VITE_BUILD_ANALYZE === 'true'
+  const componentRoot = resolve(
+    dirname(createRequire(import.meta.url).resolve('element-plus/package.json')),
+    'es/components'
+  )
+  // 样式入口没有对应的 .d.ts，不能依赖包 exports 的 glob 展开。
+  const componentStyles = readdirSync(componentRoot)
+    .filter((name) => existsSync(resolve(componentRoot, name, 'style/css.mjs')))
+    .map((name) => `element-plus/es/components/${name}/style/css`)
 
   return {
     // 使用 Composition API，保留 JSON 词条所需的消息编译器。
@@ -42,9 +52,9 @@ export function coreConfig(
       }
     },
 
-    // 首页按需组件提前预构建，减少首次跳转时的依赖补充优化。
+    // 覆盖插件注入的深层组件及样式入口，避免首次访问懒加载页时补充优化并整页刷新。
     optimizeDeps: {
-      include: ['element-plus/es/components/skeleton/index']
+      include: ['element-plus/es/components/*/index', ...componentStyles]
     },
 
     server: {

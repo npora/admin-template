@@ -23,21 +23,6 @@ html.dark #app-loading {
   width: min(320px, 100%);
   text-align: center;
 }
-#app-loading .startup-logo {
-  display: grid;
-  place-items: center;
-  width: 60px;
-  height: 60px;
-  margin: 0 auto 20px;
-  border-radius: 18px;
-  background: linear-gradient(145deg, #6c83ff, #4361ee);
-  color: #fff;
-  font-size: 34px;
-  font-weight: 700;
-  line-height: 1;
-  box-shadow: 0 10px 28px rgb(67 97 238 / 18%);
-  animation: np-startup-breathe 2s ease-in-out infinite;
-}
 #app-loading .startup-title {
   margin: 0;
   font-size: 19px;
@@ -53,22 +38,6 @@ html.dark #app-loading {
   font-size: 13px;
   line-height: 1.8;
   overflow-wrap: anywhere;
-}
-#app-loading .startup-progress {
-  width: 168px;
-  height: 3px;
-  margin: 22px auto 0;
-  overflow: hidden;
-  border-radius: 8px;
-  background: rgb(67 97 238 / 12%);
-}
-#app-loading .startup-progress span {
-  display: block;
-  width: 45%;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #a7b7ff, #4361ee);
-  animation: np-startup-flow 1.4s ease-in-out infinite;
 }
 #app-loading .startup-retry {
   margin-top: 22px;
@@ -95,37 +64,8 @@ html.dark #app-loading {
   opacity: 0;
   pointer-events: none;
 }
-#app-loading.is-failed .startup-logo,
-#app-loading.is-failed .startup-progress span {
-  animation: none;
-}
-#app-loading.is-failed .startup-progress span {
-  width: 100%;
-  opacity: 0.35;
-}
-@keyframes np-startup-breathe {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.035);
-  }
-}
-@keyframes np-startup-flow {
-  from {
-    transform: translateX(-120%);
-  }
-  to {
-    transform: translateX(350%);
-  }
-}
 @media (prefers-reduced-motion: reduce) {
   #app-loading {
     transition: none;
-  }
-  #app-loading .startup-logo,
-  #app-loading .startup-progress span {
-    animation: none;
   }
 }

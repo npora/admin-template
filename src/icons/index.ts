@@ -6,13 +6,15 @@ import {
   OfficeBuilding,
   Lock,
   Grid,
-  EditPen
+  EditPen,
+  Collection
 } from '@element-plus/icons-vue'
 
 import type { IconComponent } from './types'
 
 const iconRegistry: Record<string, IconComponent> = {
   'office-building': OfficeBuilding,
+  collection: Collection,
   lock: Lock,
   grid: Grid,
   edit: EditPen,

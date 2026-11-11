@@ -55,7 +55,12 @@ try {
     const pkg = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'))
     assert.equal(pkg.scripts['update:presets'], undefined)
     assert.equal(pkg.scripts['check:presets'], undefined)
-    for (const entry of ['database/mysql/01-schema.sql', 'database/mysql/02-seed.sql'])
+    for (const entry of [
+      'database/mysql/01-schema.sql',
+      'database/mysql/02-seed.sql',
+      'database/mysql/03-dictionaries.sql',
+      'database/mysql/04-query-indexes.sql'
+    ])
       assert.equal(
         await readFile(join(directory, entry), 'utf8'),
         await readFile(join(root, entry), 'utf8')

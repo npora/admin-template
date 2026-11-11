@@ -6,6 +6,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { setupRequestErrorHandling } from './request-errors'
 import { setupRouterGuards } from './guards'
 import { constantRoutes } from './routes'
+import { setupNavigationLoading } from './navigation-loading'
 
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -21,6 +22,7 @@ export const router = createRouter({
 })
 
 export function setupRouter(app: App): () => void {
+  const stopLoading = setupNavigationLoading(router)
   const stopErrors = setupRequestErrorHandling(router, (message) => {
     ElMessage.error({ message, grouping: true })
   })
@@ -28,6 +30,7 @@ export function setupRouter(app: App): () => void {
 
   app.use(router)
   return () => {
+    stopLoading()
     stopGuards()
     stopErrors()
   }

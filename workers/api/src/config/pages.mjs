@@ -10,7 +10,8 @@ export const pageComponents = new Set([
   'system/user/index',
   'system/role/index',
   'system/menu/index',
-  'system/department/index'
+  'system/department/index',
+  'system/dict/index'
 ])
 export const staticNames = new Set(
   ['Login', 'Layout', 'Dashboard', 'NotFound', 'RouteFallback', 'Profile', 'ExampleForm'].map(

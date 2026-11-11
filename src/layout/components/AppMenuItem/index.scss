@@ -1,26 +1,23 @@
-:deep(.el-menu-item),
-:deep(.el-sub-menu__title) {
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
 .app-menu-item__icon {
   flex-shrink: 0;
-  margin-right: 8px;
-  font-size: 18px;
-}
-
-/* Element Plus SubMenu 右侧展开箭头 */
-:deep(.el-sub-menu__icon-arrow) {
-  flex-shrink: 0;
-  margin-right: 0;
-  margin-left: auto;
+  width: 20px;
+  margin-right: 10px;
+  font-size: 19px;
 }
 
 .app-menu-item__label {
+  flex: 1;
   min-width: 0;
+  padding-right: 12px;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:deep(.el-sub-menu__icon-arrow) {
+  right: 14px;
+  width: 12px;
+  height: 12px;
+  margin-top: -6px;
+  font-size: 12px;
 }

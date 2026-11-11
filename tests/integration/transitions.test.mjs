@@ -136,6 +136,8 @@ try {
       }
     ]
   })
+  const { setupNavigationLoading } = await load('router/navigation-loading.ts')
+  const stopLoading = setupNavigationLoading(router)
   const warnings = []
   app = renderer.createApp({ render: () => h(RouterView) })
   app.config.warnHandler = (message) => warnings.push(message)
@@ -182,6 +184,26 @@ try {
   await waitFor(() => pageButton('/dashboard') && settled(), '刷新首页后应恢复交互')
   await go('/users')
   await go('/dashboard')
+  let release
+  const gate = new Promise((resolve) => {
+    release = resolve
+  })
+  const stopGuard = router.beforeEach(async () => gate)
+  const pending = router.push('/roles')
+  const byClass = (name) => flatten(root).find((el) => el.props.class === name)
+  await waitFor(() => byClass('app-main__loading'), '慢速导航应显示内容区加载')
+  assert.equal(byClass('app-main__loading').parent, byClass('app-main'))
+  assert.equal(byClass('app-main__content').props.inert, true)
+  assert.equal(byClass('app-main').props['aria-busy'], true)
+  assert.ok(pageButton('/dashboard'), '加载期间不卸载原页面')
+  release()
+  await pending
+  await nextTick()
+  assert.equal(byClass('app-main__loading'), undefined)
+  assert.equal(byClass('app-main__content').props.inert, false)
+  await waitFor(() => pageButton('/roles') && settled())
+  stopGuard()
+  stopLoading()
   assert.deepEqual(warnings, [])
   console.log(
     '通过：真实异步过渡阶段、非缓存首页返回、缓存管理页、快速连续导航、首页刷新和页面点击。'

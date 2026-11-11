@@ -8,7 +8,7 @@
   background: var(--np-bg-container);
   border-right: 1px solid var(--np-border-color-light);
   transition:
-    width var(--np-transition-duration),
+    width var(--np-transition-duration) cubic-bezier(0.2, 0, 0, 1),
     transform var(--np-transition-duration);
   &.is-collapsed {
     width: var(--np-sidebar-collapsed-width);
@@ -26,12 +26,21 @@
   }
 }
 .app-sidebar__brand {
+  position: relative;
   flex-shrink: 0;
+  margin-bottom: 10px;
+  &::after {
+    content: '';
+    position: absolute;
+    inset: auto 20px 0;
+    height: 1px;
+    background: var(--np-border-color-light);
+  }
 }
 .app-sidebar__scrollbar {
   flex: 1;
   min-height: 0;
-  padding: 12px 12px 16px;
+  padding: 6px 12px 20px;
 }
 :deep(.el-scrollbar__wrap) {
   overflow-x: hidden;
@@ -42,4 +51,10 @@
 }
 :deep(.el-scrollbar__view) {
   display: flow-root;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-sidebar {
+    transition: none;
+  }
 }

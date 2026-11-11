@@ -50,7 +50,14 @@ export async function snapshot(db, actor, { userId = 0, roleId = 0 } = {}) {
     revision: result[6].results[0].revision
   }
 }
-const tables = new Set(['sys_user', 'sys_department', 'sys_role', 'sys_menu'])
+const tables = new Set([
+  'sys_user',
+  'sys_department',
+  'sys_role',
+  'sys_menu',
+  'sys_dict_type',
+  'sys_dict_item'
+])
 function trusted(table, fields) {
   if (!tables.has(table) || Object.keys(fields).some((key) => !/^[a-z_]+$/.test(key)))
     throw new Error('Untrusted SQL identifier')

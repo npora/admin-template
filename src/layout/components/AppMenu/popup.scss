@@ -1,0 +1,47 @@
+// Submenus are teleported to body, outside the sidebar's scoped styles.
+.el-popper.app-sidebar-popper {
+  padding: 6px;
+  border: 1px solid var(--np-border-color-light);
+  border-radius: 14px;
+  background: var(--np-bg-overlay);
+  box-shadow: var(--np-shadow-large);
+}
+
+.app-sidebar-popper .el-menu--popup {
+  min-width: 196px;
+  padding: 2px;
+  border-radius: 10px;
+  background: var(--np-bg-overlay);
+  box-shadow: none;
+  --el-menu-bg-color: var(--np-bg-overlay);
+  --el-menu-text-color: var(--np-text-regular);
+  --el-menu-hover-bg-color: var(--np-fill-color-light);
+  --el-menu-active-color: var(--np-color-primary);
+  --el-menu-base-level-padding: 12px;
+  --el-menu-level-padding: 18px;
+
+  .el-menu-item,
+  .el-sub-menu__title {
+    height: 40px;
+    margin: 3px 0;
+    border-radius: 8px;
+    line-height: 40px;
+    font-size: 13px;
+    &:focus-visible {
+      outline: 2px solid var(--np-color-primary);
+      outline-offset: -2px;
+    }
+  }
+  .el-menu-item.is-active {
+    color: var(--np-color-primary);
+    background: var(--np-primary-soft);
+    font-weight: 600;
+  }
+  .el-sub-menu.is-active > .el-sub-menu__title,
+  .el-sub-menu.is-current-branch > .el-sub-menu__title {
+    color: var(--np-color-primary);
+  }
+  .app-menu-item__icon {
+    font-size: 17px;
+  }
+}

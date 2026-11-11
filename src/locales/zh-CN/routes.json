@@ -11,5 +11,6 @@
   "SystemDownload": "下载示例",
   "ExampleCache": "页面缓存示例",
   "ExampleForm": "表单示例",
-  "Profile": "个人中心"
+  "Profile": "个人中心",
+  "SystemDict": "字典管理"
 }

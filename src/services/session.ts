@@ -10,6 +10,7 @@ import { registerDynamicRoutes } from '@/router/utils/register-routes'
 import { pinia } from '@/store'
 import { usePermissionStore } from '@/store/modules/permission'
 import { useTabsStore } from '@/store/modules/tabs'
+import { useDictStore } from '@/store/modules/dict'
 import { useUserStore } from '@/store/modules/user'
 
 const sessions = new WeakMap<Router, ReturnType<typeof createSession>>()
@@ -45,6 +46,7 @@ function createSession(router: Router) {
     restoredTokenVersion = undefined
     initializingTokenVersion = undefined
     userStore.reset()
+    useDictStore(pinia).reset()
     permissionStore.reset()
     tabsStore.clear()
   }

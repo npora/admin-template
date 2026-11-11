@@ -11,5 +11,6 @@
   "SystemDownload": "Downloads",
   "ExampleCache": "Page cache",
   "ExampleForm": "Form example",
-  "Profile": "Profile"
+  "Profile": "Profile",
+  "SystemDict": "Dictionaries"
 }

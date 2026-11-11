@@ -298,6 +298,7 @@
   "sentenceEnd": ".",
   "metricUserUnit": "",
   "metricItemUnit": "",
+  "pageLoading": "Loading page…",
   "startupLoading": "Loading your workspace",
   "startupSlow": "This is taking longer than usual. Please wait or retry.",
   "startupFailed": "Unable to load the application. Please reload.",

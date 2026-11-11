@@ -6,6 +6,8 @@ MySQL 8.0.16+ 的初始化顺序：
 
 1. [01-schema.sql](../../database/mysql/01-schema.sql)：用户、部门、角色、菜单/按钮权限、用户角色关联、角色菜单关联六张表。
 2. [02-seed.sql](../../database/mysql/02-seed.sql)：基础部门、角色、系统菜单、按钮权限与授权，不含演示用户和示例页面。
+3. [03-dictionaries.sql](../../database/mysql/03-dictionaries.sql)：字典类型、数据、基础选项及菜单权限。
+4. [04-query-indexes.sql](../../database/mysql/04-query-indexes.sql)：核心列表、状态筛选和树形查询联合索引。
 
 执行命令、权限范围、账号初始化与已有数据库的处理方式见 [MySQL 使用说明](../../database/mysql/README.md)。脚本不会删除或覆盖已有表；原 `docs/database/schema.sql` 的表结构已迁移到上述正式目录，不再维护重复副本。
 

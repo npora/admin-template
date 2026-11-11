@@ -8,10 +8,11 @@ import errors from './errors.json'
 import table from './table.json'
 import form from './form.json'
 import profile from './profile.json'
+import dict from './dict.json'
 
 export default {
   label: 'English',
-  messages: { ui, routes, language, errors, table, form, profile },
+  messages: { ui, routes, language, errors, table, form, profile, dict },
   elementLocale,
   dayjsLocale: 'en',
   dateFormats: {

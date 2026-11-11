@@ -34,13 +34,25 @@ function handleSelect(): void {
     :default-active="activeMenu"
     :collapse="collapse"
     :collapse-transition="false"
+    popper-effect="light"
+    popper-class="app-sidebar-popper"
+    :popper-offset="10"
     router
     @select="handleSelect"
   >
-    <AppMenuItem v-for="item in menuItems" :key="item.path" :item="item" />
+    <AppMenuItem
+      v-for="item in menuItems"
+      :key="item.path"
+      :item="item"
+      :active-path="activeMenu"
+    />
   </ElMenu>
 </template>
 
 <style scoped lang="scss">
 @use './index.scss';
+</style>
+
+<style lang="scss">
+@use './popup.scss';
 </style>

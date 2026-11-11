@@ -165,3 +165,7 @@ pnpm run check:standalone
 ```
 
 `check:standalone` 在临时目录中验证不含演示后端与可选部署实现的前端，不会删除工作区文件或验证真实后端可用性。默认检查仅收集核心测试，`check:all` 按目录存在性收集完整仓库测试。裁剪业务页面后，应同步更新相关测试，并验证登录、菜单、直接访问页面与退出流程。
+
+## 字典模块
+
+`src/views/system/dict/` 保存类型列表、数据抽屉、编辑表单和管理逻辑；`src/api/modules/dict.ts` 与 `src/api/types/dict.ts` 定义接口契约；`src/store/modules/dict/` 管理会话内缓存，`src/composables/useDict.ts` 提供业务选项，`src/components/DictTag/` 负责标签显示。它们均为核心模块，三个预设都会保留。独立 SQL、权限与使用示例见 [字典管理](dictionaries.md)。

@@ -11,7 +11,7 @@ const escapeHtml = (text: string) =>
 
 /** Inline the small first-paint screen, independently of application chunks and API requests. */
 export function appLoading(root: string, title: string): Plugin {
-  const paths = ['loading.html', 'loading.css', 'loading.js'].map((name) =>
+  const paths = ['loading.html', 'loading.css', 'loading.js', 'wave.html', 'wave.css'].map((name) =>
     resolve(root, 'src/startup', name)
   )
   return {
@@ -19,14 +19,21 @@ export function appLoading(root: string, title: string): Plugin {
     transformIndexHtml: {
       order: 'pre',
       handler(html) {
-        const [markup, css, runtime] = paths.map((path) => readFileSync(path, 'utf8'))
-        const content = markup!.replace(/\{\{(title|initial)\}\}/g, (_, key: string) =>
-          escapeHtml(key === 'title' ? title : Array.from(title)[0] || 'N')
+        const [markup, css, runtime, wave, waveCss] = paths.map((path) =>
+          readFileSync(path, 'utf8')
+        )
+        const content = markup!.replace(/\{\{(title|wave)\}\}/g, (_, key: string) =>
+          key === 'wave' ? wave! : escapeHtml(title)
         )
         return {
           html: html.replace(/<title>[\s\S]*?<\/title>/, `<title>${escapeHtml(title)}</title>`),
           tags: [
-            { tag: 'style', attrs: { id: 'app-loading-style' }, children: css, injectTo: 'head' },
+            {
+              tag: 'style',
+              attrs: { id: 'app-loading-style' },
+              children: `${waveCss}\n${css}`,
+              injectTo: 'head'
+            },
             {
               tag: 'div',
               attrs: {

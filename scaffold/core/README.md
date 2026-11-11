@@ -1,6 +1,6 @@
 # Npora Admin
 
-Vue 3 + TypeScript + Element Plus + Pinia 后台脚手架，保留登录页、核心首页、后台布局、动态菜单、按钮权限、用户/部门/角色/菜单管理、多语言、主题和公共表格分页。
+Vue 3 + TypeScript + Element Plus + Pinia 后台脚手架，保留登录页、核心首页、后台布局、动态菜单、按钮权限、用户/部门/角色/菜单/字典管理、多语言、主题和公共表格分页。
 
 ## 开始开发
 
@@ -25,8 +25,10 @@ pnpm dev
 - `public/`：原样输出的静态资源。
 - `build/`：公共构建配置和启动加载层。
 - `scripts/`、`tests/`：验证命令与核心回归。
-- `database/mysql/`：正式权限 SQL，先导入 `01-schema.sql`，再导入 `02-seed.sql`。密码哈希和管理员账号由自己的后端初始化。
+- `database/mysql/`：正式权限与字典 SQL，按编号依次导入 `01-schema.sql`、`02-seed.sql`、`03-dictionaries.sql`、`04-query-indexes.sql`。密码哈希和管理员账号由自己的后端初始化。
 - `docs/`：接口、权限、多语言、开发和目录说明。
+
+字典类型、数据、选项缓存和标签组件的使用方法见 [字典管理](docs/dictionaries.md)。
 
 登录页和首页分别位于 `src/views/login/`、`src/views/dashboard/`。页面与登录流程完整保留，真实登录、动态菜单及系统管理数据由对接的后端提供。
 

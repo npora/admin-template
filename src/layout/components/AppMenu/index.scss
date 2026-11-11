@@ -6,62 +6,131 @@
   --el-menu-text-color: var(--np-text-regular);
   --el-menu-active-color: var(--np-color-primary);
   --el-menu-hover-bg-color: var(--np-fill-color-light);
-  &:not(.el-menu--collapse) {
-    width: 100%;
-  }
-}
-:deep(.el-menu-item),
-:deep(.el-sub-menu__title) {
-  position: relative;
-  height: 42px;
-  line-height: 42px;
-  border-radius: 8px;
-  margin: 3px 0;
-  font-size: 13px;
-  transition:
-    background-color var(--np-transition-duration-fast),
-    color var(--np-transition-duration-fast);
-  &:focus-visible {
-    outline: 2px solid var(--np-primary-border);
-    outline-offset: -2px;
-  }
-}
-:deep(.el-menu-item.is-active) {
-  background: var(--np-primary-soft);
-  color: var(--np-color-primary);
-  font-weight: 600;
-  &::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 13px;
-    width: 3px;
-    height: 16px;
-    border-radius: 0 3px 3px 0;
-    background: currentColor;
-    pointer-events: none;
-  }
-}
-:deep(.el-sub-menu.is-active > .el-sub-menu__title) {
-  color: var(--np-text-primary);
-  font-weight: 500;
-}
-:deep(.el-menu--inline) {
-  background: transparent;
-}
-:deep(.el-menu--collapse) {
-  width: 52px;
-}
-:deep(.el-menu--collapse > .el-menu-item),
-:deep(.el-menu--collapse > .el-sub-menu > .el-sub-menu__title) {
-  padding: 0 16px !important;
-}
-:deep(.el-menu-item .el-menu-tooltip__trigger) {
-  padding: 0 16px !important;
-}
-@media (prefers-reduced-motion: reduce) {
+  --el-menu-item-height: 44px;
+  --el-menu-sub-item-height: 40px;
+  --el-menu-base-level-padding: 14px;
+  --el-menu-level-padding: 18px;
+
   :deep(.el-menu-item),
   :deep(.el-sub-menu__title) {
+    position: relative;
+    height: 44px;
+    margin: 4px 0;
+    border-radius: 10px;
+    line-height: 44px;
+    font-size: 14px;
+    transition:
+      background-color var(--np-transition-duration-fast),
+      color var(--np-transition-duration-fast),
+      box-shadow var(--np-transition-duration-fast);
+    &:hover {
+      color: var(--np-text-primary);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--np-color-primary);
+      outline-offset: -2px;
+    }
+  }
+
+  :deep(.el-menu-item.is-active) {
+    background: var(--np-primary-soft);
+    color: var(--np-color-primary);
+    box-shadow: inset 0 0 0 1px var(--np-primary-border);
+    font-weight: 600;
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 50% auto auto 0;
+      width: 3px;
+      height: 16px;
+      border-radius: 0 3px 3px 0;
+      background: currentColor;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+  }
+
+  :deep(.el-sub-menu.is-active > .el-sub-menu__title),
+  :deep(.el-sub-menu.is-current-branch > .el-sub-menu__title) {
+    color: var(--np-color-primary);
+    font-weight: 600;
+  }
+
+  &:not(.el-menu--collapse) {
+    :deep(.el-menu--inline) {
+      position: relative;
+      margin: 2px 0 8px;
+      padding: 2px 0;
+      background: transparent;
+      &::before {
+        content: '';
+        position: absolute;
+        inset: 10px auto 10px;
+        left: calc(6px + var(--el-menu-level, 1) * var(--el-menu-level-padding));
+        width: 1px;
+        background: var(--np-border-color);
+        pointer-events: none;
+      }
+      .el-menu-item,
+      .el-sub-menu__title {
+        height: 40px;
+        margin-left: 12px;
+        line-height: 40px;
+        font-size: 13px;
+      }
+      .app-menu-item__icon {
+        font-size: 17px;
+      }
+    }
+  }
+
+  // The collapse class belongs to this root, not to a descendant element.
+  &.el-menu--collapse {
+    width: 100%;
+    :deep(.el-menu-item),
+    :deep(.el-sub-menu__title) {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      margin: 5px auto;
+      padding: 0 !important;
+      border-radius: 12px;
+    }
+    // Element Plus hides the title with visibility, but our flex label still
+    // occupies space. Remove it from the collapsed row's layout entirely.
+    :deep(.el-sub-menu__title > .app-menu-item__label) {
+      display: none;
+    }
+    :deep(.el-menu-item .el-menu-tooltip__trigger) {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      padding: 0 !important;
+    }
+    :deep(.app-menu-item__icon) {
+      width: 20px;
+      height: 20px;
+      margin: 0;
+      font-size: 20px;
+    }
+    :deep(.el-menu-item.is-active::after) {
+      display: none;
+    }
+    :deep(.el-sub-menu.is-active > .el-sub-menu__title),
+    :deep(.el-sub-menu.is-current-branch > .el-sub-menu__title) {
+      background: var(--np-primary-soft);
+      box-shadow: inset 0 0 0 1px var(--np-primary-border);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-menu :deep(.el-menu-item),
+  .app-menu :deep(.el-sub-menu__title) {
     transition: none;
   }
 }

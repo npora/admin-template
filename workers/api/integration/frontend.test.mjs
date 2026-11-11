@@ -77,13 +77,54 @@ test('real frontend client/session round-trip against Worker HTTP handlers and S
   await departments.deleteDepartment(department.id)
   await roles.deleteRole(role.id)
   await users.deleteUser(created.id)
+  const dictionaries = await load('api/modules/dict.ts')
+  const { useDictStore } = await load('store/modules/dict/index.ts')
+  const { pinia } = await load('store/index.ts')
+  const dictionaryCache = useDictStore(pinia)
+  assert.equal(router.hasRoute('SystemDict'), true)
+  const dictInput = {
+    name: 'Client dictionary',
+    code: 'client_dict',
+    remark: null,
+    sortOrder: 0,
+    status: 1
+  }
+  const dict = await dictionaries.createDictType(dictInput)
+  const dictItemInput = {
+    label: 'Client option',
+    value: '0',
+    tagType: 'success',
+    remark: null,
+    sortOrder: 0,
+    status: 1
+  }
+  const dictItem = await dictionaries.createDictItem(dict.id, dictItemInput)
+  assert.equal(
+    (await dictionaries.getDictTypes({ page: 1, pageSize: 10, keyword: 'client_dict' })).list[0]
+      .itemCount,
+    1
+  )
+  assert.equal(
+    (await dictionaries.getDictItems(dict.id, { page: 1, pageSize: 10 })).list[0].value,
+    '0'
+  )
+  assert.equal((await dictionaryCache.load('client_dict'))[0].label, 'Client option')
+  await dictionaries.updateDictItem(dict.id, dictItem.id, { ...dictItemInput, label: 'Renamed' })
+  assert.equal((await dictionaryCache.load('client_dict', true))[0].label, 'Renamed')
+  await dictionaries.updateDictType(dict.id, { ...dictInput, status: 0 })
+  assert.deepEqual(await dictionaries.getDictOptions('client_dict'), [])
+  await dictionaries.deleteDictItem(dict.id, dictItem.id)
+  await dictionaries.deleteDictType(dict.id)
   const oldToken = tokenStorage.get()
   await session.logout()
   assert.equal(tokenStorage.get(), null)
+  assert.equal(dictionaryCache.entries.size, 0)
   assert.equal((await f.call('/auth/user', { token: oldToken })).status, 401)
   await session.signIn({ username: 'viewer', password })
   assert.equal(router.hasRoute('SystemUser'), true)
   assert.equal(router.hasRoute('SystemRole'), false)
+  assert.equal(router.hasRoute('SystemDict'), false)
+  assert.equal((await dictionaries.getDictOptions('sys_notice_type')).length, 2)
   await assert.rejects(roles.getRoles({ page: 1, pageSize: 10 }))
   assert.ok((await getDashboardOverview()).users)
   await session.logout()

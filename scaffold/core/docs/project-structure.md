@@ -28,3 +28,5 @@
 `workers/api/` 仅 Worker 预设包含，提供独立后端源码、SQLite 迁移、初始化脚本和后端测试。前端不导入其源码。
 
 `node_modules/`、`dist/`、`report.html` 可以重新生成，不提交版本控制。不要删除正式 SQL 或本机密钥资料。添加业务页面时使用 `src/views/`，后端菜单的 `component` 必须对应已存在的页面入口。
+
+字典页面在 `src/views/system/dict/`，请求与 DTO 在 `src/api/modules/dict.ts`、`src/api/types/dict.ts`，业务读取使用 `src/composables/useDict.ts`、`src/store/modules/dict/` 和 `src/components/DictTag/`。这些均为核心内容，详见 [字典管理](dictionaries.md)。

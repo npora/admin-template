@@ -1,6 +1,6 @@
 # 独立 Worker 后端
 
-提供认证、会话、动态菜单、按钮权限和用户/部门/角色/菜单管理，菜单数据只引用核心前端页面。源码不导入前端，普通 `pnpm dev` 和 `pnpm build` 不启动或部署后端。
+提供认证、会话、动态菜单、按钮权限和用户/部门/角色/菜单/字典管理，菜单数据只引用核心前端页面。源码不导入前端，普通 `pnpm dev` 和 `pnpm build` 不启动或部署后端。
 
 - `src/`：HTTP 入口；`config/` 页面白名单，`modules/` 接口，`repositories/` SQL，`security/` 密码、Token 和授权。
 - `migrations/`：SQLite 表结构和增量迁移，按文件名顺序执行，与根目录正式 MySQL SQL 分开使用。

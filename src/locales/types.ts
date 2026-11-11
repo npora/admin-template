@@ -6,6 +6,7 @@ import type errors from './zh-CN/errors.json'
 import type table from './zh-CN/table.json'
 import type form from './zh-CN/form.json'
 import type profile from './zh-CN/profile.json'
+import type dict from './zh-CN/dict.json'
 
 export interface LocaleMessages {
   ui: typeof ui
@@ -15,6 +16,7 @@ export interface LocaleMessages {
   table: typeof table
   form: typeof form
   profile: typeof profile
+  dict: typeof dict
 }
 
 export type DateFormat = 'date' | 'dateTime' | 'short' | 'time' | 'heading'

@@ -298,6 +298,7 @@
   "sentenceEnd": "。",
   "metricUserUnit": "位",
   "metricItemUnit": "个",
+  "pageLoading": "正在加载页面",
   "startupLoading": "正在加载",
   "startupSlow": "加载时间较长，请稍候或重试",
   "startupFailed": "页面加载失败，请重新加载",
