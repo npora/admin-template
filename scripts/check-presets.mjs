@@ -7,7 +7,15 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { spawnSync } from 'node:child_process'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
-const cli = resolve(process.argv[2] || join(root, '../create-nova-admin'))
+const args = process.argv.slice(2).filter((arg) => arg !== '--')
+const install = args.includes('--install')
+const positional = args.filter((arg) => !arg.startsWith('--'))
+assert.ok(
+  args.every((arg) => !arg.startsWith('--') || arg === '--install'),
+  'Unknown preset check option'
+)
+assert.ok(positional.length <= 1, 'Provide at most one generator directory')
+const cli = resolve(positional[0] || join(root, '../create-nova-admin'))
 const { createProject } = await import(pathToFileURL(join(cli, 'src/create-project.js')).href)
 const temporary = await mkdtemp(join(tmpdir(), 'nova-presets-check-'))
 function run(directory, script, args = []) {
@@ -18,22 +26,24 @@ function run(directory, script, args = []) {
   })
   assert.equal(result.status, 0, `Failed: ${script} in ${directory}`)
 }
+async function checkMarkdownLinks(file) {
+  const content = await readFile(file, 'utf8')
+  for (const [, target] of content.matchAll(/\]\(([^\s)]+)\)/g)) {
+    if (/^(https?:|mailto:|#)/.test(target)) continue
+    assert.ok(
+      existsSync(resolve(dirname(file), target.split('#')[0])),
+      `${file}: broken link ${target}`
+    )
+  }
+}
 async function checkLinks(directory) {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const file = join(directory, entry.name)
     if (entry.isDirectory()) await checkLinks(file)
-    else if (entry.name.endsWith('.md')) {
-      const content = await readFile(file, 'utf8')
-      for (const [, target] of content.matchAll(/\]\(([^\s)]+)\)/g)) {
-        if (/^(https?:|mailto:|#)/.test(target)) continue
-        assert.ok(
-          existsSync(resolve(dirname(file), target.split('#')[0])),
-          `${file}: broken link ${target}`
-        )
-      }
-    }
+    else if (entry.name.endsWith('.md')) await checkMarkdownLinks(file)
   }
 }
+
 try {
   for (const preset of ['starter', 'worker', 'demo']) {
     const { directory } = await createProject({
@@ -53,7 +63,18 @@ try {
     assert.equal(existsSync(join(directory, 'examples')), preset === 'demo')
     assert.equal(existsSync(join(directory, 'deploy')), preset === 'demo')
     assert.equal(existsSync(join(directory, 'workers')), preset !== 'starter')
+    for (const entry of [
+      'src/views/login/index.vue',
+      'src/views/dashboard/index.vue',
+      'src/layout/index.vue'
+    ])
+      assert.ok(existsSync(join(directory, entry)), `${preset} must retain ${entry}`)
     assert.equal(existsSync(join(directory, 'scaffold')), false)
+    assert.equal(existsSync(join(directory, '.github/workflows/presets.yml')), false)
+    const workflow = await readFile(join(directory, '.github/workflows/ci.yml'), 'utf8')
+    assert.doesNotMatch(workflow, /check:presets|repository: (?:npora|ni9542)\//)
+    if (preset !== 'demo') assert.doesNotMatch(workflow, /check:standalone|check:all/)
+
     assert.equal(existsSync(join(directory, 'workers/api/.local')), false)
     if (preset !== 'demo') {
       for (const dependency of ['cf', '@cloudflare/vite-plugin'])
@@ -79,15 +100,28 @@ try {
         /examples\//
       )
     }
+    await checkMarkdownLinks(join(directory, 'README.md'))
+    if (preset !== 'starter') await checkMarkdownLinks(join(directory, 'workers/api/README.md'))
     await checkLinks(join(directory, 'docs'))
     await checkLinks(join(directory, 'database'))
-    // Reuse installed dependencies for compilation; frozen-lock installation is checked separately.
-    await symlink(join(root, 'node_modules'), join(directory, 'node_modules'), 'dir')
-    run(
-      directory,
-      'node_modules/vue-tsc/bin/vue-tsc.js',
-      preset === 'demo' ? ['-p', 'tsconfig.demo.json', '--noEmit'] : ['-b']
-    )
+    if (install) {
+      console.log(`Installing independent preset: ${preset}`)
+      const result = spawnSync('pnpm', ['install', '--frozen-lockfile'], {
+        cwd: directory,
+        stdio: 'inherit'
+      })
+      assert.equal(result.status, 0, `Frozen-lock installation failed: ${preset}`)
+    } else {
+      // Fast local check; CI uses --install to verify each preset's own dependencies.
+      await symlink(join(root, 'node_modules'), join(directory, 'node_modules'), 'dir')
+    }
+    run(directory, 'node_modules/vue-tsc/bin/vue-tsc.js', ['-b'])
+    if (preset === 'demo')
+      run(directory, 'node_modules/vue-tsc/bin/vue-tsc.js', [
+        '-p',
+        'tsconfig.demo.json',
+        '--noEmit'
+      ])
     run(directory, 'node_modules/prettier/bin/prettier.cjs', ['--check', '.'])
     run(directory, 'scripts/run-tests.mjs', preset === 'demo' ? ['--all'] : [])
     run(directory, preset === 'demo' ? 'scripts/demo.mjs' : 'node_modules/vite/bin/vite.js', [

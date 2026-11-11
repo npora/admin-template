@@ -1,110 +1,186 @@
 # Npora Admin Template
 
-基于 Vue 3、TypeScript、Element Plus、Pinia 和 Vue Router 的后台管理脚手架，使用 Vite 构建、`@npora/request` 请求接口。
+基于 Vue 3、TypeScript、Element Plus、Pinia 和 Vue Router 的后台管理脚手架，使用 Vite 构建，`@npora/request` 请求接口，Vue I18n 管理多语言，并同步 Element Plus、Day.js 和页面日期格式。
 
-核心保留登录、动态菜单、按钮权限、用户/部门/角色/菜单管理、主题、移动端布局、标签页、页面缓存、公共表格分页，以及可配置的中英文和日期格式。演示页面与测试后端独立维护，不需要通过删除目录来使用脚手架。
+核心包含登录页、首页、后台布局、侧栏、导航、标签页、页面缓存、个人中心、主题、移动端适配、公共表格分页，以及用户、部门、角色、菜单和按钮权限管理。
 
 ## 在线演示
 
-展示网站：[Npora Admin 在线体验](https://admin-demo.npora.workers.dev)。
+[打开 Npora Admin 展示网站](https://admin-demo.npora.workers.dev)
 
 | 账号    | 密码     | 权限                                 |
 | ------- | -------- | ------------------------------------ |
 | `admin` | `123456` | 超级管理员，可体验系统管理和权限功能 |
 
-这是展示站的演示账号，不是导入正式 SQL 后自动创建的账号。
+这是展示站和默认测试 API 的演示账号，不是正式 SQL 自动创建的账号。
 
-## 使用生成器选择模板
+## 创建自己的后台项目
 
-生成器配套改版提供三种实际生成结果，共用本仓库的核心源码：
+使用配套生成器：
 
-| 预设              | 生成内容                                                              |
-| ----------------- | --------------------------------------------------------------------- |
-| `starter`（默认） | 纯净后台、系统管理和正式 SQL；不包含演示页面、Worker 与展示站部署工具 |
-| `worker`          | 纯净后台 + 独立 Worker 后端，菜单种子只引用核心页面                   |
-| `demo`            | 完整演示页面、测试后端和展示站实现                                    |
+```sh
+npx @niping9542/create-nova-admin@latest
+```
 
-交互创建时选择模板；`--yes` 默认纯净版；`--preset starter\|worker\|demo` 可指定，原 `--demo` 等同 `--preset demo`。这些新选项需要配套生成器的新版本发布后才能通过 npm 使用。
+按提示输入项目名并选择模板，直接回车默认创建纯净版。
 
-生成器不自动安装依赖、执行 SQL、创建远程资源或部署。纯净版连接自己的后端；Worker 版需要先迁移数据库和初始化账号；完整演示默认连接展示站测试 API。三种预设都保留 `database/mysql/`，不会把展示站密码当成正式初始账号。
+| 预设              | 前端页面                                   | 后端与演示内容                                          |
+| ----------------- | ------------------------------------------ | ------------------------------------------------------- |
+| `starter`（默认） | 登录页、核心首页、布局、系统管理和公共能力 | 对接自己的后端，不生成 Worker、示例页面和展示站部署工具 |
+| `worker`          | 与纯净版相同                               | 额外生成独立 Worker 后端，菜单仅引用核心页面            |
+| `demo`            | 登录页、美化演示首页、系统管理和示例页面   | 保留测试后端和展示站实现，开发默认使用现有测试 API      |
 
-仓库本身保留完整维护源码。`scaffold/core/` 仅保存纯净版的入口、依赖快照和使用说明，`scaffold/worker/` 保存核心菜单覆盖文件，不复制维护三套页面。目录职责见 [模板预设说明](scaffold/README.md)。
+**纯净版保留登录页和首页，以及完整的核心后台功能。** 前端请求封装和 API 定义仍在，只是不附带 Worker 后端实现与演示模块。完成真实登录、加载动态菜单及管理数据，需要可用的后端接口。
 
-## 快速体验
+明确创建纯净版：
 
-需要 Node.js 22.12+ 和项目指定版本的 pnpm。在仓库根目录执行：
+```sh
+npx @niping9542/create-nova-admin@latest my-admin --preset starter
+cd my-admin
+pnpm install
+pnpm dev
+```
+
+其他选项使用 `--preset worker` 或 `--preset demo`；原 `--demo` 等同 `--preset demo`。`--yes` 可跳过交互，未指定预设时使用纯净版。各预设按需生成目录、依赖和命令，无需创建后再删除演示文件。
+
+三个预设均保留正式 MySQL 权限 SQL，不使用本地 Mock。Worker 版需要先初始化并运行自己的后端；生成器不自动安装依赖、执行 SQL、创建远程资源或部署。
+
+[生成器源码与完整用法](https://github.com/ni9542/create-nova-admin) · [npm 包](https://www.npmjs.com/package/@niping9542/create-nova-admin)
+
+## 本仓库与生成器的关系
+
+| 项目                       | 职责                                               |
+| -------------------------- | -------------------------------------------------- |
+| `admin-template`（本仓库） | 维护核心前端、正式 SQL、演示模块及模板预设差异文件 |
+| `create-nova-admin`        | 获取本仓库的模板，按选项生成项目并写入本机配置     |
+
+本仓库是完整维护源码，包含 `examples/`、`workers/`、`deploy/` 和 `scaffold/`。生成后的纯净项目不包含这些目录。`scaffold/` 仅供生成器组合模板，不进入任何生成结果；核心页面只在 `src/` 维护一份。
+
+## 直接运行本仓库
+
+需要 Node.js 22.12.0+，后端检查需要 Node.js 22.13.0+。使用 `package.json` 指定版本的 pnpm。
+
+### 体验完整演示
 
 ```sh
 pnpm install
 pnpm dev:demo
 ```
 
-开发地址默认 `http://localhost:3000`。展示模式加载 `examples/` 中的美化首页、表格、表单、下载与缓存示例，通过真实 HTTP 请求访问测试 API，需要网络。没有本地内存 Mock，也不会自动启动或部署测试后端。
+开发地址默认 `http://localhost:3000`，端口以终端实际输出为准。该命令加载 `examples/` 中的美化首页、表格、表单、下载与缓存示例，通过真实 HTTP 连接测试 API，需要网络；不会自动启动或部署本地后端。
 
-## 作为自己的后台脚手架使用
+### 使用核心模式
 
-在 `.env.development.local` 配置自己的后端地址：
+在本仓库的 `.env.development.local` 中配置：
 
 ```dotenv
 VITE_API_URL=http://localhost:8080
 VITE_DEMO_ENABLED=false
 ```
 
-然后运行：
+然后启动自己的后端并运行：
 
 ```sh
 pnpm dev
 ```
 
-核心模式不注册示例路由，首页只提供欢迎信息和获授权的系统管理入口。`examples/`、`workers/`、`deploy/` 均可留在仓库，不参与普通前端构建。后端按 [接口契约](docs/api.md) 实现认证、用户资料、动态路由和管理接口；更换响应格式时集中调整 `src/api/protocol/`。
+登录页和首页保存在 `src/views/login/`、`src/views/dashboard/`。核心首页展示欢迎信息与当前账号有权访问的系统管理入口，不请求演示统计接口。核心模式不注册示例路由，完整仓库的可选目录可保留，不参与核心页面构建。
 
-普通生产构建执行 `pnpm build`，产物为 `dist/`。生产环境通过站点服务器将 `/api` 转发至自己的后端；`VITE_API_URL` 仅用于开发代理。环境文件用途与覆盖顺序见 [开发说明](docs/development.md)。
+这里的 `VITE_DEMO_ENABLED` 用于完整源码仓库切换核心与演示模式。通过生成器得到的纯净版和 Worker 版不包含演示模块，不需要配置这个开关。
+
+## 接入后端与生产构建
+
+API 定义、DTO 和统一协议分别位于 `src/api/modules/`、`src/api/types/`、`src/api/protocol/`。后端按 [接口契约](docs/api.md) 实现认证、用户资料、动态路由及管理接口；响应格式不同可集中适配协议层。
+
+`VITE_API_URL` 用于开发代理，默认请求前缀为 `/api`。开发代理移除前缀后转发；生产需要站点服务器将 `/api` 转发到实际后端，环境文件不会自动创建生产反向代理。
+
+```sh
+pnpm build
+```
+
+普通构建类型检查并输出核心前端到 `dist/`。完整演示使用 `pnpm build:demo`。构建产物不提交 Git，`pnpm preview` 只预览静态产物，API 转发仍需自行提供。
+
+环境文件用途与覆盖顺序见 [开发说明](docs/development.md)，后端切换见 [接入自己的后端](docs/backend-replacement.md)。
 
 ## 正式权限 SQL
 
-独立保存在 [database/mysql/](database/mysql/README.md)，适用 MySQL 8.0.16+：
+[database/mysql/](database/mysql/README.md) 面向 MySQL 8.0.16+，所有预设都会保留。在空数据库按顺序导入：
 
 1. `01-schema.sql`：用户、部门、角色、菜单及两张关联表，含索引、外键和状态约束。
-2. `02-seed.sql`：基础角色、系统管理菜单、按钮权限及授权。
+2. `02-seed.sql`：基础部门、角色、系统管理菜单、按钮权限及授权。
 
-在空数据库按顺序导入，不包含展示用户和示例菜单，不执行删表操作。管理员账号由自己的后端初始化，密码哈希采用该后端的算法。演示代码的移动或删除不影响正式 SQL。
+正式 SQL 不包含演示用户和示例菜单，不执行删表操作。管理员由自己的后端初始化，密码哈希采用该后端的算法。
 
-## 项目结构
+`workers/api/migrations/` 是独立后端使用的 SQLite 迁移，与正式 MySQL SQL 分开维护和执行。正式 SQL 不依赖演示模块，接入自己的后端无需保留演示后端源码。
 
-```text
-src/          脚手架核心与用户、部门、角色、菜单管理
-examples/     独立演示入口、页面、统计 API、示例数据与测试
-workers/api/  独立测试后端，供展示站及维护者使用
-database/    正式权限 SQL（与演示实现无关）
-deploy/       展示站的可选部署实现
-public/       网站图标等原样输出的静态资源
-build/        启动加载层和演示入口的构建辅助
-scripts/      开发、测试、独立前端验证等命令
-scaffold/     生成器预设差异文件，不进入生成项目
-tests/       脚手架核心回归与共用测试辅助
-docs/        使用、接口、架构和目录说明
-```
+## 完整仓库目录
 
-完整职责见 [项目目录说明](docs/project-structure.md)。核心不直接导入演示文件：构建插件在核心模式提供空演示入口，在展示模式加载 `examples/index.ts`。
+| 目录           | 用途                                           | 生成项目是否包含     |
+| -------------- | ---------------------------------------------- | -------------------- |
+| `src/`         | 登录、核心首页、布局、权限、系统管理和公共能力 | 全部预设             |
+| `public/`      | 图标等原样输出的静态资源                       | 全部预设             |
+| `build/`       | 公共构建配置、启动加载层和可选演示入口         | 按预设保留需要的文件 |
+| `database/`    | 正式权限 SQL 和导入说明                        | 全部预设             |
+| `scripts/`     | 开发、测试、预设更新与验证命令                 | 按预设保留需要的文件 |
+| `tests/`       | 核心回归与共用测试辅助                         | 全部预设             |
+| `docs/`        | 目录、开发、接口、权限和通用部署说明           | 按预设匹配说明       |
+| `examples/`    | 独立演示入口、页面、统计 API、示例数据与测试   | 仅 `demo`            |
+| `workers/api/` | 独立后端、SQLite 迁移、初始化脚本与测试        | `worker`、`demo`     |
+| `deploy/`      | 展示站的部署实现                               | 仅 `demo`            |
+| `scaffold/`    | 生成器使用的差异入口、依赖快照和说明           | 不进入生成项目       |
+
+完整职责见 [项目目录说明](docs/project-structure.md)。`node_modules/`、`dist/` 和构建分析报告可以重新生成；本机 `.env.*.local`、后端密钥及账号资料不提交版本控制。
 
 ## 常用命令
 
-| 命令                        | 用途                                               |
-| --------------------------- | -------------------------------------------------- |
-| `pnpm dev`                  | 核心开发，连接配置的后端                           |
-| `pnpm dev:demo`             | 展示开发，使用独立演示页面和测试 API               |
-| `pnpm build`                | 类型检查并构建核心前端                             |
-| `pnpm build:demo`           | 类型检查并构建展示前端                             |
-| `pnpm preview`              | 预览最近生成的 `dist/`，仍需可用的 API 转发        |
-| `pnpm run check`            | 格式、类型与核心测试                               |
-| `pnpm run check:examples`   | 演示页面和路由测试                                 |
-| `pnpm run check:backend`    | 可选测试后端的构建与测试，需要 Node.js 22.13+      |
-| `pnpm run check:all`        | 完整仓库回归，包括核心、演示、后端和部署代理       |
-| `pnpm run check:standalone` | 验证不含演示页面、测试后端和部署实现的独立前端副本 |
+以下命令以本仓库为准；生成项目只包含所选预设对应的命令。
+
+| 命令                        | 用途                                         |
+| --------------------------- | -------------------------------------------- |
+| `pnpm dev`                  | 按本机配置启动前端，默认核心模式             |
+| `pnpm dev:demo`             | 展示开发，启用独立演示页面并默认连接测试 API |
+| `pnpm build`                | 类型检查并构建核心前端                       |
+| `pnpm build:demo`           | 类型检查并构建完整演示                       |
+| `pnpm preview`              | 预览最近生成的 `dist/`                       |
+| `pnpm run check`            | 格式、类型与核心测试                         |
+| `pnpm run check:views`      | 页面检查                                     |
+| `pnpm run check:locales`    | 多语言检查                                   |
+| `pnpm run check:examples`   | 演示页面和路由测试                           |
+| `pnpm run check:backend`    | 独立后端构建与回归                           |
+| `pnpm run check:all`        | 完整仓库回归，包括核心、演示、后端与代理     |
+| `pnpm run check:standalone` | 验证不包含演示、后端与部署目录的独立前端副本 |
+| `pnpm run update:presets`   | 同步纯净版依赖清单和锁文件快照               |
+| `pnpm run check:presets`    | 通过相邻的生成器检查三个实际生成项目         |
+
+## 自动检查
+
+推送或提交 PR 时，GitHub Actions 检查完整源码、生产构建和独立前端副本，并在 Node.js 22、24 上联合当前生成器验证 `starter`、`worker`、`demo`。每个生成项目使用自己的锁文件安装依赖，再检查登录页与首页、文档链接、类型、测试和生产构建；Worker 预设额外验证后端。
+
+生成项目会保留适合自身的 CI，不包含跨仓库的预设维护工作流。检查不会发布 npm 或部署服务。首次启用需先将两个仓库的配套改动推送到 `main`。
+
+本机使用已有依赖快速验证：
+
+```sh
+pnpm run check:presets
+```
+
+按 CI 的方式独立安装三个项目的依赖：
+
+```sh
+node scripts/check-presets.mjs ../create-nova-admin --install
+```
+
+## 模板维护
+
+核心代码在 `src/`，演示代码在 `examples/`，不复制维护三套业务页面。差异文件说明见 [scaffold/README.md](scaffold/README.md)。
+
+修改依赖或核心命令后，在本仓库执行 `pnpm run update:presets` 并提交更新的快照。修改核心菜单或页面时，同时检查 Worker 预设的种子和页面白名单。若生成器位于相邻的 `../create-nova-admin` 且已安装自身依赖，可运行 `pnpm run check:presets` 验证三种生成结果。
+
+模板内容推送到对应分支后，新创建的项目会获取该分支内容；已经生成的项目不会自动更新。生成器的参数、组合逻辑和 npm README 由生成器仓库维护并单独手动发布，推送 Git 不会自动发布 npm。
 
 ## 文档
 
-- [项目目录与可选部分](docs/project-structure.md)
+- [项目目录与预设范围](docs/project-structure.md)
 - [接入自己的后端](docs/backend-replacement.md)
 - [开发与环境配置](docs/development.md)
 - [架构与模块职责](docs/architecture.md)
