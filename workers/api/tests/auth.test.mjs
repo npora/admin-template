@@ -177,7 +177,7 @@ test('hidden menus keep access; disabled/deleted ancestors and corrupt cycles re
   assert.deepEqual((await call('/auth/user', { token })).body.data.permissions, [
     'system:user:list'
   ])
-  for (const update of ['status=0', "deleted_at='2026-01-01'", 'parent_id=40']) {
+  for (const update of ['status=0', "deleted_at='2026-01-01'", 'parent_id=10']) {
     sqlite.exec('UPDATE sys_menu SET status=1, deleted_at=NULL, parent_id=NULL WHERE id=1')
     sqlite.exec(`UPDATE sys_menu SET ${update} WHERE id=1`)
     assert.deepEqual((await call('/auth/routes', { token })).body.data, [])

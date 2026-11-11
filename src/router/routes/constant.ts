@@ -1,5 +1,5 @@
 import type { RouteRecordRaw } from 'vue-router'
-import { demoDashboard, demoRoutes } from 'virtual:admin-examples'
+import { demoDashboard, demoRoutes } from '@/router/extensions'
 
 export const constantRoutes: RouteRecordRaw[] = [
   {

@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict'
 import { existsSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
 import { createTestServer } from '../helpers/environment.mjs'
 
 const server = await createTestServer()
@@ -31,13 +30,6 @@ try {
     /not found/
   )
 
-  const { optionalExamples } = await server.ssrLoadModule('/build/optional-examples.ts')
-  const missing = fileURLToPath(new URL('../../node_modules/.missing-examples', import.meta.url))
-  const core = optionalExamples(missing, false)
-  assert.equal(core.enabled, false)
-  const id = core.plugin.resolveId('virtual:admin-examples')
-  assert.equal(core.plugin.load(id).includes('/examples/index.ts'), false)
-  assert.throws(() => optionalExamples(missing, true), /演示入口不存在/)
   assert.equal(existsSync(new URL('../../database/mysql/01-schema.sql', import.meta.url)), true)
   console.log('通过：核心路由不加载演示、系统管理保留、无演示目录仍可解析、正式 SQL 独立保留。')
 } finally {

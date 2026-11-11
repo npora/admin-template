@@ -84,7 +84,7 @@ export const menuInput = (extra = {}) => ({
   title: 'Test page',
   name: 'TestPage',
   path: '/test-page',
-  component: 'examples/cache/index',
+  component: 'system/user/index',
   redirect: null,
   routeQuery: null,
   activeMenu: null,

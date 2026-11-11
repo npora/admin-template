@@ -1,7 +1,7 @@
 import type { RouteComponent, RouteMeta, RouteRecordRaw } from 'vue-router'
 import type { DynamicRoute } from '@/api/types/route'
 import { compareRouteOrder, joinRoutePath } from './path'
-import { demoViews } from 'virtual:admin-examples'
+import { demoViews } from '@/router/extensions'
 
 // 只有页面入口可被后端引用，页面内部的表单等组件不参与动态路由。
 const viewModules = {

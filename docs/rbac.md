@@ -53,4 +53,4 @@
 
 ## 回归
 
-`pnpm run check` 检查核心请求、路由、组件、语言与界面基础能力。`pnpm run check:backend` 使用隔离数据库验证认证、角色授权、接口越权和事务行为，并验证实际前端的会话、CRUD 与登录失效流程；`check:all` 包含完整仓库回归。
+`pnpm run check` 检查核心请求、路由、组件、语言与界面基础能力。Worker 预设可用 `pnpm run check:backend` 使用隔离数据库验证认证、角色授权、接口越权和事务行为。完整演示仓库的 `check:all` 另外包含演示页面与前后端联调回归。
