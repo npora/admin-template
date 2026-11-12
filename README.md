@@ -196,7 +196,7 @@ node scripts/check-presets.mjs ../create-nova-admin --install
 
 ## 包管理器
 
-命令以 npm 为例，使用 pnpm 或 Yarn 时调用同名脚本即可，例如 `pnpm run dev`、`yarn dev`。项目不指定 `packageManager`，也不校验包管理器版本。仓库以 npm 和 `package-lock.json` 为准，使用 `npm ci` 安装锁定依赖。pnpm、Yarn 仍可安装运行并维护自己的锁文件，不需要先删除文件；实际业务仓库建议只维护所选工具的锁文件。
+命令以 npm 为例，使用 pnpm 或 Yarn 时调用同名脚本即可，例如 `pnpm run dev`、`yarn dev`。项目不指定 `packageManager`，也不校验包管理器版本。仓库以 npm 和 `package-lock.json` 为准，使用 `npm ci` 安装锁定依赖。pnpm、Yarn 仍可安装运行并维护自己的锁文件，不需要先删除文件；实际业务仓库建议只维护所选工具的锁文件。`pnpm-workspace.yaml` 仅保留可选 pnpm 安装所需的原生依赖构建许可，npm 不使用该文件。
 
 ## 开发教程、变更与许可
 
