@@ -68,8 +68,7 @@ function updateSize(value: string | number | object) {
               :disabled="disabled"
               circle
           /></template>
-          <strong>{{ t('table.columns') }}</strong
-          ><ElCheckboxGroup
+          <strong>{{ t('table.columns') }}</strong><ElCheckboxGroup
             :model-value="visibleColumns"
             class="table-toolbar__columns"
             @change="updateColumns"

@@ -126,8 +126,7 @@ function setTabs(value: unknown) {
         <div class="profile-summary__roles">
           <ElTag v-if="userInfo?.isSuperAdmin" type="primary" effect="plain">{{
             t('ui.superAdministrator')
-          }}</ElTag
-          ><ElTag
+          }}</ElTag><ElTag
             v-for="role in userInfo?.roles ?? []"
             :key="role"
             :title="role"
@@ -189,8 +188,9 @@ function setTabs(value: unknown) {
               <div class="profile-actions">
                 <ElButton type="primary" native-type="submit" :loading="saving">{{
                   t('profile.saveLocal')
+                }}</ElButton><ElButton :disabled="saving" @click="restore">{{
+                  t('profile.discard')
                 }}</ElButton
-                ><ElButton :disabled="saving" @click="restore">{{ t('profile.discard') }}</ElButton
                 ><ElButton text type="danger" :disabled="saving" @click="reset">{{
                   t('profile.resetLocal')
                 }}</ElButton>
@@ -228,12 +228,16 @@ function setTabs(value: unknown) {
                 >
               </div>
               <div class="profile-preferences__switch">
-                <span>{{ t('ui.showBreadcrumbs') }}</span
-                ><ElSwitch :model-value="settings.layout.showBreadcrumb" @change="setBreadcrumb" />
+                <span>{{ t('ui.showBreadcrumbs') }}</span><ElSwitch
+                  :model-value="settings.layout.showBreadcrumb"
+                  @change="setBreadcrumb"
+                />
               </div>
               <div class="profile-preferences__switch">
-                <span>{{ t('ui.showTabs') }}</span
-                ><ElSwitch :model-value="settings.layout.showTabs" @change="setTabs" />
+                <span>{{ t('ui.showTabs') }}</span><ElSwitch
+                  :model-value="settings.layout.showTabs"
+                  @change="setTabs"
+                />
               </div>
             </div> </ElTabPane
         ></ElTabs>

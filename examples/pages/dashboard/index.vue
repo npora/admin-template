@@ -196,8 +196,9 @@ onMounted(() => {
               ><ElIcon><Connection /></ElIcon></span
             ><span class="workspace-card__status"><i />{{ t('ui.signedIn') }}</span>
           </div>
-          <span class="workspace-card__label">{{ t('ui.currentWorkspace') }}</span
-          ><strong>{{ appConfig.title }}</strong>
+          <span class="workspace-card__label">{{ t('ui.currentWorkspace') }}</span><strong>{{
+            appConfig.title
+          }}</strong>
           <div class="workspace-card__account">
             <ElAvatar :size="36">{{ user.displayName.charAt(0) }}</ElAvatar>
             <div>
@@ -205,8 +206,7 @@ onMounted(() => {
                 (overview?.account.isSuperAdmin ?? user.userInfo?.isSuperAdmin)
                   ? t('ui.superAdministrator')
                   : formatList(overview?.account.roleNames ?? []) || t('ui.authorizedAccount')
-              }}</b
-              ><span>{{
+              }}</b><span>{{
                 overview?.account.departmentName || t('ui.everydayManagementOrganized')
               }}</span>
             </div>
@@ -233,8 +233,7 @@ onMounted(() => {
     <div class="metric-grid">
       <article v-for="metric in metrics" :key="metric.key" class="metric-card">
         <div class="metric-card__top">
-          <span>{{ metric.label }}</span
-          ><span class="tone-icon" :class="`tone-${metric.tone}`"
+          <span>{{ metric.label }}</span><span class="tone-icon" :class="`tone-${metric.tone}`"
             ><ElIcon><component :is="metric.icon" /></ElIcon
           ></span>
         </div>
@@ -267,8 +266,7 @@ onMounted(() => {
             ><ElIcon><CircleCheck /></ElIcon
           ></span>
           <div>
-            <strong>{{ t('ui.accountAvailability') }}</strong
-            ><span>{{
+            <strong>{{ t('ui.accountAvailability') }}</strong><span>{{
               overview?.users
                 ? t('ui.usersCanSignIn', { value: overview.users.enabled }, overview.users.enabled)
                 : t('ui.loadingAccountStatus')
@@ -286,8 +284,7 @@ onMounted(() => {
               ><div class="dashboard-users__person">
                 <ElAvatar :size="36">{{ row.displayName.charAt(0) }}</ElAvatar>
                 <div>
-                  <strong>{{ row.displayName }}</strong
-                  ><span>{{ row.username }}</span>
+                  <strong>{{ row.displayName }}</strong><span>{{ row.username }}</span>
                 </div>
               </div></template
             ></ElTableColumn
@@ -409,8 +406,7 @@ onMounted(() => {
       </section>
     </div>
     <footer class="dashboard__footer">
-      <span>{{ t('ui.workspaceFooter', { value: appConfig.title }) }}</span
-      ><span
+      <span>{{ t('ui.workspaceFooter', { value: appConfig.title }) }}</span><span
         ><ElIcon><Setting /></ElIcon>{{ t('ui.adjustYourPreferencesInTheSettingsMenu') }}</span
       >
     </footer>

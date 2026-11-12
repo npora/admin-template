@@ -25,23 +25,22 @@ const output = join(root, 'scaffold/core')
 const temporary = await mkdtemp(join(tmpdir(), 'nova-preset-lock-'))
 try {
   await writeFile(join(temporary, 'package.json'), JSON.stringify(pkg, null, 2) + '\n')
-  await cp(join(root, 'pnpm-lock.yaml'), join(temporary, 'pnpm-lock.yaml'))
-  await cp(join(output, 'pnpm-workspace.yaml'), join(temporary, 'pnpm-workspace.yaml'))
+  await cp(join(root, 'package-lock.json'), join(temporary, 'package-lock.json'))
   const result = spawnSync(
-    'pnpm',
-    ['install', '--lockfile-only', '--ignore-scripts', '--offline'],
-    { cwd: temporary, stdio: 'inherit' }
+    'npm',
+    ['install', '--package-lock-only', '--ignore-scripts', '--offline', '--no-audit', '--no-fund'],
+    { cwd: temporary, shell: process.platform === 'win32', stdio: 'inherit' }
   )
   if (result.status !== 0) throw new Error('Unable to regenerate preset lockfile')
   await writeFile(join(output, 'package.json'), JSON.stringify(pkg, null, 2) + '\n')
-  await cp(join(temporary, 'pnpm-lock.yaml'), join(output, 'pnpm-lock.yaml'))
+  await cp(join(temporary, 'package-lock.json'), join(output, 'package-lock.json'))
   await writeFile(
     join(root, 'scaffold/metadata.json'),
     JSON.stringify(
       {
-        version: 1,
+        version: 2,
         sourceLockHash: createHash('sha256')
-          .update(await readFile(join(root, 'pnpm-lock.yaml')))
+          .update(await readFile(join(root, 'package-lock.json')))
           .digest('hex')
       },
       null,

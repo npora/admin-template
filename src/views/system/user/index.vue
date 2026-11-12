@@ -216,8 +216,7 @@ async function confirmDelete(user: ManagedUser): Promise<void> {
               <div class="management-page__identity">
                 <ElAvatar :size="36">{{ row.displayName.slice(0, 1) }}</ElAvatar>
                 <div>
-                  <strong>{{ row.displayName }}</strong
-                  ><span>{{ row.username }}</span>
+                  <strong>{{ row.displayName }}</strong><span>{{ row.username }}</span>
                 </div>
               </div>
             </template>

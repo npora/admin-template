@@ -57,6 +57,9 @@ try {
     })
     const pkg = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'))
     assert.equal(pkg.packageManager, undefined, 'Generated projects must not pin a manager')
+    const lock = JSON.parse(await readFile(join(directory, 'package-lock.json'), 'utf8'))
+    assert.equal(lock.name, pkg.name)
+    assert.equal(lock.packages[''].name, pkg.name)
     for (const command of Object.values(pkg.scripts))
       assert.doesNotMatch(
         command,
@@ -111,10 +114,8 @@ try {
         await readFile(join(directory, 'vite.config.ts'), 'utf8'),
         /cloudflare|optional-examples/
       )
-      assert.doesNotMatch(
-        await readFile(join(directory, 'pnpm-lock.yaml'), 'utf8'),
-        /@cloudflare\/vite-plugin|workerd@|cf@1\./
-      )
+      for (const dependency of ['cf', '@cloudflare/vite-plugin', 'workerd'])
+        assert.equal(lock.packages[`node_modules/${dependency}`], undefined)
     }
     if (preset === 'worker') {
       assert.doesNotMatch(
@@ -132,7 +133,7 @@ try {
     await checkLinks(join(directory, 'database'))
     if (install) {
       console.log(`Installing independent preset: ${preset}`)
-      run(directory, manager === 'pnpm' ? ['install', '--frozen-lockfile'] : ['install'])
+      run(directory, manager === 'npm' ? ['ci'] : ['install'])
     } else {
       // Fast local check; CI uses --install to verify each preset's own dependencies.
       await symlink(join(root, 'node_modules'), join(directory, 'node_modules'), 'dir')

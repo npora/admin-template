@@ -120,8 +120,7 @@ async function confirmDelete(row: DictItem) {
         <div class="management-page__filter-actions">
           <ElButton type="primary" native-type="submit" :loading="loading">{{
             t('ui.search')
-          }}</ElButton
-          ><ElButton @click="reset">{{ t('ui.reset') }}</ElButton>
+          }}</ElButton><ElButton @click="reset">{{ t('ui.reset') }}</ElButton>
         </div>
       </ElForm>
       <div class="management-page__table-card">

@@ -146,7 +146,7 @@
 | `.env`、`.env.development`、`.env.production`                        | 公共、开发与生产配置，保留；用途和覆盖关系见 [环境配置](development.md#为什么有多个-env-文件) |
 | `.env.development.local`                                             | 本机覆盖配置，忽略提交；删除后恢复公共配置，需重启开发服务                                    |
 | `.env.development.local.example`                                     | 本机配置样例，不会被 Vite 自动加载；可随相关接入说明裁剪                                      |
-| `package.json`、`pnpm-lock.yaml`、`pnpm-workspace.yaml`              | 项目命令、pnpm 可选锁文件及依赖构建许可；使用 npm/Yarn 时不参与安装                           |
+| `package.json`、`package-lock.json`                                  | 项目命令及 npm 锁定依赖；npm 使用 npm ci，其他工具可自行生成锁文件                            |
 | `vite.config.ts`、`tsconfig*.json`、`index.html`                     | 构建、类型检查与 HTML 入口；保留或随整体技术方案调整                                          |
 | `.gitignore`、`.editorconfig`、`.prettierrc.json`、`.prettierignore` | Git 忽略规则、编辑和格式约定；建议保留                                                        |
 | `report.html`                                                        | 开启构建分析后生成的体积报告，可删除，不提交 Git                                              |

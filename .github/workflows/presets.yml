@@ -39,18 +39,19 @@ jobs:
           path: create-nova-admin
           persist-credentials: false
       - uses: pnpm/action-setup@v4
+        if: matrix.manager == 'pnpm'
         with:
           version: 12.3.4
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-          cache: pnpm
-          cache-dependency-path: admin-template/pnpm-lock.yaml
+          cache: npm
+          cache-dependency-path: admin-template/package-lock.json
       - name: Install generator dependencies
         run: npm ci --prefix ../create-nova-admin
       - name: Check generator
         run: npm run check --prefix ../create-nova-admin
       - name: Install template dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
       - name: Generate, install and check all three presets
-        run: pnpm run check:presets -- ../create-nova-admin --install --manager=${{ matrix.manager }}
+        run: npm run check:presets -- ../create-nova-admin --install --manager=${{ matrix.manager }}

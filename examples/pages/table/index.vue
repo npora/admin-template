@@ -181,8 +181,9 @@ function exportData() {
         <div class="management-page__filter-actions">
           <ElButton type="primary" native-type="submit" :disabled="busy">{{
             t('ui.search')
-          }}</ElButton
-          ><ElButton :disabled="busy" @click="resetSearch">{{ t('ui.reset') }}</ElButton>
+          }}</ElButton><ElButton :disabled="busy" @click="resetSearch">{{
+            t('ui.reset')
+          }}</ElButton>
         </div>
       </ElForm>
       <div class="management-page__table-card">
@@ -216,8 +217,11 @@ function exportData() {
           >
         </TableToolbar>
         <div v-if="selectedIds.length" class="example-selection">
-          <span>{{ t('table.selectedRows', { count: selectedIds.length }) }}</span
-          ><ElButton text @click="clearSelection">{{ t('table.clearSelection') }}</ElButton>
+          <span>{{ t('table.selectedRows', { count: selectedIds.length }) }}</span><ElButton
+            text
+            @click="clearSelection"
+            >{{ t('table.clearSelection') }}</ElButton
+          >
         </div>
         <ElAlert
           v-if="failed"
@@ -252,8 +256,7 @@ function exportData() {
             min-width="240"
             ><template #default="{ row }"
               ><div class="example-task">
-                <strong>{{ row.name }}</strong
-                ><span>{{ row.code }}</span>
+                <strong>{{ row.name }}</strong><span>{{ row.code }}</span>
               </div></template
             ></ElTableColumn
           >
@@ -331,10 +334,13 @@ function exportData() {
           >
         </DataTable>
         <div class="example-failure">
-          <span>{{ t('table.failureHint') }}</span
-          ><ElButton text size="small" :disabled="busy" @click="table.simulateFailure">{{
-            t('table.simulateFailure')
-          }}</ElButton>
+          <span>{{ t('table.failureHint') }}</span><ElButton
+            text
+            size="small"
+            :disabled="busy"
+            @click="table.simulateFailure"
+            >{{ t('table.simulateFailure') }}</ElButton
+          >
         </div>
       </div>
     </template>

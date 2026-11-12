@@ -260,8 +260,7 @@ function submit() {
           ><div class="menu-switches">
             <ElCheckbox v-model="form.visible" :disabled="saving || submission.submitting.value">{{
               t('ui.showMenu')
-            }}</ElCheckbox
-            ><ElCheckbox
+            }}</ElCheckbox><ElCheckbox
               v-model="form.alwaysShow"
               :disabled="saving || submission.submitting.value"
               >{{ t('ui.alwaysShowParent') }}</ElCheckbox

@@ -368,10 +368,11 @@ onBeforeRouteLeave(async (to) => {
           />
         </div>
         <div class="form-example__actions">
-          <ElButton v-if="step > 0" @click="step--">{{ t('form.previous') }}</ElButton
-          ><ElButton v-if="step < 2" type="primary" native-type="submit">{{
-            t('form.next')
-          }}</ElButton
+          <ElButton v-if="step > 0" @click="step--">{{ t('form.previous') }}</ElButton><ElButton
+            v-if="step < 2"
+            type="primary"
+            native-type="submit"
+            >{{ t('form.next') }}</ElButton
           ><ElButton v-else type="primary" native-type="submit" :loading="submitting">{{
             t('form.submit')
           }}</ElButton

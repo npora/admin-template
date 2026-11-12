@@ -31,4 +31,4 @@
 
 字典页面在 `src/views/system/dict/`，请求与 DTO 在 `src/api/modules/dict.ts`、`src/api/types/dict.ts`，业务读取使用 `src/composables/useDict.ts`、`src/store/modules/dict/` 和 `src/components/DictTag/`。这些均为核心内容，详见 [字典管理](dictionaries.md)。
 
-用户、角色、字典分页列表复用 `src/composables/useManagementTable.ts`，业务适配器位于各页面目录。模板不指定 `packageManager`；pnpm 配置和锁文件是可选工具文件，npm/Yarn 使用者无需删除它们即可安装运行。
+用户、角色、字典分页列表复用 `src/composables/useManagementTable.ts`，业务适配器位于各页面目录。模板不指定 `packageManager`；默认使用 npm 锁文件，pnpm/Yarn 使用者也可安装运行。

@@ -125,8 +125,10 @@ async function confirmDelete(department: ManagedDepartment) {
               :value="option.value" /></ElSelect
         ></ElFormItem>
         <div class="management-page__filter-actions">
-          <ElButton type="primary" native-type="submit">{{ t('ui.search') }}</ElButton
-          ><ElButton @click="reset">{{ t('ui.reset') }}</ElButton>
+          <ElButton type="primary" native-type="submit">{{ t('ui.search') }}</ElButton><ElButton
+            @click="reset"
+            >{{ t('ui.reset') }}</ElButton
+          >
         </div></ElForm
       >
       <div class="management-page__table-card">
