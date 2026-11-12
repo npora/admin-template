@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useFormSubmit } from '@/composables/useFormSubmit'
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { FormInstance, FormRules } from 'element-plus'
@@ -29,7 +30,6 @@ const defaults = () => ({
 })
 const form = reactive(defaults()),
   formRef = ref<FormInstance>()
-let initialInput = ''
 const rules = computed<FormRules>(() => ({
   name: [{ required: true, whitespace: true, message: t('dict.required'), trigger: 'blur' }],
   code: [
@@ -48,7 +48,7 @@ watch(
   async (visible) => {
     if (!visible) return
     Object.assign(form, defaults(), props.input ?? {})
-    initialInput = JSON.stringify(toInput())
+    submission.reset(toInput())
     await nextTick()
     formRef.value?.clearValidate()
   }
@@ -66,15 +66,16 @@ function toInput(): DictTypeInput | DictItemInput {
     ? { ...common, name: form.name.trim(), code: form.code.trim() }
     : { ...common, label: form.label.trim(), value: form.value.trim(), tagType: form.tagType }
 }
-async function submit() {
-  if (props.saving) return
-  const input = toInput()
-  if (props.input && JSON.stringify(input) === initialInput) {
-    close()
-    return
-  }
-  if (!(await formRef.value?.validate().catch(() => false)) || props.saving) return
-  emit('submit', input)
+const submission = useFormSubmit<DictTypeInput | DictItemInput>({
+  active: () => props.modelValue,
+  editing: () => props.input !== null,
+  saving: () => props.saving,
+  validate: () => formRef.value?.validate().catch(() => false) ?? Promise.resolve(false),
+  close,
+  submit: (input) => emit('submit', input)
+})
+function submit() {
+  return submission.submit(toInput())
 }
 </script>
 <template>
@@ -93,7 +94,7 @@ async function submit() {
       :model="form"
       :rules="rules"
       label-position="top"
-      :disabled="saving"
+      :disabled="saving || submission.submitting.value"
       @submit.prevent="submit"
     >
       <template v-if="kind === 'type'">
@@ -150,8 +151,10 @@ async function submit() {
       <button type="submit" hidden tabindex="-1" />
     </ElForm>
     <template #footer
-      ><ElButton :disabled="saving" @click="close">{{ t('ui.cancel') }}</ElButton
-      ><ElButton type="primary" :loading="saving" @click="submit">{{
+      ><ElButton :disabled="saving || submission.submitting.value" @click="close">{{
+        t('ui.cancel')
+      }}</ElButton
+      ><ElButton type="primary" :loading="saving || submission.submitting.value" @click="submit">{{
         t('ui.save')
       }}</ElButton></template
     >

@@ -2,43 +2,13 @@ import assert from 'node:assert/strict'
 import { readFile, writeFile, unlink } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { parse, compileScript } from 'vue/compiler-sfc'
-import { createRenderer, h, nextTick } from 'vue'
+import { h, nextTick } from 'vue'
 import { createPinia, setActivePinia } from 'pinia'
 import { createTestServer, installMemoryStorage, waitFor } from '../helpers/environment.mjs'
 
+import { node, renderer } from '../helpers/renderer.mjs'
+
 // Mount the real page, drawer and form templates; stub only UI and HTTP boundaries.
-const node = (type) => ({ type, parent: null, children: [], props: {}, text: '' })
-const remove = (child) => {
-  if (!child.parent) return
-  const siblings = child.parent.children
-  siblings.splice(siblings.indexOf(child), 1)
-  child.parent = null
-}
-const renderer = createRenderer({
-  createElement: node,
-  createText: (text) => ({ ...node('text'), text }),
-  createComment: (text) => ({ ...node('comment'), text }),
-  setText: (target, text) => {
-    target.text = text
-  },
-  setElementText: (target, text) => {
-    target.text = text
-    target.children = []
-  },
-  parentNode: (target) => target.parent,
-  nextSibling: (target) =>
-    target.parent?.children[target.parent.children.indexOf(target) + 1] ?? null,
-  patchProp: (target, key, _old, value) => {
-    target.props[key] = value
-  },
-  remove,
-  insert: (child, parent, anchor = null) => {
-    remove(child)
-    const position = anchor ? parent.children.indexOf(anchor) : -1
-    parent.children.splice(position < 0 ? parent.children.length : position, 0, child)
-    child.parent = parent
-  }
-})
 const id = process.pid
 const pathFor = (name) => new URL(`.check-dict-${name}-${id}.ts`, import.meta.url)
 const files = ['boundaries', 'page', 'items', 'form'].map(pathFor)

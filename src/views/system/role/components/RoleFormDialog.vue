@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useFormSubmit } from '@/composables/useFormSubmit'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -51,6 +52,7 @@ watch(
           }
         : defaults()
     )
+    submission.reset(toInput())
     await nextTick()
     formRef.value?.clearValidate()
   }
@@ -58,14 +60,24 @@ watch(
 function close() {
   if (!props.saving) emit('update:modelValue', false)
 }
-async function submit() {
-  if (props.saving || !(await formRef.value?.validate().catch(() => false))) return
-  emit('submit', {
+function toInput(): RoleInput {
+  return {
     ...form,
     code: form.code.trim(),
     name: form.name.trim(),
     description: form.description?.trim() || null
-  })
+  }
+}
+const submission = useFormSubmit<RoleInput>({
+  active: () => props.modelValue,
+  editing: () => props.role !== null,
+  saving: () => props.saving,
+  validate: () => formRef.value?.validate().catch(() => false) ?? Promise.resolve(false),
+  close,
+  submit: (input) => emit('submit', input)
+})
+function submit() {
+  return submission.submit(toInput())
 }
 </script>
 <template>
@@ -89,17 +101,20 @@ async function submit() {
       <ElFormItem :label="t('ui.roleCode')" prop="code"
         ><ElInput
           v-model="form.code"
-          :disabled="saving"
+          :disabled="saving || submission.submitting.value"
           maxlength="64"
           :placeholder="t('ui.forExampleOperator')"
       /></ElFormItem>
       <ElFormItem :label="t('ui.roleName')" prop="name"
-        ><ElInput v-model="form.name" :disabled="saving" maxlength="100"
+        ><ElInput
+          v-model="form.name"
+          :disabled="saving || submission.submitting.value"
+          maxlength="100"
       /></ElFormItem>
       <ElFormItem :label="t('ui.description')"
         ><ElInput
           v-model="form.description"
-          :disabled="saving"
+          :disabled="saving || submission.submitting.value"
           type="textarea"
           maxlength="255"
           show-word-limit
@@ -107,14 +122,14 @@ async function submit() {
       <ElFormItem :label="t('ui.sortOrder')"
         ><ElInputNumber
           v-model="form.sortOrder"
-          :disabled="saving"
+          :disabled="saving || submission.submitting.value"
           :min="0"
           :max="4294967295"
           :precision="0"
           :value-on-clear="0"
       /></ElFormItem>
       <ElFormItem :label="t('ui.status')"
-        ><ElRadioGroup v-model="form.status" :disabled="saving"
+        ><ElRadioGroup v-model="form.status" :disabled="saving || submission.submitting.value"
           ><ElRadio
             v-for="option in SYSTEM_STATUS_OPTIONS"
             :key="option.value"
@@ -126,8 +141,10 @@ async function submit() {
       <button type="submit" hidden tabindex="-1" />
     </ElForm>
     <template #footer
-      ><ElButton :disabled="saving" @click="close">{{ t('ui.cancel') }}</ElButton
-      ><ElButton type="primary" :loading="saving" @click="submit">{{
+      ><ElButton :disabled="saving || submission.submitting.value" @click="close">{{
+        t('ui.cancel')
+      }}</ElButton
+      ><ElButton type="primary" :loading="saving || submission.submitting.value" @click="submit">{{
         t('ui.save')
       }}</ElButton></template
     >

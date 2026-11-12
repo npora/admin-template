@@ -66,6 +66,8 @@ try {
     assert.equal(pkg.scripts['update:presets'], undefined)
     assert.equal(pkg.scripts['check:presets'], undefined)
     for (const entry of [
+      'LICENSE',
+      'CHANGELOG.md',
       'database/mysql/01-schema.sql',
       'database/mysql/02-seed.sql',
       'database/mysql/03-dictionaries.sql',

@@ -22,6 +22,9 @@ const loading = ref(false),
   failed = ref(false),
   ready = ref(false)
 let version = 0
+let initialIds = ''
+const checkedIds = () =>
+  [...new Set(treeRef.value?.getCheckedKeys(false).map(Number) ?? [])].sort((a, b) => a - b)
 onScopeDispose(() => {
   version++
 })
@@ -42,9 +45,10 @@ async function load() {
     if (current !== version || token !== getTokenVersion() || !props.modelValue) return
     if (!treeRef.value) throw new Error(t('ui.permissionTreeIsNotReady'))
     treeRef.value.setCheckedKeys(ids)
+    initialIds = JSON.stringify(checkedIds())
     ready.value = true
   } catch (error) {
-    if (current === version) {
+    if (current === version && token === getTokenVersion() && props.modelValue) {
       failed.value = true
       handleRequestError(error)
     }
@@ -74,16 +78,21 @@ async function submit() {
     !hasPermission('system:role:grant')
   )
     return
+  const ids = checkedIds()
+  if (JSON.stringify(ids) === initialIds) {
+    close()
+    return
+  }
   const current = version,
     token = getTokenVersion()
   saving.value = true
   try {
-    await grantRoleMenus(props.role.id, treeRef.value.getCheckedKeys(false).map(Number))
+    await grantRoleMenus(props.role.id, ids)
     if (current !== version || token !== getTokenVersion()) return
     ElMessage.success(t('ui.permissionsSavedHint'))
     emit('update:modelValue', false)
   } catch (error) {
-    handleRequestError(error)
+    if (current === version && token === getTokenVersion()) handleRequestError(error)
   } finally {
     saving.value = false
   }

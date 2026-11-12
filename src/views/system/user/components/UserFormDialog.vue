@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useFormSubmit } from '@/composables/useFormSubmit'
 import { useI18n } from 'vue-i18n'
 
 import { computed, nextTick, reactive, ref, watch } from 'vue'
@@ -94,6 +95,7 @@ watch(
           }
         : defaults()
     )
+    submission.reset(toInput())
     await nextTick()
     formRef.value?.clearValidate()
   }
@@ -101,17 +103,27 @@ watch(
 function close() {
   if (!props.saving) emit('update:modelValue', false)
 }
-async function submit() {
-  if (props.saving || !(await formRef.value?.validate().catch(() => false))) return
-  emit('submit', {
+function toInput(): CreateUserInput {
+  return {
     ...form,
     departmentId: form.departmentId ?? null,
     displayName: form.displayName.trim(),
     email: form.email?.trim() || null,
     mobile: form.mobile?.trim() || null,
     avatar: form.avatar?.trim() || null,
-    roleIds: [...form.roleIds]
-  })
+    roleIds: [...form.roleIds].sort((a, b) => a - b)
+  }
+}
+const submission = useFormSubmit<CreateUserInput>({
+  active: () => props.modelValue,
+  editing: () => props.user !== null,
+  saving: () => props.saving,
+  validate: () => formRef.value?.validate().catch(() => false) ?? Promise.resolve(false),
+  close,
+  submit: (input) => emit('submit', input)
+})
+function submit() {
+  return submission.submit(toInput())
 }
 </script>
 
@@ -151,7 +163,7 @@ async function submit() {
       <ElFormItem v-if="!editing" :label="t('ui.initialPassword')" prop="password"
         ><ElInput
           v-model="form.password"
-          :disabled="saving"
+          :disabled="saving || submission.submitting.value"
           type="password"
           show-password
           maxlength="128"
@@ -159,7 +171,10 @@ async function submit() {
           :placeholder="t('ui.passwordLengthPlaceholder')"
       /></ElFormItem>
       <ElFormItem :label="t('ui.displayName')" prop="displayName"
-        ><ElInput v-model="form.displayName" :disabled="saving" maxlength="100"
+        ><ElInput
+          v-model="form.displayName"
+          :disabled="saving || submission.submitting.value"
+          maxlength="100"
       /></ElFormItem>
       <ElFormItem :label="t('ui.assignedDepartment')"
         ><ElTreeSelect
@@ -170,28 +185,28 @@ async function submit() {
           :props="{ label: 'name', children: 'children', disabled: 'disabled' }"
           check-strictly
           clearable
-          :disabled="saving"
+          :disabled="saving || submission.submitting.value"
           :placeholder="t('ui.departmentIsOptional')"
           style="width: 100%"
       /></ElFormItem>
       <ElFormItem :label="t('ui.email')" prop="email"
         ><ElInput
           v-model="form.email"
-          :disabled="saving"
+          :disabled="saving || submission.submitting.value"
           maxlength="255"
           :placeholder="t('ui.optional')"
       /></ElFormItem>
       <ElFormItem :label="t('ui.mobile')" prop="mobile"
         ><ElInput
           v-model="form.mobile"
-          :disabled="saving"
+          :disabled="saving || submission.submitting.value"
           maxlength="32"
           :placeholder="t('ui.optional')"
       /></ElFormItem>
       <ElFormItem :label="t('ui.avatarURL')"
         ><ElInput
           v-model="form.avatar"
-          :disabled="saving"
+          :disabled="saving || submission.submitting.value"
           maxlength="500"
           :placeholder="t('ui.optional')"
       /></ElFormItem>
@@ -225,8 +240,10 @@ async function submit() {
       <button type="submit" hidden aria-hidden="true" tabindex="-1" />
     </ElForm>
     <template #footer
-      ><ElButton :disabled="saving" @click="close">{{ t('ui.cancel') }}</ElButton
-      ><ElButton type="primary" :loading="saving" @click="submit">{{
+      ><ElButton :disabled="saving || submission.submitting.value" @click="close">{{
+        t('ui.cancel')
+      }}</ElButton
+      ><ElButton type="primary" :loading="saving || submission.submitting.value" @click="submit">{{
         t('ui.save')
       }}</ElButton></template
     >

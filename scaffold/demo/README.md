@@ -39,3 +39,7 @@ npm run dev:demo
 ## 包管理器
 
 命令以 npm 为例，使用 pnpm 或 Yarn 时调用同名脚本即可，例如 `pnpm run dev`、`yarn dev`。项目不指定 `packageManager`，也不校验包管理器版本。仓库中的 `pnpm-lock.yaml` 与 `pnpm-workspace.yaml` 只服务于 pnpm；npm 和 Yarn 可直接安装并生成自己的锁文件，无需先删除其他文件。实际业务仓库建议只维护所选工具的锁文件。
+
+## 开发教程、变更与许可
+
+[新增业务页面](docs/new-business-page.md) · [变更记录](CHANGELOG.md) · [MIT 许可证](LICENSE)。第三方依赖遵循各自许可证。

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useFormSubmit } from '@/composables/useFormSubmit'
 import { useI18n } from 'vue-i18n'
 
 import { computed, nextTick, reactive, ref, watch } from 'vue'
@@ -75,6 +76,7 @@ watch(
           }
         : { ...defaults(), parentId: props.parentId ?? 0 }
     )
+    submission.reset(toInput())
     await nextTick()
     formRef.value?.clearValidate()
   }
@@ -82,9 +84,8 @@ watch(
 function close() {
   if (!props.saving) emit('update:modelValue', false)
 }
-async function submit() {
-  if (props.saving || !(await formRef.value?.validate().catch(() => false))) return
-  emit('submit', {
+function toInput(): DepartmentInput {
+  return {
     ...form,
     parentId: form.parentId || null,
     name: form.name.trim(),
@@ -92,7 +93,18 @@ async function submit() {
     leader: form.leader?.trim() || null,
     phone: form.phone?.trim() || null,
     email: form.email?.trim() || null
-  })
+  }
+}
+const submission = useFormSubmit<DepartmentInput>({
+  active: () => props.modelValue,
+  editing: () => props.department !== null,
+  saving: () => props.saving,
+  validate: () => formRef.value?.validate().catch(() => false) ?? Promise.resolve(false),
+  close,
+  submit: (input) => emit('submit', input)
+})
+function submit() {
+  return submission.submit(toInput())
 }
 </script>
 <template>
@@ -124,20 +136,20 @@ async function submit() {
           value-key="id"
           :props="{ label: 'name', children: 'children' }"
           check-strictly
-          :disabled="saving"
+          :disabled="saving || submission.submitting.value"
           style="width: 100%"
       /></ElFormItem>
       <div class="dialog-field-grid">
         <ElFormItem :label="t('ui.departmentName')" prop="name"
           ><ElInput
             v-model="form.name"
-            :disabled="saving"
+            :disabled="saving || submission.submitting.value"
             maxlength="100"
             :placeholder="t('ui.forExampleProductEngineering')" /></ElFormItem
         ><ElFormItem :label="t('ui.departmentCode')"
           ><ElInput
             v-model="form.code"
-            :disabled="saving"
+            :disabled="saving || submission.submitting.value"
             maxlength="64"
             :placeholder="t('ui.optionalMustBeUniqueWhenProvided')"
         /></ElFormItem>
@@ -146,13 +158,13 @@ async function submit() {
         <ElFormItem :label="t('ui.departmentLead')"
           ><ElInput
             v-model="form.leader"
-            :disabled="saving"
+            :disabled="saving || submission.submitting.value"
             maxlength="100"
             :placeholder="t('ui.enterTheDepartmentLead')" /></ElFormItem
         ><ElFormItem :label="t('ui.phone')"
           ><ElInput
             v-model="form.phone"
-            :disabled="saving"
+            :disabled="saving || submission.submitting.value"
             maxlength="32"
             :placeholder="t('ui.enterAPhoneNumber')"
         /></ElFormItem>
@@ -160,7 +172,7 @@ async function submit() {
       <ElFormItem :label="t('ui.contactEmail')" prop="email"
         ><ElInput
           v-model="form.email"
-          :disabled="saving"
+          :disabled="saving || submission.submitting.value"
           maxlength="255"
           placeholder="name@example.com"
       /></ElFormItem>
@@ -168,13 +180,13 @@ async function submit() {
         <ElFormItem :label="t('ui.sortOrder')"
           ><ElInputNumber
             v-model="form.sortOrder"
-            :disabled="saving"
+            :disabled="saving || submission.submitting.value"
             :min="0"
             :max="4294967295"
             :precision="0"
             :value-on-clear="0" /></ElFormItem
         ><ElFormItem :label="t('ui.status')"
-          ><ElRadioGroup v-model="form.status" :disabled="saving"
+          ><ElRadioGroup v-model="form.status" :disabled="saving || submission.submitting.value"
             ><ElRadio
               v-for="option in SYSTEM_STATUS_OPTIONS"
               :key="option.value"
@@ -187,8 +199,10 @@ async function submit() {
       <button type="submit" hidden tabindex="-1" />
     </ElForm>
     <template #footer
-      ><ElButton :disabled="saving" @click="close">{{ t('ui.cancel') }}</ElButton
-      ><ElButton type="primary" :loading="saving" @click="submit">{{
+      ><ElButton :disabled="saving || submission.submitting.value" @click="close">{{
+        t('ui.cancel')
+      }}</ElButton
+      ><ElButton type="primary" :loading="saving || submission.submitting.value" @click="submit">{{
         t('ui.saveDepartment')
       }}</ElButton></template
     >
