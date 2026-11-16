@@ -202,11 +202,10 @@ async function confirmDelete(user: ManagedUser): Promise<void> {
           :loading="loading"
           :data="rows"
           stripe
-          pagination
+          :pagination="{ disabled: busy }"
           :page="query.page"
           :page-size="query.pageSize"
           :total="total"
-          :pagination-disabled="loading || busy"
           @update:page="changePage"
           @update:page-size="changePageSize"
         >

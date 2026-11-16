@@ -23,6 +23,8 @@ export const request = publicRequest
   .use(
     retryPlugin({
       retries: 2,
+      // 后台写操作不默认幂等，统一限制重试范围，新增 API 无需逐个关闭重试。
+      methods: ['GET', 'HEAD', 'OPTIONS'],
       shouldRetry: (error) => (isApiError(error) ? false : undefined),
       retryOnTimeout: false,
       respectRetryAfter: true,

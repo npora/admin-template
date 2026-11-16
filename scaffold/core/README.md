@@ -17,7 +17,7 @@ npm run dev
 
 ## 在线体验
 
-[完整展示网站](https://admin-demo.npora.workers.dev)，演示账号 `admin`，密码 `123456`。这是展示站账号，不是正式 SQL 自动创建的账号。
+[完整展示网站](https://admin.npora.live)，演示账号 `admin`，密码 `123456`。这是展示站账号，不是正式 SQL 自动创建的账号。
 
 ## 目录与文档
 

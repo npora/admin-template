@@ -17,12 +17,9 @@ export async function updateDepartment(
   input: DepartmentInput
 ): Promise<ManagedDepartment> {
   return request.put<ManagedDepartment>(`/system/departments/${id}`, {
-    json: input,
-    extensions: { retry: 0 }
+    json: input
   })
 }
 export async function deleteDepartment(id: number): Promise<void> {
-  await request.delete<null>(`/system/departments/${id}`, {
-    extensions: { retry: 0 }
-  })
+  await request.delete<null>(`/system/departments/${id}`)
 }

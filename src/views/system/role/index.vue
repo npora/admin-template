@@ -140,11 +140,10 @@ async function confirmDelete(role: ManagedRole) {
         <DataTable
           :loading="loading"
           :data="rows"
-          pagination
+          :pagination="{ disabled: busy }"
           :page="query.page"
           :page-size="query.pageSize"
           :total="total"
-          :pagination-disabled="loading || busy"
           @update:page="changePage"
           @update:page-size="changePageSize"
         >

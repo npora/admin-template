@@ -13,7 +13,9 @@ npm run dev:demo
 
 展示开发默认通过真实 HTTP 连接测试 API，需要网络。`npm run build:demo` 构建完整演示；`npm run build` 构建核心模式；`npm run dev` 是否启用演示取决于 `.env.development.local` 的 `VITE_DEMO_ENABLED`。使用自己的后端时在 `.env.development.local` 配置 `VITE_API_URL`；生产需要站点 API 转发。
 
-[在线体验](https://admin-demo.npora.workers.dev)，账号 `admin`，密码 `123456`。演示账号不是正式 SQL 自动创建的账号。
+[在线体验](https://admin.npora.live)，账号 `admin`，密码 `123456`。演示账号不是正式 SQL 自动创建的账号。
+
+演示接口地址：`https://api.npora.live`。本地展示命令默认代理到此地址，生产页面仍请求同源 `/api`。
 
 ## 目录
 
@@ -28,7 +30,7 @@ npm run dev:demo
 | `scripts/`、`tests/` | 开发与验证命令                                 |
 | `docs/`              | 目录、接口、权限、开发与通用部署说明           |
 
-正式 MySQL 依次导入 `01-schema.sql`、`02-seed.sql`；账号和密码哈希由自己的后端初始化。Worker SQLite 迁移与 MySQL SQL 独立使用。没有本地 Mock，普通前端构建不启动或部署后端。
+正式 MySQL 按 [正式 SQL 说明](database/mysql/README.md) 依次导入四个编号文件；账号和密码哈希由自己的后端初始化。Worker SQLite 迁移与 MySQL SQL 独立使用。没有本地 Mock，普通前端构建不启动或部署后端。
 
 ## 文档与检查
 

@@ -9,12 +9,9 @@ export async function createMenu(input: MenuInput): Promise<ManagedMenu> {
 }
 export async function updateMenu(id: number, input: MenuInput): Promise<ManagedMenu> {
   return request.put<ManagedMenu>(`/system/menus/${id}`, {
-    json: input,
-    extensions: { retry: 0 }
+    json: input
   })
 }
 export async function deleteMenu(id: number): Promise<void> {
-  await request.delete<null>(`/system/menus/${id}`, {
-    extensions: { retry: 0 }
-  })
+  await request.delete<null>(`/system/menus/${id}`)
 }

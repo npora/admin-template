@@ -1,22 +1,20 @@
 <script setup lang="ts" generic="T extends object">
-import { ref, useAttrs } from 'vue'
+import { computed, ref, useAttrs } from 'vue'
 import type { TableInstance } from 'element-plus'
-import type { DataTableInstance, DataTableSort } from './types'
-import TablePagination from '@/components/TablePagination/index.vue'
+import type { DataTableInstance, DataTablePagination, DataTableSort } from './types'
 
 defineOptions({ inheritAttrs: false })
-withDefaults(
+const props = withDefaults(
   defineProps<{
     data: T[]
     loading?: boolean
     border?: boolean
     rowKey?: string | ((row: T) => string)
     emptyText?: string
-    pagination?: boolean
+    pagination?: boolean | DataTablePagination
     page?: number
     pageSize?: number
     total?: number
-    paginationDisabled?: boolean
   }>(),
   {
     loading: false,
@@ -25,9 +23,26 @@ withDefaults(
     pagination: false,
     page: 1,
     pageSize: 10,
-    total: 0,
-    paginationDisabled: false
+    total: 0
   }
+)
+const paginationOptions = computed(() => {
+  const { align = 'center', ...options } =
+    typeof props.pagination === 'object' ? props.pagination : {}
+  return {
+    align,
+    props: {
+      pageSizes: [10, 20, 50],
+      pagerCount: 5,
+      layout: 'total, sizes, prev, pager, next',
+      ...options
+    }
+  }
+})
+const showPagination = computed(
+  () =>
+    props.pagination &&
+    !(paginationOptions.value.props.hideOnSinglePage && props.total <= props.pageSize)
 )
 const emit = defineEmits<{
   'update:page': [value: number]
@@ -65,15 +80,21 @@ defineExpose<DataTableInstance>({
       </template>
       <template v-if="$slots.append" #append><slot name="append" /></template>
     </ElTable>
-    <TablePagination
-      v-if="pagination"
-      :page="page"
-      :page-size="pageSize"
-      :total="total"
-      :disabled="loading || paginationDisabled"
-      @update:page="emit('update:page', $event)"
-      @update:page-size="emit('update:pageSize', $event)"
-    />
+    <div
+      v-if="showPagination"
+      class="data-table__pagination"
+      :class="`data-table__pagination--${paginationOptions.align}`"
+    >
+      <ElPagination
+        v-bind="paginationOptions.props"
+        :current-page="page"
+        :page-size="pageSize"
+        :total="total"
+        :disabled="loading || paginationOptions.props.disabled"
+        @update:current-page="emit('update:page', $event)"
+        @update:page-size="emit('update:pageSize', $event)"
+      />
+    </div>
   </div>
 </template>
 
@@ -81,5 +102,22 @@ defineExpose<DataTableInstance>({
 .data-table {
   width: 100%;
   min-width: 0;
+  &__pagination {
+    display: flex;
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--np-border-color-lighter);
+    overflow-x: auto;
+    :deep(.el-pagination) {
+      flex-shrink: 0;
+    }
+    // 自动外边距在宽屏居中，窄屏溢出时仍能从起点横向滚动。
+    &--center :deep(.el-pagination) {
+      margin-inline: auto;
+    }
+    &--right :deep(.el-pagination) {
+      margin-left: auto;
+    }
+  }
 }
 </style>

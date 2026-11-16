@@ -34,7 +34,9 @@ try {
   assert.ok(csv.includes('"\'  @cmd"'))
   assert.ok(csv.includes('"-12"'))
 
-  const { usePaginatedTable } = await load('composables/usePaginatedTable.ts')
+  const { usePaginatedTable } = await server.ssrLoadModule(
+    '/examples/composables/usePaginatedTable.ts'
+  )
   const requests = []
   const list = scoped(() =>
     usePaginatedTable({

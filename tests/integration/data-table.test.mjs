@@ -2,60 +2,24 @@ import assert from 'node:assert/strict'
 import { readFile, writeFile, unlink } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { parse, compileScript } from 'vue/compiler-sfc'
-import { createRenderer, defineComponent, h, nextTick, ref } from 'vue'
+import { defineComponent, h, nextTick, ref } from 'vue'
+import { node, renderer } from '../helpers/renderer.mjs'
 import { createTestServer } from '../helpers/environment.mjs'
 
 // Compile the actual client templates and mount with Element Plus boundary stubs.
 // This tests wrapper behavior without depending on browser layout or an HTTP service.
-const node = (type) => ({ type, parent: null, children: [], props: {}, text: '' })
-function remove(child) {
-  if (!child.parent) return
-  const siblings = child.parent.children
-  siblings.splice(siblings.indexOf(child), 1)
-  child.parent = null
-}
-const renderer = createRenderer({
-  createElement: node,
-  createText: (text) => ({ ...node('text'), text }),
-  createComment: (text) => ({ ...node('comment'), text }),
-  setText: (target, text) => {
-    target.text = text
-  },
-  setElementText: (target, text) => {
-    target.text = text
-    target.children = []
-  },
-  parentNode: (target) => target.parent,
-  nextSibling: (target) =>
-    target.parent?.children[target.parent.children.indexOf(target) + 1] ?? null,
-  patchProp: (target, key, _old, value) => {
-    target.props[key] = value
-  },
-  remove,
-  insert: (child, parent, anchor = null) => {
-    remove(child)
-    const position = anchor ? parent.children.indexOf(anchor) : -1
-    parent.children.splice(position < 0 ? parent.children.length : position, 0, child)
-    child.parent = parent
-  }
-})
-const generated = [
-  new URL(`.check-data-table-${process.pid}.ts`, import.meta.url),
-  new URL(`.check-table-pagination-${process.pid}.ts`, import.meta.url)
-]
+const generated = [new URL(`.check-data-table-${process.pid}.ts`, import.meta.url)]
 let server, app
 try {
-  for (const [index, name] of ['DataTable', 'TablePagination'].entries()) {
+  for (const [index, name] of ['DataTable'].entries()) {
     const filename = fileURLToPath(
       new URL(`../../src/components/${name}/index.vue`, import.meta.url)
     )
     const { descriptor } = parse(await readFile(filename, 'utf8'), { filename })
-    const content = compileScript(descriptor, { id: `test-${name}`, inlineTemplate: true })
-      .content.replace(
-        '@/components/TablePagination/index.vue',
-        `./.check-table-pagination-${process.pid}.ts`
-      )
-      .replace("from './types'", "from '../../src/components/DataTable/types'")
+    const content = compileScript(descriptor, {
+      id: `test-${name}`,
+      inlineTemplate: true
+    }).content.replace("from './types'", "from '../../src/components/DataTable/types'")
     await writeFile(generated[index], content)
   }
   server = await createTestServer()
@@ -64,7 +28,6 @@ try {
   )
   const rows = ref([{ id: 1, children: [{ id: 2 }] }])
   const loading = ref(false),
-    disabled = ref(false),
     pagination = ref(true),
     border = ref(true),
     size = ref('small')
@@ -102,7 +65,18 @@ try {
     }
   })
   const StubPagination = defineComponent({
-    props: ['currentPage', 'pageSize', 'total', 'disabled'],
+    props: [
+      'currentPage',
+      'pageSize',
+      'total',
+      'disabled',
+      'pageSizes',
+      'pagerCount',
+      'layout',
+      'background',
+      'size',
+      'hideOnSinglePage'
+    ],
     emits: ['update:current-page', 'update:page-size'],
     setup(props, { emit }) {
       paginationProps = () => props
@@ -124,7 +98,6 @@ try {
               data: rows.value,
               loading: loading.value,
               pagination: pagination.value,
-              paginationDisabled: disabled.value,
               border: border.value,
               page: page.value,
               pageSize: pageSize.value,
@@ -173,6 +146,13 @@ try {
   assert.equal(paginationProps().currentPage, 2)
   assert.equal(paginationProps().pageSize, 20)
   assert.equal(paginationProps().total, 100)
+  assert.deepEqual(paginationProps().pageSizes, [10, 20, 50])
+  assert.equal(paginationProps().pagerCount, 5)
+  assert.equal(paginationProps().layout, 'total, sizes, prev, pager, next')
+  assert.equal(
+    root.children[0].children[1].props.class,
+    'data-table__pagination data-table__pagination--center'
+  )
   nativeEmit('selection-change', rows.value)
   const sort = { column: {}, prop: 'id', order: 'ascending' }
   nativeEmit('sort-change', sort)
@@ -198,12 +178,36 @@ try {
   await nextTick()
   assert.equal(paginationProps().disabled, true)
   loading.value = false
-  disabled.value = true
+  pagination.value = {
+    disabled: true,
+    pageSizes: [20, 50, 100],
+    pagerCount: 7,
+    layout: 'prev, pager, next, jumper',
+    align: 'right',
+    background: true,
+    size: 'small',
+    hideOnSinglePage: true
+  }
   size.value = 'large'
   border.value = false
   rows.value = []
   await nextTick()
   assert.equal(paginationProps().disabled, true)
+  assert.deepEqual(paginationProps().pageSizes, [20, 50, 100])
+  assert.equal(paginationProps().pagerCount, 7)
+  assert.equal(paginationProps().layout, 'prev, pager, next, jumper')
+  assert.equal(paginationProps().background, true)
+  assert.equal(paginationProps().size, 'small')
+  assert.equal(paginationProps().hideOnSinglePage, true)
+  assert.equal(
+    root.children[0].children[1].props.class,
+    'data-table__pagination data-table__pagination--right'
+  )
+  assert.equal(
+    nativeProps().pageSizes,
+    undefined,
+    'pagination config must not leak into table attrs'
+  )
   assert.equal(nativeProps().size, 'large', 'native attrs must refresh after density changes')
   assert.equal(nativeProps().border, false)
   const contains = (target, type) =>
@@ -211,6 +215,16 @@ try {
   assert.ok(contains(root, 'column-slot'))
   assert.ok(contains(root, 'empty-slot'))
   assert.ok(contains(root, 'append-slot'))
+  pageSize.value = 100
+  await nextTick()
+  assert.equal(contains(root, 'native-pagination'), false, 'hide the entire single-page footer')
+  pagination.value = { align: 'left' }
+  await nextTick()
+  assert.equal(contains(root, 'native-pagination'), true)
+  assert.equal(
+    root.children[0].children[1].props.class,
+    'data-table__pagination data-table__pagination--left'
+  )
   pagination.value = false
   await nextTick()
   assert.equal(contains(root, 'native-pagination'), false)

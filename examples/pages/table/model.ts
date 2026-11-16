@@ -1,4 +1,4 @@
-import type { TableQuery } from '@/composables/usePaginatedTable'
+import type { TableQuery } from '../../composables/usePaginatedTable'
 export const taskCategories = ['design', 'engineering', 'operations'] as const
 export const taskStatuses = ['draft', 'active', 'completed'] as const
 export interface TaskInput {

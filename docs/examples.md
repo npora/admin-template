@@ -15,10 +15,10 @@
 
 ## 表格与可复用组件
 
-- `src/composables/usePaginatedTable.ts`：筛选、查询快照、分页、排序、请求取消、竞态隔离、加载/失败状态和删除后的末页回退。`fetcher` 接收查询对象和 `AbortSignal`，返回 `{ list, total }`，可替换为真实接口。筛选字段使用扁平可复制对象。
+- `examples/composables/usePaginatedTable.ts`：筛选、查询快照、分页、排序、请求取消、竞态隔离、加载/失败状态和删除后的末页回退。`fetcher` 接收查询对象和 `AbortSignal`，返回 `{ list, total }`，可替换为真实接口。筛选字段使用扁平可复制对象。
 - `src/components/TableToolbar`：标题、摘要、刷新、密度、列显隐和业务操作插槽。必选列不能隐藏。已有用户、角色列表也复用标题/刷新工具栏。
 - `src/components/DataTable`：统一表格、加载状态、空数据提示和可选分页，首页、用户、角色、部门、菜单及表格示例均已接入。默认 `border=true`、`rowKey="id"`；业务列保留原生 `ElTableColumn` 插槽，不引入列配置 DSL。
-- `src/components/TablePagination`：`DataTable` 内部复用的分页基础组件，分页默认居中，窄屏溢出时从起点横向滚动。
+- 分页直接集成在 `DataTable` 中，使用 `pagination` 参数配置布局、条数和对齐，详见 [表格与分页配置](new-business-page.md#表格与分页配置)。
 - `examples/utils/csv.ts`：UTF-8 CSV、引号/换行转义、字符串公式防护与浏览器下载，不依赖额外导出库。
 
 分页列表示例（筛选、请求、翻页及末页回退仍由业务 composable 负责）：
@@ -27,11 +27,10 @@
 <DataTable
   :data="rows"
   :loading="loading"
-  pagination
+  :pagination="{ disabled: busy }"
   :page="query.page"
   :page-size="query.pageSize"
   :total="total"
-  :pagination-disabled="busy"
   @update:page="changePage"
   @update:page-size="changePageSize"
 >

@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
-    "@npora/request": "^1.22.3",
+    "@npora/request": "^1.23.1",
     "dayjs": "^1.11.23",
     "element-plus": "^2.14.5",
     "pinia": "^4.0.3",

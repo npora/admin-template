@@ -128,11 +128,10 @@ async function confirmDelete(row: DictType) {
         <DataTable
           :data="rows"
           :loading="loading"
-          pagination
+          :pagination="{ disabled: busy }"
           :page="query.page"
           :page-size="query.pageSize"
           :total="total"
-          :pagination-disabled="loading || busy"
           @update:page="changePage"
           @update:page-size="changePageSize"
         >

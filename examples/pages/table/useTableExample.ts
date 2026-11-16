@@ -1,6 +1,6 @@
 import { onScopeDispose, ref } from 'vue'
 import { usePermission } from '@/composables/usePermission'
-import { usePaginatedTable } from '@/composables/usePaginatedTable'
+import { usePaginatedTable } from '../../composables/usePaginatedTable'
 import {
   createTaskSeed,
   queryTasks,

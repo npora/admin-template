@@ -67,3 +67,64 @@ test('business clients unwrap once over Fetch, preserve metadata and reject inva
   assert.equal(failures.at(-1).context.authenticated, false)
   assert.equal(failures.at(-1).context.silent, true)
 })
+
+test('read retries settle once while writes and cancelled requests never replay', async (t) => {
+  installMemoryStorage()
+  const server = await createTestServer()
+  t.after(() => server.close())
+  const originalFetch = globalThis.fetch
+  t.after(() => {
+    globalThis.fetch = originalFetch
+  })
+  const { request } = await server.ssrLoadModule('/src/api/client.ts')
+  const { setRequestErrorHandler, isCancelledRequest } = await server.ssrLoadModule(
+    '/src/api/errors/handling.ts'
+  )
+  const failures = []
+  t.after(setRequestErrorHandler((error) => failures.push(error)))
+  let calls = 0
+  globalThis.fetch = async () => {
+    calls += 1
+    return calls === 1
+      ? Response.json({ message: 'temporary' }, { status: 503 })
+      : Response.json({ code: 0, message: 'success', data: 'recovered' })
+  }
+  assert.equal(
+    await request.get('/retry', { extensions: { retry: { delay: 0, jitter: false } } }),
+    'recovered'
+  )
+  assert.equal(calls, 2)
+  assert.equal(failures.length, 0, 'a recovered read must not display a transient failure')
+
+  for (const method of ['post', 'put', 'patch', 'delete']) {
+    for (const networkFailure of [false, true]) {
+      calls = 0
+      globalThis.fetch = async () => {
+        calls += 1
+        if (networkFailure) throw new TypeError('connection closed')
+        return Response.json({ message: 'temporary' }, { status: 503 })
+      }
+      const before = failures.length
+      await assert.rejects(request[method]('/write', { json: { value: 1 } }))
+      assert.equal(calls, 1, `${method} must not replay after a transport failure`)
+      assert.equal(failures.length, before + 1, 'report each final failure once')
+    }
+  }
+
+  calls = 0
+  const controller = new AbortController()
+  globalThis.fetch = async () => {
+    calls += 1
+    setTimeout(() => controller.abort(), 0)
+    return Response.json({ message: 'temporary' }, { status: 503 })
+  }
+  await assert.rejects(
+    request.get('/cancel-retry', {
+      signal: controller.signal,
+      extensions: { retry: { delay: 100, jitter: false } }
+    }),
+    isCancelledRequest
+  )
+  await new Promise((resolve) => setTimeout(resolve, 150))
+  assert.equal(calls, 1, 'cancellation during retry delay must prevent another dispatch')
+})

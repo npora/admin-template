@@ -32,3 +32,5 @@
 字典页面在 `src/views/system/dict/`，请求与 DTO 在 `src/api/modules/dict.ts`、`src/api/types/dict.ts`，业务读取使用 `src/composables/useDict.ts`、`src/store/modules/dict/` 和 `src/components/DictTag/`。这些均为核心内容，详见 [字典管理](dictionaries.md)。
 
 用户、角色、字典分页列表复用 `src/composables/useManagementTable.ts`，业务适配器位于各页面目录。模板不指定 `packageManager`；默认使用 npm 锁文件，pnpm/Yarn 使用者也可安装运行。
+
+表格和分页统一使用 `src/components/DataTable/`，通过 `pagination` 参数配置，不需要额外引入分页组件。请求协议集中在 `src/api/protocol/index.ts`；接入自己的后端时在该入口调整响应校验和解包。

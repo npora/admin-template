@@ -20,14 +20,11 @@ export async function createRole(input: RoleInput): Promise<ManagedRole> {
 }
 export async function updateRole(id: number, input: RoleInput): Promise<ManagedRole> {
   return request.put<ManagedRole>(`/system/roles/${id}`, {
-    json: input,
-    extensions: { retry: 0 }
+    json: input
   })
 }
 export async function deleteRole(id: number): Promise<void> {
-  await request.delete<null>(`/system/roles/${id}`, {
-    extensions: { retry: 0 }
-  })
+  await request.delete<null>(`/system/roles/${id}`)
 }
 export async function getRoleMenuOptions(): Promise<ManagedMenu[]> {
   return request.get<ManagedMenu[]>('/system/roles/menu-options')
@@ -37,7 +34,6 @@ export async function getRoleMenus(id: number): Promise<number[]> {
 }
 export async function grantRoleMenus(id: number, menuIds: number[]): Promise<number[]> {
   return request.put<number[]>(`/system/roles/${id}/menus`, {
-    json: { menuIds },
-    extensions: { retry: 0 }
+    json: { menuIds }
   })
 }

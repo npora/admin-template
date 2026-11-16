@@ -66,7 +66,7 @@ API 函数、DTO、协议分别位于 `src/api/modules/`、`src/api/types/`、`s
 
 ## 公共列表逻辑
 
-`src/composables/useManagementTable.ts` 管理带关键词、状态与分页的权限列表，统一查询取消、过期响应隔离、末页回退以及保存和删除互斥。角色页面只配置 API，用户页面保留账号字段过滤、超级管理员删除保护及角色/部门选项加载；字典页面通过 `useDictionaryTable.ts` 补充字典缓存失效回调。树形菜单、部门继续保留业务专属逻辑；用户筛选通过筛选工厂扩展。演示用的 `usePaginatedTable.ts` 支持本地数据、排序和自定义筛选，职责不同，不耦合系统权限。
+`src/composables/useManagementTable.ts` 管理带关键词、状态与分页的权限列表，统一查询取消、过期响应隔离、末页回退以及保存和删除互斥。角色页面只配置 API，用户页面保留账号字段过滤、超级管理员删除保护及角色/部门选项加载；字典页面通过 `useDictionaryTable.ts` 补充字典缓存失效回调。树形菜单、部门继续保留业务专属逻辑；用户筛选通过筛选工厂扩展。演示用的 `examples/composables/usePaginatedTable.ts` 支持本地数据、排序和自定义筛选，职责不同，不耦合系统权限。
 
 ## 新业务与编辑表单
 

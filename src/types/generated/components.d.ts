@@ -64,7 +64,6 @@ declare module 'vue' {
     LocaleSwitch: typeof import('./../../components/LocaleSwitch/index.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    TablePagination: typeof import('./../../components/TablePagination/index.vue')['default']
     TableToolbar: typeof import('./../../components/TableToolbar/index.vue')['default']
   }
   export interface GlobalDirectives {

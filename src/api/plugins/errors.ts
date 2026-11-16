@@ -2,7 +2,7 @@ import type { Plugin } from '@npora/request/core'
 
 import { getTokenVersion, tokenStorage } from '../auth/token-storage'
 import { handleRequestError, type RequestFailureContext } from '../errors/handling'
-import { unwrapApiResponse } from '../protocol/default'
+import { unwrapApiResponse } from '../protocol'
 
 /** 校验并解包业务协议，仅在重试结束后处理最终错误。 */
 export function requestErrorsPlugin(authenticated: boolean): Plugin {

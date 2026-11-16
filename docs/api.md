@@ -4,7 +4,7 @@
 
 默认响应为 `{ code: 0, message: 'success', data }`，`code === 0` 表示业务成功。分页响应的 `data` 为 `{ list, total }`。公共类型位于 `src/api/types/common.ts`；其他后端协议可通过 `api/protocol` 适配。
 
-项目使用 `@npora/request` 1.22.3 的 data-first API：`src/api/client.ts` 中的两个业务客户端会在 `onResponse` 中统一校验并解包响应。API 模块的泛型填写 `data` 的类型，调用方直接得到业务数据，不再读取 `.data` 或重复调用 `unwrapApiResponse`：
+项目使用 `@npora/request` 1.23.1 的 data-first API：`src/api/client.ts` 中的两个业务客户端会在 `onResponse` 中统一校验并解包响应。API 模块的泛型填写 `data` 的类型，调用方直接得到业务数据，不再读取 `.data` 或重复调用 `unwrapApiResponse`：
 
 ```ts
 return request.get<PageResult<ManagedUser>>('/system/users', {
@@ -78,7 +78,7 @@ HTTP 401，以及业务 code 为 `401`、`10002`（含字符串形式），表�
 
 菜单请求类型见 `src/api/types/menu.ts`，包含 SQL 对应的路由、查询参数、显示、缓存、排序和状态字段。节点类型是 `1=目录`、`2=页面`、`3=按钮`。目录与页面只能挂在目录下，按钮必须挂在页面下；按钮的路由字段为 `null`。接口拒绝循环父级、重定向循环、冲突路径/名称/权限码，以及不存在的组件和授权目标。
 
-写操作不自动重试；删除使用软删除。由于 SQL 唯一索引不含 `deleted_at`，用户名、邮箱、手机号、角色编码、菜单路由名称和权限码在软删除后仍保留唯一性约束。完整字段映射和权限生效规则见 [RBAC 说明](rbac.md)。
+客户端默认只允许 GET、HEAD、OPTIONS 读取请求重试；POST、PUT、PATCH、DELETE 写操作不自动重试，不需要在每个模块重复配置 `extensions.retry: 0`。业务错误、协议错误、超时与取消不重试；错误通知在请求最终结束后统一处理。删除使用软删除。由于 SQL 唯一索引不含 `deleted_at`，用户名、邮箱、手机号、角色编码、菜单路由名称和权限码在软删除后仍保留唯一性约束。完整字段映射和权限生效规则见 [RBAC 说明](rbac.md)。
 
 ## 部门管理
 

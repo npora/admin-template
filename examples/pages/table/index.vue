@@ -8,7 +8,7 @@ import { usePermission } from '@/composables/usePermission'
 import { useAppStore } from '@/store/modules/app'
 import { formatDate, formatNumber } from '@/locales'
 import { buildCsv, downloadText, type CsvColumn } from '../../utils/csv'
-import type { TableSort } from '@/composables/usePaginatedTable'
+import type { TableSort } from '../../composables/usePaginatedTable'
 import TableToolbar from '@/components/TableToolbar/index.vue'
 import DataTable from '@/components/DataTable/index.vue'
 import type { DataTableInstance } from '@/components/DataTable/types'
@@ -239,11 +239,10 @@ function exportData() {
           :default-sort="{ prop: 'createdAt', order: 'descending' }"
           @selection-change="changeSelection"
           @sort-change="changeSort"
-          pagination
+          :pagination="{ disabled: busy }"
           :page="query.page"
           :page-size="query.pageSize"
           :total="total"
-          :pagination-disabled="busy"
           @update:page="changePage"
           @update:page-size="changePageSize"
         >

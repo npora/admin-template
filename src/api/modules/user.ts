@@ -20,13 +20,10 @@ export async function createUser(input: CreateUserInput): Promise<ManagedUser> {
 
 export async function updateUser(id: number, input: UpdateUserInput): Promise<ManagedUser> {
   return request.put<ManagedUser>(`/system/users/${id}`, {
-    json: input,
-    extensions: { retry: 0 }
+    json: input
   })
 }
 
 export async function deleteUser(id: number): Promise<void> {
-  await request.delete<null>(`/system/users/${id}`, {
-    extensions: { retry: 0 }
-  })
+  await request.delete<null>(`/system/users/${id}`)
 }

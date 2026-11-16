@@ -45,7 +45,6 @@
 | `assets/styles/`                   | 主题变量、重置、滚动条、Element Plus 覆盖和过渡样式                                                                                                                                                                 |
 | `components/`                      | 跨页面共享的组件，不放某个业务页专属弹窗                                                                                                                                                                            |
 | `components/DataTable/`            | 统一表格、边框、加载/空状态与可选分页                                                                                                                                                                               |
-| `components/TablePagination/`      | 默认居中的分页，供表格复用                                                                                                                                                                                          |
 | `components/TableToolbar/`         | 表格标题、刷新、密度、列显隐及操作插槽                                                                                                                                                                              |
 | `components/LocaleSwitch/`         | 多语言切换图标与选择入口                                                                                                                                                                                            |
 | `composables/`                     | Vue 组合式逻辑，例如分页查询、会话使用入口                                                                                                                                                                          |
@@ -172,3 +171,5 @@ npm run check:standalone
 用户、角色与字典共用 `composables/useManagementTable.ts`，页面适配层只负责 API 和字典缓存失效；不要把树形管理和演示排序强行放入同一个 CRUD 抽象。`scripts/lib/vite.mjs` 统一启动当前项目安装的 Vite，开发、展示和构建入口不依赖特定包管理器。
 
 缓存演示专属的占位组件位于 `examples/components/PagePlaceholder/`，不进入纯净版的公共组件目录。
+
+表格和分页统一由 `src/components/DataTable/` 提供，通过 `pagination` 对象配置分页外观；演示专属分页逻辑位于 `examples/composables/`，纯净后台不包含该目录。请求协议集中在 `src/api/protocol/index.ts`，无需维护额外策略类。

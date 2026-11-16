@@ -53,18 +53,16 @@ export function getRecords(query: RecordQuery, signal?: AbortSignal) {
 }
 export function createRecord(input: RecordInput) {
   return request.post<ManagedRecord>('/business/records', {
-    json: input,
-    extensions: { retry: 0 }
+    json: input
   })
 }
 export function updateRecord(id: number, input: RecordInput) {
   return request.put<ManagedRecord>(`/business/records/${id}`, {
-    json: input,
-    extensions: { retry: 0 }
+    json: input
   })
 }
 export function deleteRecord(id: number) {
-  return request.delete<null>(`/business/records/${id}`, { extensions: { retry: 0 } })
+  return request.delete<null>(`/business/records/${id}`)
 }
 ```
 
@@ -100,6 +98,32 @@ export function useRecordManagement() {
 - 对集合语义的数组排序后再比较；不要比较列表计数、审计字段或整个后端对象。
 - 表单只发出 `submit`；父页面调用列表的 `save()`，成功后关闭。关闭或取消不额外调用 `load()`。
 - 保存失败保留表单；校验失败不发送请求；编辑无变化时关闭且不发送更新请求。
+
+### 表格与分页配置
+
+表格和分页是同一个 `DataTable` 组件，无需额外引入分页组件。默认带边框，分页开启后默认居中；传 `false` 隐藏分页，传 `true` 使用默认设置，也可传配置对象：
+
+```vue
+<DataTable
+  :data="rows"
+  :loading="loading"
+  :pagination="{ disabled: busy, pageSizes: [10, 20, 50], align: 'center' }"
+  :page="query.page"
+  :page-size="query.pageSize"
+  :total="total"
+  @update:page="changePage"
+  @update:page-size="changePageSize"
+>
+  <ElTableColumn prop="name" label="名称" />
+  <ElTableColumn prop="code" label="编码" />
+</DataTable>
+```
+
+`page`、`pageSize` 支持 `v-model`；有接口查询时使用上面的更新事件，每次事件由页面发起一次查询，组件不自行请求或重置页码。
+
+分页配置支持 `pageSizes`、`pagerCount`、`layout`、`background`、`size`、`hideOnSinglePage`、`disabled`，以及 `align: 'left' | 'center' | 'right'`。默认条数选项为 `[10, 20, 50]`，按钮数量为 `5`，布局为 `total, sizes, prev, pager, next`。加载期间自动禁用分页，窄屏可横向滚动。
+
+表格的 `border`、`rowKey`、`emptyText` 可直接配置；其他 Element Plus 表格属性与事件透传，`class`、`style` 作用于外层容器。业务列使用 `ElTableColumn` 和插槽，支持 `empty`、`append` 插槽。类型位于 `src/components/DataTable/types.ts`。
 
 ## 4. 注册菜单与页面白名单
 
