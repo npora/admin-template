@@ -68,6 +68,9 @@ try {
       )
     assert.equal(pkg.scripts['update:presets'], undefined)
     assert.equal(pkg.scripts['check:presets'], undefined)
+    assert.equal(pkg.scripts['release:prepare'], undefined)
+    assert.equal(existsSync(join(directory, 'scripts/release')), false)
+    assert.equal(existsSync(join(directory, '.github/workflows/release.yml')), false)
     for (const entry of [
       'LICENSE',
       'CHANGELOG.md',
@@ -106,7 +109,12 @@ try {
 
     assert.equal(existsSync(join(directory, 'workers/api/.local')), false)
     if (preset !== 'demo') {
-      for (const dependency of ['cf', '@cloudflare/vite-plugin'])
+      for (const dependency of [
+        'cf',
+        '@cloudflare/vite-plugin',
+        'rollup-plugin-visualizer',
+        'vite-plugin-compression2'
+      ])
         assert.equal(pkg.devDependencies[dependency], undefined)
       for (const script of ['dev:demo', 'typecheck:demo', 'deploy:cloudflare', 'check:all'])
         assert.equal(pkg.scripts[script], undefined)
@@ -114,8 +122,15 @@ try {
         await readFile(join(directory, 'vite.config.ts'), 'utf8'),
         /cloudflare|optional-examples/
       )
-      for (const dependency of ['cf', '@cloudflare/vite-plugin', 'workerd'])
+      for (const dependency of [
+        'cf',
+        '@cloudflare/vite-plugin',
+        'workerd',
+        'rollup-plugin-visualizer',
+        'vite-plugin-compression2'
+      ])
         assert.equal(lock.packages[`node_modules/${dependency}`], undefined)
+      assert.equal(existsSync(join(directory, 'build/optional-tools.ts')), false)
     }
     if (preset === 'worker') {
       assert.doesNotMatch(

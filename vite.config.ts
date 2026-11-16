@@ -2,6 +2,7 @@ import { defineConfig, loadEnv } from 'vite'
 import { fileURLToPath } from 'node:url'
 import { coreConfig } from './build/vite.ts'
 import { optionalExamples } from './build/optional-examples.ts'
+import { optionalTools } from './build/optional-tools.ts'
 
 export default defineConfig(async (context) => {
   const root = fileURLToPath(new URL('./', import.meta.url))
@@ -15,6 +16,11 @@ export default defineConfig(async (context) => {
   return {
     ...core,
     define: { ...core.define, __DEMO_ENABLED__: examples.enabled },
-    plugins: [cloudflarePlugin, examples.plugin, ...(core.plugins ?? [])]
+    plugins: [
+      cloudflarePlugin,
+      examples.plugin,
+      ...(core.plugins ?? []),
+      ...optionalTools(env, context.command === 'build')
+    ]
   }
 })

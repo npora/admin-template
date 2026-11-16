@@ -66,7 +66,7 @@ server {
 
 上述前缀替换基于 [Nginx proxy_pass](https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_pass)，页面回退基于 [try_files](https://nginx.org/en/docs/http/ngx_http_core_module.html#try_files)。配置前先在目标服务器执行 `nginx -t`；本机未安装 Nginx，未运行该语法检查或部署验证。
 
-API 路径不要回退前端 HTML，也不要为 API 配置静态资源缓存。构建生成的 `.gz` 文件只有在服务器支持并启用预压缩文件服务时才会使用；未配置时原始 JS/CSS 仍可正常提供。上述配置适用于域名根路径；子目录部署需要一起调整 Vite `base`、Router history base 和站点转发规则。
+API 路径不要回退前端 HTML，也不要为 API 配置静态资源缓存。基础模板不生成额外的 `.gz` 文件；可由服务器按需压缩静态资源。上述配置适用于域名根路径；子目录部署需要一起调整 Vite `base`、Router history base 和站点转发规则。
 
 ## 接入自己的后端
 

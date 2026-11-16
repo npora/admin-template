@@ -1,7 +1,7 @@
 {
   "name": "admin-template",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.11",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -25,7 +25,8 @@
     "check:all": "prettier --check . && vue-tsc -p tsconfig.demo.json --noEmit && vue-tsc -p tsconfig.node.json --noEmit && node scripts/run-tests.mjs --all",
     "typecheck:demo": "vue-tsc -p tsconfig.demo.json --noEmit && vue-tsc -p tsconfig.node.json --noEmit",
     "update:presets": "node scripts/update-presets.mjs",
-    "check:presets": "node scripts/check-presets.mjs"
+    "check:presets": "node scripts/check-presets.mjs",
+    "release:prepare": "node scripts/release/prepare.mjs"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",

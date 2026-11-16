@@ -36,6 +36,8 @@ npm run dev
 
 [目录职责](docs/project-structure.md) · [开发与配置](docs/development.md) · [后端接入](docs/backend-replacement.md) · [权限模型](docs/rbac.md) · [多语言](docs/i18n.md) · [正式 SQL](database/mysql/README.md)
 
+基础开发依赖仅用于 Vue/Vite 构建、组件按需加载、Sass、TypeScript 类型与格式检查；不附带体积分析、额外压缩或展示站部署依赖。
+
 ## 验证
 
 `npm run check` 执行格式、类型和核心测试。`npm run check:views` 检查页面，`npm run check:locales` 检查词条。`npm run preview` 预览构建产物，API 转发仍需自行提供。

@@ -23,7 +23,7 @@ npm install
 npm run dev
 ```
 
-按提示选择模板，默认是纯净后台：
+按提示选择模板，默认是纯净后台；创建后可选择 npm、pnpm、Yarn 自动安装依赖，也可跳过。使用 `--yes --install npm` 可无交互创建并安装：
 
 | 模板              | 内容                                             |
 | ----------------- | ------------------------------------------------ |
@@ -31,7 +31,7 @@ npm run dev
 | `worker`          | 相同核心前端，附加独立 Worker 后端参考实现       |
 | `demo`            | 完整展示网站、示例页面和测试后端                 |
 
-也可通过 `--preset starter`、`--preset worker` 或 `--preset demo` 明确选择。生成器按需组合目录，创建后无需删除演示文件；纯净版保留登录和首页，不附带 Mock 或 Worker 接口。所有预设都保留用户权限及字典 SQL。
+也可通过 `--preset starter`、`--preset worker` 或 `--preset demo` 明确选择。生成器默认使用同版本模板 Tag，可用 `--ref main` 跟随开发分支。生成器按需组合目录，创建后无需删除演示文件；纯净版保留登录和首页，不附带 Mock 或 Worker 接口。所有预设都保留用户权限及字典 SQL。
 
 [生成器用法](https://github.com/npora/create-admin) · [npm 包](https://www.npmjs.com/package/@niping9542/create-nova-admin)
 
@@ -90,7 +90,7 @@ Node.js 最低要求见 `package.json`，建议使用受依赖支持的 LTS 版�
 | `deploy/`            | 展示站部署实现，仅完整演示需要              |
 | `scaffold/`          | 生成器差异文件，不进入生成项目              |
 
-核心代码只维护一份。修改依赖后运行 `npm run update:presets`；维护和 CI 细节见 [模板预设维护](scaffold/README.md)。
+纯净版与 Worker 版只保留基础构建、类型和格式检查依赖，不包含额外压缩、体积分析和展示部署工具。核心代码只维护一份。修改依赖后运行 `npm run update:presets`；两个仓库通过 `npm run release:prepare -- patch` 统一版本，Tag 工作流分别发布 GitHub Release 与生成器 npm 包。维护和 CI 细节见 [模板预设维护](scaffold/README.md)。
 
 [目录职责](docs/project-structure.md) · [新增业务页面与表格配置](docs/new-business-page.md) · [权限模型](docs/rbac.md) · [字典](docs/dictionaries.md) · [多语言](docs/i18n.md) · [架构](docs/architecture.md) · [示例](docs/examples.md)
 

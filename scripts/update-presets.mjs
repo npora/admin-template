@@ -21,6 +21,8 @@ const scripts = [
 pkg.scripts = Object.fromEntries(scripts.map((name) => [name, pkg.scripts[name]]))
 delete pkg.devDependencies['@cloudflare/vite-plugin']
 delete pkg.devDependencies.cf
+delete pkg.devDependencies['rollup-plugin-visualizer']
+delete pkg.devDependencies['vite-plugin-compression2']
 const output = join(root, 'scaffold/core')
 const temporary = await mkdtemp(join(tmpdir(), 'nova-preset-lock-'))
 try {

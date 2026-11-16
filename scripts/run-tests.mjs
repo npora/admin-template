@@ -9,7 +9,8 @@ const optional = [
   'examples/tests',
   'workers/api/tests',
   'workers/api/integration',
-  'deploy/cloudflare/tests'
+  'deploy/cloudflare/tests',
+  'scripts/release'
 ]
 const directories = args.includes('--all')
   ? ['tests/integration', ...optional]

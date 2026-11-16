@@ -1,4 +1,4 @@
-import type { ConfigEnv, PluginOption, UserConfig } from 'vite'
+import type { ConfigEnv, UserConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { appLoading } from './app-loading.ts'
 import { normalizeApiPrefix } from '../src/config/env.ts'
@@ -8,26 +8,18 @@ import { createRequire } from 'node:module'
 
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
-import { compression } from 'vite-plugin-compression2'
-import { visualizer } from 'rollup-plugin-visualizer'
 
 export function coreConfig(
   root: string,
-  { command, mode }: ConfigEnv,
+  { mode }: ConfigEnv,
   env: Record<string, string>
 ): UserConfig {
   const resolvePath = (path: string) => resolve(root, path)
-  const isBuild = command === 'build'
   const isProd = mode === 'production'
 
   // .env: API 请求前缀
   const apiPrefix = normalizeApiPrefix(env.VITE_API_PREFIX)
 
-  // .env: VITE_BUILD_COMPRESS=false 可关闭构建压缩
-  const shouldCompress = isBuild && env.VITE_BUILD_COMPRESS !== 'false'
-
-  // .env: VITE_BUILD_ANALYZE=true 可生成构建体积分析报告
-  const shouldAnalyze = isBuild && env.VITE_BUILD_ANALYZE === 'true'
   const componentRoot = resolve(
     dirname(createRequire(import.meta.url).resolve('element-plus/package.json')),
     'es/components'
@@ -83,24 +75,7 @@ export function coreConfig(
       Components({
         resolvers: [ElementPlusResolver()],
         dts: 'src/types/generated/components.d.ts'
-      }),
-
-      shouldCompress &&
-        compression({
-          algorithms: ['gzip'],
-          threshold: 10 * 1024,
-          deleteOriginalAssets: false,
-          skipIfLargerOrEqual: true
-        }),
-
-      shouldAnalyze &&
-        (visualizer({
-          filename: 'report.html',
-          template: 'treemap',
-          open: false,
-          gzipSize: true,
-          brotliSize: true
-        }) as PluginOption)
+      })
     ],
 
     build: {
