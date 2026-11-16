@@ -30,7 +30,7 @@ async function releaseFiles(templateDir, generatorDir) {
   const values = await Promise.all(paths.map(readJson))
   if (
     values[0].name !== 'admin-template' ||
-    values[4].name !== '@niping9542/create-nova-admin' ||
+    values[4].name !== '@npora/create-admin' ||
     values[0].private !== true
   )
     throw new Error('请指定 admin-template 和 create-admin 的维护仓库目录')

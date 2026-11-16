@@ -17,7 +17,7 @@
 ## 创建项目
 
 ```sh
-npx @niping9542/create-nova-admin@latest my-admin
+npx @npora/create-admin@latest my-admin
 cd my-admin
 npm install
 npm run dev
@@ -33,7 +33,7 @@ npm run dev
 
 也可通过 `--preset starter`、`--preset worker` 或 `--preset demo` 明确选择。生成器默认使用同版本模板 Tag，可用 `--ref main` 跟随开发分支。生成器按需组合目录，创建后无需删除演示文件；纯净版保留登录和首页，不附带 Mock 或 Worker 接口。所有预设都保留用户权限及字典 SQL。
 
-[生成器用法](https://github.com/npora/create-admin) · [npm 包](https://www.npmjs.com/package/@niping9542/create-nova-admin)
+[生成器用法](https://github.com/npora/create-admin) · [npm 包](https://www.npmjs.com/package/@npora/create-admin)
 
 ## 接入自己的后端
 

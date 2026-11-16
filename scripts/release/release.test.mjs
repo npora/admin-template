@@ -21,7 +21,7 @@ test('release preparation synchronizes both repositories, lockfiles and preset h
     await writeFile(
       join(dir, 'package.json'),
       JSON.stringify({
-        name: dir === generator ? '@niping9542/create-nova-admin' : 'admin-template',
+        name: dir === generator ? '@npora/create-admin' : 'admin-template',
         private: dir !== generator,
         version,
         dependencies: { vue: '^3.5.41' }
