@@ -34,7 +34,7 @@ jobs:
       - name: Check out the current generator
         uses: actions/checkout@v4
         with:
-          repository: ni9542/create-nova-admin
+          repository: npora/create-admin
           ref: main
           path: create-nova-admin
           persist-credentials: false
