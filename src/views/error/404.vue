@@ -25,10 +25,5 @@ const router = useRouter()
 </template>
 
 <style scoped lang="scss">
-.not-found-page {
-  display: grid;
-  min-height: 100%;
-  place-items: center;
-  padding: 24px;
-}
+@use './404.scss' as error-page;
 </style>

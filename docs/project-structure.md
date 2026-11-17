@@ -94,6 +94,8 @@
 
 管理页面中的 `components/` 是该页面的局部组件。仅当多个业务页面共同使用时，再移入顶层 `src/components/`。
 
+页面与组件的样式统一放在同目录、同名的 SCSS 文件中，例如 `views/dashboard/index.vue` 搭配 `index.scss`、`DictionaryForm.vue` 搭配 `DictionaryForm.scss`。Vue 的 `<style scoped lang="scss">` 只通过 `@use './index.scss';` 等方式导入；全局样式仍使用不带 `scoped` 的样式块。公共主题和共享样式位于 `src/assets/styles/`，没有样式的组件不创建空 SCSS 文件。
+
 ## 可选后端、部署与测试目录
 
 | 目录                            | 用途                                                           | 删除条件                                                                                         |

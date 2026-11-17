@@ -315,5 +315,5 @@ async function confirmDelete(user: ManagedUser): Promise<void> {
 </template>
 
 <style scoped lang="scss">
-@use '@/assets/styles/management.scss';
+@use './index.scss';
 </style>

@@ -165,5 +165,5 @@ async function confirmDelete(menu: ManagedMenu) {
   </section>
 </template>
 <style scoped lang="scss">
-@use '@/assets/styles/management.scss';
+@use './index.scss';
 </style>

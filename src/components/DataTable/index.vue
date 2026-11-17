@@ -1,31 +1,18 @@
 <script setup lang="ts" generic="T extends object">
 import { computed, ref, useAttrs } from 'vue'
 import type { TableInstance } from 'element-plus'
-import type { DataTableInstance, DataTablePagination, DataTableSort } from './types'
+import type { DataTableInstance, DataTableProps, DataTableSort } from './types'
 
 defineOptions({ inheritAttrs: false })
-const props = withDefaults(
-  defineProps<{
-    data: T[]
-    loading?: boolean
-    border?: boolean
-    rowKey?: string | ((row: T) => string)
-    emptyText?: string
-    pagination?: boolean | DataTablePagination
-    page?: number
-    pageSize?: number
-    total?: number
-  }>(),
-  {
-    loading: false,
-    border: true,
-    rowKey: 'id',
-    pagination: false,
-    page: 1,
-    pageSize: 10,
-    total: 0
-  }
-)
+const props = withDefaults(defineProps<DataTableProps<T>>(), {
+  loading: false,
+  border: true,
+  rowKey: 'id',
+  pagination: false,
+  page: 1,
+  pageSize: 10,
+  total: 0
+})
 const paginationOptions = computed(() => {
   const { align = 'center', ...options } =
     typeof props.pagination === 'object' ? props.pagination : {}
@@ -44,12 +31,21 @@ const showPagination = computed(
     props.pagination &&
     !(paginationOptions.value.props.hideOnSinglePage && props.total <= props.pageSize)
 )
+const paginationDisabled = computed(() => props.loading || paginationOptions.value.props.disabled)
 const emit = defineEmits<{
   'update:page': [value: number]
   'update:pageSize': [value: number]
   'selection-change': [rows: T[]]
   'sort-change': [value: DataTableSort<T>]
 }>()
+function changePage(value: number) {
+  if (!showPagination.value || paginationDisabled.value || value === props.page) return
+  if (Number.isSafeInteger(value) && value > 0) emit('update:page', value)
+}
+function changePageSize(value: number) {
+  if (!showPagination.value || paginationDisabled.value || value === props.pageSize) return
+  if (Number.isSafeInteger(value) && value > 0) emit('update:pageSize', value)
+}
 const attrs = useAttrs()
 const tableRef = ref<TableInstance>()
 // class/style 属于容器，其余原生表格属性和事件透传；每次渲染读取最新 attrs。
@@ -90,34 +86,14 @@ defineExpose<DataTableInstance>({
         :current-page="page"
         :page-size="pageSize"
         :total="total"
-        :disabled="loading || paginationOptions.props.disabled"
-        @update:current-page="emit('update:page', $event)"
-        @update:page-size="emit('update:pageSize', $event)"
+        :disabled="paginationDisabled"
+        @update:current-page="changePage"
+        @update:page-size="changePageSize"
       />
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-.data-table {
-  width: 100%;
-  min-width: 0;
-  &__pagination {
-    display: flex;
-    margin-top: 22px;
-    padding-top: 18px;
-    border-top: 1px solid var(--np-border-color-lighter);
-    overflow-x: auto;
-    :deep(.el-pagination) {
-      flex-shrink: 0;
-    }
-    // 自动外边距在宽屏居中，窄屏溢出时仍能从起点横向滚动。
-    &--center :deep(.el-pagination) {
-      margin-inline: auto;
-    }
-    &--right :deep(.el-pagination) {
-      margin-left: auto;
-    }
-  }
-}
+@use './index.scss';
 </style>

@@ -207,11 +207,5 @@ async function confirmDelete(row: DictItem) {
   </ElDrawer>
 </template>
 <style scoped lang="scss">
-@use '@/assets/styles/management.scss';
-.dictionary-items {
-  padding: 0;
-  &__hint {
-    margin-bottom: 20px;
-  }
-}
+@use './DictionaryItems.scss';
 </style>

@@ -1,0 +1,9 @@
+@use '@/assets/styles/management.scss';
+.department-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.department-name .el-icon {
+  color: var(--np-color-primary);
+}

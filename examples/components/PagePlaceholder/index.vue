@@ -23,22 +23,5 @@ const router = useRouter()
 </template>
 
 <style scoped lang="scss">
-.page-placeholder {
-  margin: 24px;
-  padding: 24px;
-  border: 1px solid var(--np-border-color-lighter);
-  border-radius: var(--np-radius-medium);
-  background: var(--np-bg-container);
-
-  h1 {
-    font-size: 20px;
-    font-weight: 600;
-  }
-}
-@media (max-width: 767px) {
-  .page-placeholder {
-    margin: 16px;
-    padding: 16px;
-  }
-}
+@use './index.scss';
 </style>

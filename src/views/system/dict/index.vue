@@ -199,5 +199,5 @@ async function confirmDelete(row: DictType) {
   </section>
 </template>
 <style scoped lang="scss">
-@use '@/assets/styles/management.scss';
+@use './index.scss';
 </style>

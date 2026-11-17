@@ -46,19 +46,5 @@ const { locale, localeLabel, localeOptions, enabled, setLocale } = useLocale()
   </ElDropdown>
 </template>
 <style scoped lang="scss">
-.locale-switch {
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  color: var(--np-text-regular);
-  &:hover,
-  &:focus-visible {
-    color: var(--np-color-primary);
-    background: var(--np-primary-soft);
-  }
-  svg {
-    display: block;
-    flex-shrink: 0;
-  }
-}
+@use './index.scss';
 </style>

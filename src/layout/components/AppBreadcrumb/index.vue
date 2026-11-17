@@ -20,5 +20,5 @@ const breadcrumbs = computed(() =>
 </template>
 
 <style scoped lang="scss">
-@use 'index';
+@use './index.scss';
 </style>

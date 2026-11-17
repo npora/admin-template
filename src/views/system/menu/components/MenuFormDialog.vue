@@ -304,10 +304,6 @@ function submit() {
     >
   </ElDialog>
 </template>
-<style scoped>
-.menu-switches {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
+<style scoped lang="scss">
+@use './MenuFormDialog.scss';
 </style>

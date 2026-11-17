@@ -34,3 +34,5 @@
 用户、角色、字典分页列表复用 `src/composables/useManagementTable.ts`，业务适配器位于各页面目录。模板不指定 `packageManager`；默认使用 npm 锁文件，pnpm/Yarn 使用者也可安装运行。
 
 表格和分页统一使用 `src/components/DataTable/`，通过 `pagination` 参数配置，不需要额外引入分页组件。请求协议集中在 `src/api/protocol/index.ts`；接入自己的后端时在该入口调整响应校验和解包。
+
+页面与组件的样式放在同目录、同名的 SCSS 文件中：`index.vue` 搭配 `index.scss`，`DictionaryForm.vue` 搭配 `DictionaryForm.scss`。Vue 的 `<style scoped lang="scss">` 只通过 `@use './index.scss';` 等方式导入，保留原有 `scoped` 或全局作用域。公共样式继续放在 `src/assets/styles/`；没有样式的组件无需创建空文件。

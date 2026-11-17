@@ -160,10 +160,6 @@ function submit() {
     >
   </ElDialog>
 </template>
-<style scoped>
-.dictionary-form__hint {
-  margin-top: 6px;
-  color: var(--np-text-secondary);
-  line-height: 1.6;
-}
+<style scoped lang="scss">
+@use './DictionaryForm.scss';
 </style>

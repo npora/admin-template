@@ -75,7 +75,10 @@ try {
       'layout',
       'background',
       'size',
-      'hideOnSinglePage'
+      'hideOnSinglePage',
+      'prevText',
+      'nextText',
+      'teleported'
     ],
     emits: ['update:current-page', 'update:page-size'],
     setup(props, { emit }) {
@@ -174,9 +177,23 @@ try {
   assert.equal(pageCalls, 1)
   assert.equal(sizeCalls, 1)
   assert.equal(paginationProps().currentPage, 3)
+  paginationEmit('update:current-page', 3)
+  paginationEmit('update:page-size', 50)
+  for (const invalid of [0, -1, 1.5, NaN, Infinity]) {
+    paginationEmit('update:current-page', invalid)
+    paginationEmit('update:page-size', invalid)
+  }
+  await nextTick()
+  assert.equal(pageCalls, 1, 'unchanged or invalid pages must not trigger queries')
+  assert.equal(sizeCalls, 1, 'unchanged or invalid page sizes must not trigger queries')
   loading.value = true
   await nextTick()
   assert.equal(paginationProps().disabled, true)
+  paginationEmit('update:current-page', 4)
+  paginationEmit('update:page-size', 20)
+  await nextTick()
+  assert.equal(pageCalls, 1, 'loading blocks page changes')
+  assert.equal(sizeCalls, 1, 'loading blocks page size changes')
   loading.value = false
   pagination.value = {
     disabled: true,
@@ -186,7 +203,10 @@ try {
     align: 'right',
     background: true,
     size: 'small',
-    hideOnSinglePage: true
+    hideOnSinglePage: true,
+    prevText: 'Previous',
+    nextText: 'Next',
+    teleported: false
   }
   size.value = 'large'
   border.value = false
@@ -199,6 +219,14 @@ try {
   assert.equal(paginationProps().background, true)
   assert.equal(paginationProps().size, 'small')
   assert.equal(paginationProps().hideOnSinglePage, true)
+  assert.equal(paginationProps().prevText, 'Previous')
+  assert.equal(paginationProps().nextText, 'Next')
+  assert.equal(paginationProps().teleported, false)
+  paginationEmit('update:current-page', 4)
+  paginationEmit('update:page-size', 20)
+  await nextTick()
+  assert.equal(pageCalls, 1, 'explicitly disabled pagination blocks page changes')
+  assert.equal(sizeCalls, 1, 'explicitly disabled pagination blocks page size changes')
   assert.equal(
     root.children[0].children[1].props.class,
     'data-table__pagination data-table__pagination--right'

@@ -163,23 +163,6 @@ async function submit() {
     >
   </ElDialog>
 </template>
-<style scoped>
-.grant-saving {
-  pointer-events: none;
-  opacity: 0.6;
-}
-:deep(.el-tree-node__content) {
-  height: auto;
-  min-height: 32px;
-}
-.grant-node {
-  min-width: 0;
-  padding-block: 5px;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-small {
-  color: var(--np-text-secondary);
-  margin-left: 8px;
-}
+<style scoped lang="scss">
+@use './RoleGrantDialog.scss';
 </style>

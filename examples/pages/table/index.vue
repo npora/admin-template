@@ -348,57 +348,5 @@ function exportData() {
   </section>
 </template>
 <style scoped lang="scss">
-@use '@/assets/styles/management.scss';
-:deep(.el-table--small td.el-table__cell) {
-  height: 42px;
-}
-:deep(.el-table--small th.el-table__cell) {
-  height: 36px;
-}
-:deep(.el-table--large td.el-table__cell) {
-  height: 68px;
-}
-:deep(.el-table--large th.el-table__cell) {
-  height: 50px;
-}
-.example-notice {
-  margin-bottom: 20px;
-}
-.example-selection {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-  padding: 8px 12px;
-  margin-bottom: 12px;
-  background: var(--np-primary-soft);
-  border-radius: 8px;
-  color: var(--np-color-primary);
-  font-size: 12px;
-}
-.example-task {
-  strong,
-  span {
-    display: block;
-  }
-  strong {
-    font-size: 12px;
-    font-weight: 500;
-  }
-  span {
-    margin-top: 4px;
-    font-size: 10px;
-    color: var(--np-text-secondary);
-  }
-}
-.example-failure {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 18px;
-  font-size: 11px;
-  color: var(--np-text-secondary);
-}
+@use './index.scss';
 </style>

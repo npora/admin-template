@@ -10,11 +10,23 @@ src/
   api/modules/record.ts
   views/business/record/
     index.vue
+    index.scss
     useRecordManagement.ts
     components/RecordForm.vue
+    components/RecordForm.scss
 ```
 
 页面入口使用 `index.vue`；局部弹窗和逻辑留在页面目录，存在跨页面复用后再提取公共组件。不要将业务页放进 `examples/`。
+
+页面与组件的样式放在同目录、同名的 `.scss` 文件中，Vue 文件只保留导入，原有作用域设置继续保留：
+
+```vue
+<style scoped lang="scss">
+@use './index.scss';
+</style>
+```
+
+例如 `RecordForm.vue` 导入 `./RecordForm.scss`。公共主题和管理页面样式放在 `src/assets/styles/`；需要共享管理样式时，在页面的 SCSS 文件中使用 `@use '@/assets/styles/management.scss';`。不需要样式的组件无需创建空文件。
 
 在 `src/api/types/record.ts` 中声明后端真实返回的 DTO：
 
@@ -119,11 +131,11 @@ export function useRecordManagement() {
 </DataTable>
 ```
 
-`page`、`pageSize` 支持 `v-model`；有接口查询时使用上面的更新事件，每次事件由页面发起一次查询，组件不自行请求或重置页码。
+`page`、`pageSize` 支持 `v-model`；有接口查询时使用上面的更新事件，每次事件由页面发起一次查询，组件不自行请求或重置页码。页码或条数没有变化、值不是正整数，以及加载或分页禁用时，不发出分页更新事件。
 
-分页配置支持 `pageSizes`、`pagerCount`、`layout`、`background`、`size`、`hideOnSinglePage`、`disabled`，以及 `align: 'left' | 'center' | 'right'`。默认条数选项为 `[10, 20, 50]`，按钮数量为 `5`，布局为 `total, sizes, prev, pager, next`。加载期间自动禁用分页，窄屏可横向滚动。
+分页配置支持 Element Plus 分页的外观属性，包括 `pageSizes`、`pagerCount`、`layout`、`background`、`size`、`hideOnSinglePage`、`disabled`、`prevText`、`nextText`、`teleported` 等，以及 `align: 'left' | 'center' | 'right'`。默认条数选项为 `[10, 20, 50]`，按钮数量为 `5`，布局为 `total, sizes, prev, pager, next`。加载期间自动禁用分页，窄屏可横向滚动。页码、每页条数、总数仅由顶层 `page`、`pageSize`、`total` 控制，配置对象不接受原生的受控状态、默认状态或 `pageCount`，避免出现两套分页状态。
 
-表格的 `border`、`rowKey`、`emptyText` 可直接配置；其他 Element Plus 表格属性与事件透传，`class`、`style` 作用于外层容器。业务列使用 `ElTableColumn` 和插槽，支持 `empty`、`append` 插槽。类型位于 `src/components/DataTable/types.ts`。
+表格的 `border`、`rowKey`、`emptyText` 可直接配置；其他 Element Plus 表格属性与事件透传，`class`、`style` 作用于外层容器。业务列使用 `ElTableColumn` 和插槽，支持 `empty`、`append` 插槽。`DataTableProps`、`DataTablePagination`、`DataTableSort` 和 `DataTableInstance` 类型统一位于 `src/components/DataTable/types.ts`；高级表格操作可通过组件实例的 `getTable()` 访问原生实例。
 
 ## 4. 注册菜单与页面白名单
 
