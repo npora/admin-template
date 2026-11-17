@@ -9,10 +9,11 @@ import table from './table.json'
 import form from './form.json'
 import profile from './profile.json'
 import dict from './dict.json'
+import timezone from './timezone.json'
 
 export default {
   label: '简体中文',
-  messages: { ui, routes, language, errors, table, form, profile, dict },
+  messages: { ui, routes, language, errors, table, form, profile, dict, timezone },
   elementLocale,
   dayjsLocale: 'zh-cn',
   dateFormats: {

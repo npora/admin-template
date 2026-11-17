@@ -7,6 +7,7 @@ import { localStorageService } from '@/utils/storage'
 import { createDefaultSettings, resolveAppSettings } from './config'
 import { getDevice, watchDevice } from './responsive'
 import { applyDarkMode, getSystemDarkMode, resolveDarkMode, watchSystemTheme } from './theme'
+import { applyTimeZone, isAppTimeZone } from '@/utils/datetime'
 
 import type { AppSettings, AppSettingsPatch, DeviceType, ThemeMode } from './types'
 
@@ -75,6 +76,7 @@ export const useAppStore = defineStore('app', () => {
   }
 
   function updateSettings(value: AppSettingsPatch): void {
+    if (isAppTimeZone(value.timeZone)) settings.value.timeZone = value.timeZone
     if (value.theme) {
       settings.value.theme = {
         ...settings.value.theme,
@@ -98,6 +100,7 @@ export const useAppStore = defineStore('app', () => {
   }
 
   function applyTheme(): void {
+    applyTimeZone(settings.value.timeZone)
     applyDarkMode(isDark.value)
   }
 

@@ -24,6 +24,7 @@ import { appConfig } from '@/config/app'
 import { useUserStore } from '@/store/modules/user'
 import { usePermission } from '@/composables/usePermission'
 import { useDashboard } from './useDashboard'
+import { zonedDate } from '@/utils/datetime'
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -34,12 +35,13 @@ const { overview, loading, failed, load } = useDashboard()
 const permissionStore = usePermissionStore()
 const date = new Date()
 const dateLabel = computed(() => formatDate(date, 'heading'))
+const hour = computed(() => zonedDate(date).hour())
 const greeting = computed(() =>
-  date.getHours() < 6
+  hour.value < 6
     ? t('ui.workingLate')
-    : date.getHours() < 12
+    : hour.value < 12
       ? t('ui.goodMorning')
-      : date.getHours() < 18
+      : hour.value < 18
         ? t('ui.goodAfternoon')
         : t('ui.goodEvening')
 )

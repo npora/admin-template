@@ -48,7 +48,7 @@
 | `components/TableToolbar/`         | 表格标题、刷新、密度、列显隐及操作插槽                                                                                                                                                                              |
 | `components/LocaleSwitch/`         | 多语言切换图标与选择入口                                                                                                                                                                                            |
 | `composables/`                     | Vue 组合式逻辑，例如分页查询、会话使用入口                                                                                                                                                                          |
-| `config/`                          | 应用配置、环境变量读取及 API 前缀规范化                                                                                                                                                                             |
+| `config/`                          | 应用、语言、默认时区配置、环境变量读取及 API 前缀规范化                                                                                                                                                             |
 | `constants/`                       | 存储键、组件尺寸和界面选项等常量                                                                                                                                                                                    |
 | `directives/permission/`           | 按钮权限指令；前端隐藏按钮，后端仍需校验接口权限                                                                                                                                                                    |
 | `icons/`                           | 菜单等位置使用的图标注册与解析                                                                                                                                                                                      |
@@ -70,7 +70,7 @@
 | `store/modules/tabs/`              | 已访问标签、固定标签与标签操作                                                                                                                                                                                      |
 | `store/modules/views/`             | 页面缓存状态及 KeepAlive 管理                                                                                                                                                                                       |
 | `store/modules/profile/`           | 按账号隔离的本地个人资料；用户显示信息和表单草稿也引用这里的能力                                                                                                                                                    |
-| `types/`                           | 环境变量、i18n、可选演示入口等声明                                                                                                                                                                                  |
+| `types/`                           | 时区枚举、环境变量、i18n、可选演示入口等声明                                                                                                                                                                        |
 | `types/generated/`                 | 自动组件类型声明；由 Vite 组件插件生成，勿手工修改，也不要在仅运行类型检查前随意删除                                                                                                                                |
 | `utils/`                           | 权限判断、CSV、日期等基础工具                                                                                                                                                                                       |
 | `utils/storage/`                   | 浏览器存储封装及不可用时的降级                                                                                                                                                                                      |
@@ -175,3 +175,5 @@ npm run check:standalone
 缓存演示专属的占位组件位于 `examples/components/PagePlaceholder/`，不进入纯净版的公共组件目录。
 
 表格和分页统一由 `src/components/DataTable/` 提供，通过 `pagination` 对象配置分页外观；演示专属分页逻辑位于 `examples/composables/`，纯净后台不包含该目录。请求协议集中在 `src/api/protocol/index.ts`，无需维护额外策略类。
+
+日期区间组件为 `src/components/DateRangePicker/`，按应用时区显示并输出毫秒时间戳；默认值、枚举分别位于 `src/config/datetime.ts`、`src/types/timezone.ts`。偏好保存在浏览器，详见 [日期与时区](i18n.md#时区配置与时间区间)。

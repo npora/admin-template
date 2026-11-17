@@ -4,6 +4,7 @@ import { limitLogin } from '../security/rate-limit.mjs'
 import { authorization, userInfo, dynamicRoutes } from '../security/access.mjs'
 import { findLoginUser, findSession, saveSession, deleteSession } from '../repositories/auth.mjs'
 import { decryptTotp, verifyTotp } from '../security/totp.mjs'
+import { resolveAuthConfig } from '../config/auth.mjs'
 
 function bearer(request) {
   const match = /^Bearer ([a-f0-9]{64})$/i.exec(request.headers.get('Authorization') || '')
@@ -40,6 +41,7 @@ export async function login(request, env) {
   )
     .bind(user.id)
     .first()
+  // 开关仅控制新绑定；已绑定账号始终验证动态码，不能通过关闭入口绕过。
   if (binding) {
     const step = await verifyTotp(
       await decryptTotp(binding.secret_encrypted, user.id, env),
@@ -50,14 +52,15 @@ export async function login(request, env) {
     if (step === null)
       throw new HttpError(400, '请输入有效的验证器动态码，验证码不能重复使用', 10003)
     const consumed = await env.DB.prepare(
-      'UPDATE sys_user_totp SET last_used_step = ?1 WHERE user_id = ?2 AND enabled = 1 AND secret_encrypted = ?3 AND last_used_step < ?1'
+      'UPDATE sys_user_totp SET last_used_step = ?1 WHERE user_id = ?2 AND enabled = 1 AND secret_encrypted = ?3 AND last_used_step < ?1 RETURNING user_id'
     )
       .bind(step, user.id, binding.secret_encrypted)
-      .run()
-    if (consumed.meta.changes !== 1)
+      .all()
+    if (consumed.results.length !== 1)
       throw new HttpError(400, '动态验证码已使用，请等待下一个验证码', 10003)
   }
-  const ttl = input.rememberMe === true ? 7 * 24 * 60 * 60_000 : 60 * 60_000
+  const config = resolveAuthConfig(env)
+  const ttl = input.rememberMe === true ? config.rememberedSessionTtlMs : config.sessionTtlMs
   const accessToken = randomHex()
   const saved = await saveSession(
     env.DB,

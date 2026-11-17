@@ -12,6 +12,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     DataTable: typeof import('./../../components/DataTable/index.vue')['default']
+    DateRangePicker: typeof import('./../../components/DateRangePicker/index.vue')['default']
     DictTag: typeof import('./../../components/DictTag/index.vue')['default']
     ElAlert: typeof import('element-plus/es')['ElAlert']
     ElAvatar: typeof import('element-plus/es')['ElAvatar']

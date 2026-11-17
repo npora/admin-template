@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useLocale } from '@/composables/useLocale'
+import { useTimeZone } from '@/composables/useTimeZone'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -10,6 +11,7 @@ import { useAppStore } from '@/store/modules/app'
 import type { ComponentSize, ThemeMode } from '@/store/modules/app/types'
 
 const { locale, localeOptions, enabled, setLocale, resetLocale } = useLocale()
+const { timeZone, timeZoneOptions, setTimeZone } = useTimeZone()
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -132,6 +134,23 @@ function handleTabsChange(value: string | number | boolean): void {
             :label="option.label"
           />
         </ElSelect>
+      </section>
+      <section class="app-settings__section">
+        <h3 class="app-settings__title">{{ t('timezone.title') }}</h3>
+        <ElSelect
+          :model-value="timeZone"
+          filterable
+          :aria-label="t('timezone.title')"
+          @change="setTimeZone"
+        >
+          <ElOption
+            v-for="option in timeZoneOptions"
+            :key="option.value"
+            :value="option.value"
+            :label="option.label"
+          />
+        </ElSelect>
+        <p class="app-settings__hint">{{ t('timezone.hint') }}</p>
       </section>
       <section class="app-settings__section">
         <h3 class="app-settings__title">{{ t('ui.appearance') }}</h3>

@@ -78,7 +78,7 @@ try {
   assert.equal(userStore.displayName, '用户')
   assert.equal(localeLabel.value, '简体中文')
   assert.equal(i18n.global.t('ui.unassignedDepartment'), '未分配部门')
-  assert.equal(formatted.value, '2026-11-09 15:05')
+  assert.equal(formatted.value, '2026-11-09 23:05')
   assert.match(formatDate('2026-11-09', 'heading'), /11月|十一月/)
   assert.equal(SYSTEM_STATUS_OPTIONS[0].label, '启用')
   assert.equal(MENU_TYPE_OPTIONS[0].label, '目录')
@@ -114,7 +114,7 @@ try {
     )
   }
   assert.equal(i18n.global.t('ui.metricUserUnit'), '')
-  assert.equal(formatted.value, 'Nov 9, 2026 3:05 PM')
+  assert.equal(formatted.value, 'Nov 9, 2026 11:05 PM')
   assert.equal(document.documentElement.lang, 'en-US')
   assert.equal(elementLocale.value.name, 'en')
   assert.equal(localizedPattern.locale(), 'en')
@@ -136,7 +136,7 @@ try {
   assert.equal(formatDate(null), '—')
   assert.equal(formatDate('invalid'), '—')
   assert.equal(formatNumber(12345), '12,345')
-  assert.equal(formatDate('2026-11-09T15:05:06', 'time'), '3:05:06 PM')
+  assert.equal(formatDate('2026-11-09T15:05:06', 'time'), '11:05:06 PM')
 
   assert.equal(localStorageService.get(STORAGE_KEYS.LOCALE), 'en-US')
   store.resetLocale()
@@ -192,7 +192,9 @@ try {
       assert.equal(localizedPattern.locale(), definition.dayjsLocale)
       assert.equal(
         formatDate('2026-11-09T15:05:06'),
-        localizedPattern('2026-11-09T15:05:06')
+        localizedPattern
+          .utc('2026-11-09T15:05:06')
+          .tz('Asia/Shanghai')
           .locale(definition.dayjsLocale)
           .format(definition.dateFormats.dateTime)
       )

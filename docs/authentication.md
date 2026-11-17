@@ -27,6 +27,23 @@ VITE_PASSWORD_RESET_CONTACT=
 
 重置密码不会解除已绑定的验证器。手机丢失时由运维核验身份后处理对应用户的绑定记录，禁止通过匿名接口绕过第二因素。参考后端删除该用户的 `sys_user_totp` 记录会同时撤销旧会话。
 
+## 后端认证配置与测试
+
+前端入口开关保留在根目录 `.env` 的 `VITE_AUTHENTICATOR_ENABLED`，默认 `false`。后端公共认证默认值集中在 `workers/api/src/config/auth.mjs`：验证器新绑定默认关闭，签发者为 `Npora Admin`，普通会话 1 小时、保持登录 7 天；登录及绑定接口共同读取此配置。独立 Worker 的环境变量 `AUTH_TOTP_ENABLED`、`AUTH_TOTP_ISSUER` 可以覆盖对应默认值，便于同一套源码在测试环境开启。
+
+`AUTH_TOTP_KEY` 仍只从后端私密环境读取，不放进认证配置源码，也不能复制到前端 `.env`。无 Worker 的纯净版由自己的后端实现同样的校验。
+
+测试顺序：
+
+1. 在自己的测试环境设置前端 `VITE_AUTHENTICATOR_ENABLED=true`，重启开发服务或重新构建。
+2. 测试后端设置 `AUTH_TOTP_ENABLED=true`，并配置有效的 `AUTH_TOTP_KEY`；可选设置 `AUTH_TOTP_ISSUER`。默认模板保持关闭。
+3. 先用账号密码登录，在个人中心的验证器页签创建密钥，用 Google Authenticator 添加账号并输入动态码确认绑定。
+4. 绑定会撤销原会话。等待下一个动态码后重新登录：不填或填错动态码应失败；正确动态码应成功；同一个动态码不能再次使用。
+
+开启功能不会自动给所有账号绑定验证器；未绑定账号仍可使用账号密码登录。关闭界面入口或新绑定开关，也不会跳过已有绑定账号的动态码校验。
+
+完整仓库可执行 `node --test workers/api/tests/authenticator.test.mjs`，用隔离 SQLite 验证上述登录、绑定、错误动态码、重放和会话撤销流程，不修改线上账号。
+
 ## 可选验证器
 
 后端私密配置如下，默认不设置即关闭新绑定：

@@ -160,6 +160,8 @@ export function useRecordManagement() {
 
 页面标题、按钮、校验文案同步加入 `src/locales/zh-CN/` 与 `src/locales/en-US/`，按当前语言聚合入口注册。动态菜单的路由标题映射参照已有路由词条；后端维护的记录名称、字典标签保留原文。日期使用 `@/locales` 导出的 `formatDate(value)` 或 `formatDate(value, 'date')`。
 
+时间区间筛选使用 `DateRangePicker`，绑定 `TimestampRange | null`，接口接收毫秒时间戳；显示和选择跟随应用设置中的时区，默认北京时间（`Asia/Shanghai`）。默认值与枚举分别在 `src/config/datetime.ts`、`src/types/timezone.ts`，详见 [日期与时区](i18n.md#时区配置与时间区间)。
+
 ## 6. 自检和实际验收
 
 ```sh

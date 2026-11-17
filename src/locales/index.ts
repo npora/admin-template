@@ -5,6 +5,7 @@ import { i18nConfig, type AppLocale } from '@/config/i18n'
 import { localeRegistry, localeMessages } from './registry'
 import type { DateFormat } from './types'
 import { resolveInitialLocale } from './policy'
+import { activeTimeZone, zonedDate } from '@/utils/datetime'
 
 export type { DateFormat } from './types'
 
@@ -39,14 +40,22 @@ export function translateRouteTitle(title: string | undefined, name?: unknown): 
 
 export function formatDate(value: ConfigType, format: DateFormat = 'dateTime'): string {
   if (value == null || value === '') return '—'
-  const date = dayjs(value)
+  // 纯日期不是绝对时刻，不因切换时区移动到前一天。
+  const date =
+    typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
+      ? dayjs.utc(value)
+      : zonedDate(value)
   if (!date.isValid()) return '—'
   const locale = i18n.global.locale.value
   if (format === 'heading')
     return new Intl.DateTimeFormat(locale, {
       month: 'long',
       day: 'numeric',
-      weekday: 'long'
+      weekday: 'long',
+      timeZone:
+        typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
+          ? 'UTC'
+          : activeTimeZone.value
     }).format(date.toDate())
   return date
     .locale(localeRegistry[locale].dayjsLocale)

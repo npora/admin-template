@@ -48,3 +48,10 @@
 .app-settings__reset {
   width: 100%;
 }
+
+.app-settings__hint {
+  margin: 0;
+  color: var(--np-text-secondary);
+  font-size: var(--np-font-size-small);
+  line-height: 1.6;
+}

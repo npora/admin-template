@@ -24,6 +24,10 @@ import { Upload } from '@element-plus/icons-vue'
 import { useLocale } from '@/composables/useLocale'
 import { localeRegistry } from '@/locales/registry'
 import { formatDate, formatNumber } from '@/locales'
+import DateRangePicker from '@/components/DateRangePicker/index.vue'
+import { useTimeZone } from '@/composables/useTimeZone'
+import { startOfZonedDay } from '@/components/DateRangePicker/model'
+import { zonedDate } from '@/utils/datetime'
 import { localStorageService } from '@/utils/storage'
 import { STORAGE_KEYS } from '@/constants/storage'
 import { useUserStore } from '@/store/modules/user'
@@ -40,15 +44,21 @@ import {
 } from './model'
 const { t } = useI18n({ useScope: 'global' })
 const { locale } = useLocale()
+const { timeZone } = useTimeZone()
 const dateFormat = computed(() => localeRegistry[locale.value].dateFormats.date)
 const account = useUserStore().userInfo
 const draftKey = `${STORAGE_KEYS.FORM_DRAFT}:${account ? profileAccountKey(account) : 'anonymous'}`
 const stored = resolveFormDraft(localStorageService.get(draftKey))
 const form = reactive<ExampleFormData>(stored ?? createExampleForm())
 const rangeDates = computed({
-  get: () => form.dates,
+  get: () =>
+    form.dates
+      .map((value) => startOfZonedDay(value, timeZone.value))
+      .filter((value): value is number => value !== null),
   set: (value: unknown) => {
-    form.dates = Array.isArray(value) ? value.map(String) : []
+    form.dates = Array.isArray(value)
+      ? value.map((date) => zonedDate(date).format('YYYY-MM-DD'))
+      : []
   }
 })
 const baseline = ref(JSON.stringify(form))
@@ -270,15 +280,15 @@ onBeforeRouteLeave(async (to) => {
           <h2>{{ t('form.plan') }}</h2>
           <p>{{ t('form.planHint') }}</p>
           <ElFormItem :label="t('form.dates')" prop="dates"
-            ><ElDatePicker
+            ><DateRangePicker
               v-model="rangeDates"
               type="daterange"
-              value-format="YYYY-MM-DD"
               :format="dateFormat"
               :start-placeholder="t('form.startDate')"
               :end-placeholder="t('form.endDate')"
               unlink-panels
           /></ElFormItem>
+          <p>{{ t('timezone.current', { zone: timeZone }) }}</p>
           <div class="dialog-field-grid">
             <ElFormItem :label="t('table.budget')" prop="budget"
               ><ElInputNumber

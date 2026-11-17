@@ -31,11 +31,14 @@ export function database() {
       )
       let parameters = []
       const values = () => (order.length ? order.map((index) => parameters[index]) : parameters)
-      const execute = () => ({
-        success: true,
-        results: statement.all(...values()).map((row) => ({ ...row })),
-        meta: { changes: Number(sqlite.prepare('SELECT changes() AS count').get().count) }
-      })
+      const totalChanges = () =>
+        Number(sqlite.prepare('SELECT total_changes() AS count').get().count)
+      const execute = () => {
+        const before = totalChanges()
+        const results = statement.all(...values()).map((row) => ({ ...row }))
+        // D1 meta.changes includes writes performed by triggers, unlike SQLite changes().
+        return { success: true, results, meta: { changes: totalChanges() - before } }
+      }
       return {
         bind(...values) {
           parameters = values

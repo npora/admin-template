@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { service, password } from './helpers/service.mjs'
 import { verifyPassword } from '../src/security/crypto.mjs'
+import { AUTH_DEFAULTS, resolveAuthConfig } from '../src/config/auth.mjs'
 import {
   createTotpSecret,
   totpCode,
@@ -9,6 +10,27 @@ import {
   encryptTotp,
   decryptTotp
 } from '../src/security/totp.mjs'
+
+test('shared auth configuration defaults off and honors explicit environment overrides', () => {
+  assert.equal(resolveAuthConfig().authenticatorEnabled, false)
+  assert.equal(resolveAuthConfig({ AUTH_TOTP_ENABLED: 'true' }).authenticatorEnabled, true)
+  for (const value of ['false', '', true, 'TRUE', '1', null])
+    assert.equal(resolveAuthConfig({ AUTH_TOTP_ENABLED: value }).authenticatorEnabled, false)
+  assert.equal(
+    resolveAuthConfig({ AUTH_TOTP_ISSUER: '  Test admin  ' }).authenticatorIssuer,
+    'Test admin'
+  )
+  assert.equal(
+    resolveAuthConfig({ AUTH_TOTP_ISSUER: '  ' }).authenticatorIssuer,
+    AUTH_DEFAULTS.authenticatorIssuer
+  )
+  assert.equal(
+    resolveAuthConfig({ AUTH_TOTP_ISSUER: 'x'.repeat(100) }).authenticatorIssuer.length,
+    80
+  )
+  assert.equal(resolveAuthConfig().sessionTtlMs, 3600000)
+  assert.equal(resolveAuthConfig().rememberedSessionTtlMs, 7 * 86400000)
+})
 
 test('TOTP matches RFC 6238 SHA1 vectors and rejects reused or malformed codes', async () => {
   const secret = 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ'
@@ -65,10 +87,12 @@ test('enrollment, replay protection, disabled feature enforcement and unlinking 
   sqlite.prepare('UPDATE sys_auth_session SET expires_at = ?').run(now + 3600000)
   env.AUTH_TOTP_ENABLED = 'true'
   env.AUTH_TOTP_KEY = 'b1'.repeat(32)
+  env.AUTH_TOTP_ISSUER = 'Test admin'
   const setup = await call('/auth/totp/setup', { method: 'POST', json: { password } })
   assert.equal(setup.status, 200)
   const secret = setup.body.data.secret
   assert.match(setup.body.data.uri, /^otpauth:\/\/totp\//)
+  assert.equal(new URL(setup.body.data.uri).searchParams.get('issuer'), 'Test admin')
   assert.equal(sqlite.prepare('SELECT enabled FROM sys_user_totp').get().enabled, 0)
   assert.ok(
     !sqlite
@@ -83,8 +107,6 @@ test('enrollment, replay protection, disabled feature enforcement and unlinking 
   )
   assert.equal((await call('/auth/user', { token: admin })).status, 401)
   now += 30000
-  const loginCode = await totpCode(secret, Math.floor(now / 30000))
-  env.AUTH_TOTP_ENABLED = 'false'
   const signIn = (totpCode, ip) =>
     call('/auth/login', {
       method: 'POST',
@@ -92,6 +114,23 @@ test('enrollment, replay protection, disabled feature enforcement and unlinking 
       json: { username: 'admin', password, totpCode, rememberMe: true },
       headers: { 'CF-Connecting-IP': ip }
     })
+  assert.equal((await signIn(undefined, '192.0.2.20')).body.code, 10003)
+  const enabledCode = await totpCode(secret, Math.floor(now / 30000))
+  const validCodes = await Promise.all(
+    [-1, 0, 1].map((offset) => totpCode(secret, Math.floor(now / 30000) + offset))
+  )
+  let wrongCode = '000000'
+  while (validCodes.includes(wrongCode)) wrongCode = String(Number(wrongCode) + 1).padStart(6, '0')
+  assert.equal((await signIn(wrongCode, '192.0.2.21')).body.code, 10003)
+  const enabledLogin = await signIn(enabledCode, '192.0.2.22')
+  assert.equal(enabledLogin.status, 200)
+  assert.equal(
+    (await call('/auth/user', { token: enabledLogin.body.data.accessToken })).status,
+    200
+  )
+  now += 30000
+  env.AUTH_TOTP_ENABLED = 'false'
+  const loginCode = await totpCode(secret, Math.floor(now / 30000))
   assert.equal((await signIn(undefined, '192.0.2.10')).body.code, 10003)
   const results = await Promise.all([
     signIn(loginCode, '192.0.2.11'),

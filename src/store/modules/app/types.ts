@@ -1,3 +1,5 @@
+import type { AppTimeZone } from '@/types/timezone'
+
 export type ThemeMode = 'light' | 'dark' | 'system'
 
 export type DeviceType = 'desktop' | 'mobile'
@@ -15,12 +17,14 @@ export interface LayoutSettings {
 }
 
 export interface AppSettings {
+  timeZone: AppTimeZone
   theme: ThemeSettings
   layout: LayoutSettings
   componentSize: ComponentSize
 }
 
 export interface AppSettingsPatch {
+  timeZone?: AppTimeZone
   theme?: Partial<ThemeSettings>
   layout?: Partial<LayoutSettings>
   componentSize?: ComponentSize

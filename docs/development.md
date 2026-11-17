@@ -49,7 +49,7 @@ API 函数、DTO、协议分别位于 `src/api/modules/`、`src/api/types/`、`s
 
 `dev:demo` 和 `build:demo` 通过 `scripts/demo.mjs` 在进程环境开启展示功能，不改写环境文件。开发默认使用维护者的测试 API，可通过启动进程的 `VITE_API_URL` 覆盖。普通 `npm run dev` 仍遵循本机配置；本机已有 `VITE_DEMO_ENABLED=true` 时会进入展示模式。
 
-生产的 `VITE_API_URL` 不会创建反向代理。任何 `VITE_*` 值都不能用于保存密码或服务端密钥。语言、日期与 Element Plus 配置仍放在 `src/config/i18n.ts` 和 `src/locales/`，见 [多语言](i18n.md)。
+生产的 `VITE_API_URL` 不会创建反向代理。任何 `VITE_*` 值都不能用于保存密码或服务端密钥。语言与 Element Plus 文案放在 `src/config/i18n.ts` 和 `src/locales/`；默认时区放在 `src/config/datetime.ts`，时区枚举放在 `src/types/timezone.ts`，均不需要环境变量或数据库。日期显示与时间区间用法见 [多语言与时区](i18n.md)。
 
 ## 新增页面
 
