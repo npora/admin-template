@@ -23,15 +23,16 @@ export async function dashboard(request, env) {
     state.userRoles.filter((row) => row.user_id === actor.id).map((row) => row.role_id)
   )
   const result = {
-    generatedAt: new Date().toISOString(),
+    generatedAt: Date.now(),
     capabilities,
     account: {
       roleNames: state.roles
-        .filter((role) => roleIds.has(role.id) && role.status === 1 && !role.deleted_at)
+        .filter((role) => roleIds.has(role.id) && role.status === 1 && role.deleted_at == null)
         .map((role) => role.name),
       departmentName:
-        state.departments.find((row) => row.id === state.user.department_id && !row.deleted_at)
-          ?.name ?? null,
+        state.departments.find(
+          (row) => row.id === state.user.department_id && row.deleted_at == null
+        )?.name ?? null,
       isSuperAdmin: state.user.is_super_admin === 1
     },
     accessiblePages: 3 + countPages(dynamicRoutes(state.access))
@@ -59,7 +60,7 @@ export async function dashboard(request, env) {
   }
   for (const key of ['roles', 'departments'])
     if (capabilities[key]) {
-      const rows = state[key].filter((row) => !row.deleted_at)
+      const rows = state[key].filter((row) => row.deleted_at == null)
       result[key] = { total: rows.length, enabled: rows.filter((row) => row.status === 1).length }
     }
   return success(result)

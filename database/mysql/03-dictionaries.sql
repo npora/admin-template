@@ -1,3 +1,4 @@
+-- Absolute times use Unix milliseconds (BIGINT); the backend explicitly writes updated_at.
 -- 字典增量迁移：先执行 01-schema.sql、02-seed.sql；已有权限库只执行本文件一次。
 -- 保留已有数据，遇错停止；DDL 在 MySQL 中隐式提交，请勿重复执行。
 SET NAMES utf8mb4;
@@ -8,9 +9,9 @@ CREATE TABLE sys_dict_type (
   remark VARCHAR(255) DEFAULT NULL,
   sort_order INT UNSIGNED NOT NULL DEFAULT 0,
   status TINYINT UNSIGNED NOT NULL DEFAULT 1,
-  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  deleted_at DATETIME DEFAULT NULL,
+  created_at BIGINT NOT NULL DEFAULT (CAST(UNIX_TIMESTAMP(CURRENT_TIMESTAMP(3)) * 1000 AS UNSIGNED)),
+  updated_at BIGINT NOT NULL DEFAULT (CAST(UNIX_TIMESTAMP(CURRENT_TIMESTAMP(3)) * 1000 AS UNSIGNED)),
+  deleted_at BIGINT DEFAULT NULL,
   PRIMARY KEY (id), UNIQUE KEY uk_sys_dict_type_code (code),
   KEY idx_sys_dict_type_live_sort (deleted_at, sort_order, id),
   KEY idx_sys_dict_type_live_status_sort (deleted_at, status, sort_order, id),
@@ -25,9 +26,9 @@ CREATE TABLE sys_dict_item (
   remark VARCHAR(255) DEFAULT NULL,
   sort_order INT UNSIGNED NOT NULL DEFAULT 0,
   status TINYINT UNSIGNED NOT NULL DEFAULT 1,
-  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  deleted_at DATETIME DEFAULT NULL,
+  created_at BIGINT NOT NULL DEFAULT (CAST(UNIX_TIMESTAMP(CURRENT_TIMESTAMP(3)) * 1000 AS UNSIGNED)),
+  updated_at BIGINT NOT NULL DEFAULT (CAST(UNIX_TIMESTAMP(CURRENT_TIMESTAMP(3)) * 1000 AS UNSIGNED)),
+  deleted_at BIGINT DEFAULT NULL,
   PRIMARY KEY (id), UNIQUE KEY uk_sys_dict_item_value (dict_type_id, value),
   KEY idx_sys_dict_item_live_sort (dict_type_id, deleted_at, sort_order, id),
   KEY idx_sys_dict_item_live_status_sort (dict_type_id, deleted_at, status, sort_order, id),

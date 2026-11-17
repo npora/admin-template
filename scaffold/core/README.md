@@ -34,7 +34,7 @@ npm run dev
 
 此预设不包含演示页面与展示站部署工具；纯净版不生成 Worker 后端，选择 Worker 版时额外包含独立后端源码和初始化说明。
 
-[目录职责](docs/project-structure.md) · [开发与配置](docs/development.md) · [后端接入](docs/backend-replacement.md) · [权限模型](docs/rbac.md) · [多语言](docs/i18n.md) · [正式 SQL](database/mysql/README.md)
+[目录职责](docs/project-structure.md) · [开发与配置](docs/development.md) · [登录与账号安全](docs/authentication.md) · [后端接入](docs/backend-replacement.md) · [权限模型](docs/rbac.md) · [多语言](docs/i18n.md) · [正式 SQL](database/mysql/README.md)
 
 基础开发依赖仅用于 Vue/Vite 构建、组件按需加载、Sass、TypeScript 类型与格式检查；不附带体积分析、额外压缩或展示站部署依赖。
 

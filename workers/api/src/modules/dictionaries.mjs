@@ -116,7 +116,7 @@ export async function dictionaries(request, env, { typeId, itemId, items, code }
       if (count.total) conflict('请先删除该字典下的数据')
     }
     await commit(env.DB, actor, state, [
-      update(env.DB, table, targetId, { deleted_at: new Date().toISOString(), ...nowFields() })
+      update(env.DB, table, targetId, { deleted_at: Date.now(), ...nowFields() })
     ])
     return success(null)
   }

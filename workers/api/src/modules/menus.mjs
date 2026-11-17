@@ -78,7 +78,7 @@ function validate(input, state, existing) {
   if (
     existing &&
     existing.type !== input.type &&
-    state.menus.some((menu) => !menu.deleted_at && menu.parent_id === existing.id)
+    state.menus.some((menu) => menu.deleted_at == null && menu.parent_id === existing.id)
   )
     invalid('有子节点时不能更改节点类型')
   if (input.type === 3) {
@@ -140,7 +140,7 @@ function validate(input, state, existing) {
       conflict('路由名称或权限码已存在')
   const candidate = { id: existing?.id ?? -1, ...fromInput(input) }
   const nodes = [
-    ...state.menus.filter((row) => row.id !== existing?.id && !row.deleted_at),
+    ...state.menus.filter((row) => row.id !== existing?.id && row.deleted_at == null),
     candidate
   ]
   const byId = new Map(nodes.map((row) => [row.id, row]))
@@ -207,10 +207,10 @@ export async function menus(request, env, routeId) {
   if (request.method === 'GET') return success(tree(state.menus, menuDto))
   const existing = routeId ? find(state.menus, routeId, '菜单') : undefined
   if (request.method === 'DELETE') {
-    if (state.menus.some((row) => row.parent_id === routeId && !row.deleted_at))
+    if (state.menus.some((row) => row.parent_id === routeId && row.deleted_at == null))
       conflict('请先删除子节点')
     await commit(env.DB, actor, state, [
-      update(env.DB, 'sys_menu', routeId, { deleted_at: new Date().toISOString(), ...nowFields() })
+      update(env.DB, 'sys_menu', routeId, { deleted_at: Date.now(), ...nowFields() })
     ])
     return success(null)
   }

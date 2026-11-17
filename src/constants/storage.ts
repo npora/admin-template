@@ -2,6 +2,7 @@ export const STORAGE_PREFIX = 'npora_admin_'
 
 export const STORAGE_KEYS = {
   ACCESS_TOKEN: 'access_token',
+  REMEMBERED_ACCESS_TOKEN: 'remembered_access_token',
   LOCALE: 'locale',
   APP_SETTINGS: 'app_settings',
   FORM_DRAFT: 'form_example_draft',

@@ -24,7 +24,7 @@ export async function roles(request, env, routeId, operation) {
   const state = await snapshot(env.DB, actor, { roleId: routeId })
   if (operation === 'options') {
     requireAny(state.access, ['system:user:list', 'system:user:create', 'system:user:update'])
-    return success(state.roles.filter((role) => !role.deleted_at).map(roleOption))
+    return success(state.roles.filter((role) => role.deleted_at == null).map(roleOption))
   }
   if (operation === 'menu-options' || operation === 'menus') {
     requirePermission(state.access, 'system:role:grant')
@@ -34,7 +34,7 @@ export async function roles(request, env, routeId, operation) {
       .filter(
         (link) =>
           link.role_id === routeId &&
-          state.menus.some((row) => row.id === link.menu_id && !row.deleted_at)
+          state.menus.some((row) => row.id === link.menu_id && row.deleted_at == null)
       )
       .map((link) => link.menu_id)
     if (request.method === 'GET') return success(existingIds)
@@ -66,7 +66,7 @@ export async function roles(request, env, routeId, operation) {
     const query = pagination(new URL(request.url))
     const list = state.roles.filter(
       (role) =>
-        !role.deleted_at &&
+        role.deleted_at == null &&
         (query.status === null || role.status === query.status) &&
         (!query.keyword ||
           `${role.name} ${role.code}`.toLowerCase().includes(query.keyword.toLowerCase()))
@@ -80,7 +80,7 @@ export async function roles(request, env, routeId, operation) {
   if (request.method === 'DELETE') {
     if (existing.user_count) conflict('角色已关联用户，请先调整用户角色')
     await commit(env.DB, actor, state, [
-      update(env.DB, 'sys_role', routeId, { deleted_at: new Date().toISOString(), ...nowFields() })
+      update(env.DB, 'sys_role', routeId, { deleted_at: Date.now(), ...nowFields() })
     ])
     return success(null)
   }

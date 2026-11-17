@@ -1,0 +1,22 @@
+.authenticator-settings {
+  display: grid;
+  justify-items: start;
+  gap: 20px;
+  .el-form {
+    width: 100%;
+    max-width: 480px;
+  }
+  p {
+    color: var(--np-text-secondary);
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+  }
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    :deep(.el-button + .el-button) {
+      margin-left: 0;
+    }
+  }
+}

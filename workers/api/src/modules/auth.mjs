@@ -3,6 +3,7 @@ import { digest, randomHex, verifyPassword } from '../security/crypto.mjs'
 import { limitLogin } from '../security/rate-limit.mjs'
 import { authorization, userInfo, dynamicRoutes } from '../security/access.mjs'
 import { findLoginUser, findSession, saveSession, deleteSession } from '../repositories/auth.mjs'
+import { decryptTotp, verifyTotp } from '../security/totp.mjs'
 
 function bearer(request) {
   const match = /^Bearer ([a-f0-9]{64})$/i.exec(request.headers.get('Authorization') || '')
@@ -26,13 +27,37 @@ export async function login(request, env) {
     !/^[A-Za-z][A-Za-z0-9_]{2,63}$/.test(input.username) ||
     typeof input.password !== 'string' ||
     input.password.length < 1 ||
-    input.password.length > 128
+    input.password.length > 128 ||
+    (input.rememberMe !== undefined && typeof input.rememberMe !== 'boolean')
   )
     throw new HttpError(400, '用户名或密码格式错误')
   await limitLogin(request, env.DB, input.username, Date.now())
   const user = await findLoginUser(env.DB, input.username)
   const valid = await verifyPassword(input.password, user?.password_hash, env.AUTH_PEPPER)
   if (!valid || !user || user.status !== 1) throw new HttpError(401, '用户名或密码错误', 10001)
+  const binding = await env.DB.prepare(
+    'SELECT * FROM sys_user_totp WHERE user_id = ?1 AND enabled = 1'
+  )
+    .bind(user.id)
+    .first()
+  if (binding) {
+    const step = await verifyTotp(
+      await decryptTotp(binding.secret_encrypted, user.id, env),
+      input.totpCode,
+      Date.now(),
+      binding.last_used_step
+    )
+    if (step === null)
+      throw new HttpError(400, '请输入有效的验证器动态码，验证码不能重复使用', 10003)
+    const consumed = await env.DB.prepare(
+      'UPDATE sys_user_totp SET last_used_step = ?1 WHERE user_id = ?2 AND enabled = 1 AND secret_encrypted = ?3 AND last_used_step < ?1'
+    )
+      .bind(step, user.id, binding.secret_encrypted)
+      .run()
+    if (consumed.meta.changes !== 1)
+      throw new HttpError(400, '动态验证码已使用，请等待下一个验证码', 10003)
+  }
+  const ttl = input.rememberMe === true ? 7 * 24 * 60 * 60_000 : 60 * 60_000
   const accessToken = randomHex()
   const saved = await saveSession(
     env.DB,
@@ -40,10 +65,11 @@ export async function login(request, env) {
     await digest(accessToken),
     await digest(user.password_hash),
     Date.now(),
-    60 * 60_000
+    ttl,
+    binding?.secret_encrypted ?? ''
   )
   if (!saved) throw new HttpError(401, '用户名或密码错误', 10001)
-  return success({ accessToken })
+  return success({ accessToken, expiresAt: Date.now() + ttl })
 }
 export async function logout(request, env) {
   // Idempotent for expired/revoked tokens. Invalid syntax still returns 401.

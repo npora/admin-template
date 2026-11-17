@@ -24,13 +24,15 @@ export async function snapshot(db, actor, { userId = 0, roleId = 0 } = {}) {
       .bind(actor.sessionHash, Date.now())
   ])
   const [departments, roles, menus, roleMenus, userRoles, users] = result.map((r) => r.results)
-  const user = users.find((row) => row.id === actor.id && row.status === 1 && !row.deleted_at)
+  const user = users.find(
+    (row) => row.id === actor.id && row.status === 1 && row.deleted_at == null
+  )
   if (!user || !result[7].results.length) throw unauthorized()
   const roleIds = new Set(
     userRoles.filter((row) => row.user_id === user.id).map((row) => row.role_id)
   )
   const activeRoles = roles.filter(
-    (role) => roleIds.has(role.id) && role.status === 1 && !role.deleted_at
+    (role) => roleIds.has(role.id) && role.status === 1 && role.deleted_at == null
   )
   const activeIds = new Set(activeRoles.map((role) => role.id))
   const access = calculateAccess(user, {
@@ -105,5 +107,5 @@ export async function commit(db, actor, state, statements) {
     throw error
   }
 }
-export const nowFields = () => ({ updated_at: new Date().toISOString() })
+export const nowFields = () => ({ updated_at: Date.now() })
 export const selectUsers = userColumns

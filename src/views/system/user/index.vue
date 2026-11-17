@@ -4,7 +4,7 @@ import TableToolbar from '@/components/TableToolbar/index.vue'
 import { useI18n } from 'vue-i18n'
 
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 import { Delete, EditPen, Plus, Search } from '@element-plus/icons-vue'
 import { formatDate } from '@/locales'
 import 'element-plus/es/components/message-box/style/css'
@@ -15,12 +15,25 @@ import type { CreateUserInput, ManagedUser } from '@/api/types/user'
 import { usePermission } from '@/composables/usePermission'
 import { useUserManagement } from './useUserManagement'
 import UserFormDialog from './components/UserFormDialog.vue'
+import { resetUserPassword } from '@/api/modules/user'
+import { useUserStore } from '@/store/modules/user'
+import { useSession } from '@/composables/useSession'
+import { getTokenVersion } from '@/api/auth/token-storage'
 
 const { t } = useI18n({ useScope: 'global' })
 
 defineOptions({ name: 'SystemUser' })
 
 const { hasPermission } = usePermission()
+const currentUser = useUserStore()
+const session = useSession()
+const resettingPassword = ref(false)
+let resetController: AbortController | undefined
+let disposed = false
+onBeforeUnmount(() => {
+  disposed = true
+  resetController?.abort()
+})
 const {
   roleOptions,
   departments,
@@ -48,7 +61,52 @@ const confirmingDelete = ref(false)
 const canManage = computed(
   () => hasPermission('system:user:update') || hasPermission('system:user:delete')
 )
-const busy = computed(() => saving.value || deletingId.value !== undefined)
+const busy = computed(
+  () => saving.value || deletingId.value !== undefined || resettingPassword.value
+)
+
+async function resetPassword(user: ManagedUser) {
+  if (busy.value || !currentUser.userInfo?.isSuperAdmin) return
+  resettingPassword.value = true
+  const version = getTokenVersion()
+  const active = () => !disposed && version === getTokenVersion()
+  try {
+    const current = await ElMessageBox.prompt(
+      t('ui.administratorPasswordHint'),
+      t('ui.resetPassword'),
+      {
+        inputType: 'password',
+        inputValidator: (value) =>
+          Boolean(value && value.length <= 128) || t('ui.enterYourPassword'),
+        confirmButtonText: t('ui.gotIt'),
+        cancelButtonText: t('ui.cancel')
+      }
+    )
+    if (!active()) return
+    const next = await ElMessageBox.prompt(
+      t('ui.newPasswordHint', { account: user.username }),
+      t('ui.resetPassword'),
+      {
+        inputType: 'password',
+        inputValidator: (value) =>
+          Boolean(value && value.length >= 12 && value.length <= 128) ||
+          t('ui.passwordMustContain12128Characters'),
+        confirmButtonText: t('ui.resetPassword'),
+        cancelButtonText: t('ui.cancel')
+      }
+    )
+    if (!active()) return
+    resetController = new AbortController()
+    await resetUserPassword(user.id, current.value, next.value, resetController.signal)
+    if (!active()) return
+    ElMessage.success(t('ui.passwordResetSuccess'))
+    if (currentUser.userInfo?.id === user.id) await session.logout()
+  } catch (error) {
+    if (active() && error !== 'cancel' && error !== 'close') handleRequestError(error)
+  } finally {
+    resettingPassword.value = false
+  }
+}
 
 onMounted(() => {
   if (hasPermission('system:user:list')) {
@@ -212,6 +270,17 @@ async function confirmDelete(user: ManagedUser): Promise<void> {
           <!-- @vue-generic {ManagedUser} -->
           <ElTableColumn :label="t('ui.user')" min-width="210">
             <template #default="{ row }">
+              <ElButton
+                v-if="
+                  currentUser.userInfo?.isSuperAdmin &&
+                  (!row.isSuperAdmin || row.id === currentUser.userInfo.id)
+                "
+                link
+                type="primary"
+                :disabled="busy"
+                @click="resetPassword(row)"
+                >{{ t('ui.resetPassword') }}</ElButton
+              >
               <div class="management-page__identity">
                 <ElAvatar :size="36">{{ row.displayName.slice(0, 1) }}</ElAvatar>
                 <div>
@@ -261,7 +330,12 @@ async function confirmDelete(user: ManagedUser): Promise<void> {
             <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
           </ElTableColumn>
           <!-- @vue-generic {ManagedUser} -->
-          <ElTableColumn v-if="canManage" :label="t('ui.actions')" width="160" fixed="right">
+          <ElTableColumn
+            v-if="canManage"
+            :label="t('ui.actions')"
+            :width="currentUser.userInfo?.isSuperAdmin ? 260 : 160"
+            fixed="right"
+          >
             <template #default="{ row }">
               <ElButton
                 v-permission="'system:user:update'"

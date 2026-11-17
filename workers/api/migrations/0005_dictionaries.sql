@@ -6,9 +6,9 @@ CREATE TABLE sys_dict_type (
   remark TEXT CHECK(remark IS NULL OR length(remark)<=255),
   sort_order INTEGER NOT NULL DEFAULT 0 CHECK(sort_order>=0),
   status INTEGER NOT NULL DEFAULT 1 CHECK(status IN (0,1)),
-  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
-  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
-  deleted_at TEXT
+  created_at INTEGER NOT NULL DEFAULT (CAST(strftime('%s','now') AS INTEGER) * 1000 + CAST(substr(strftime('%f','now'),4,3) AS INTEGER)),
+  updated_at INTEGER NOT NULL DEFAULT (CAST(strftime('%s','now') AS INTEGER) * 1000 + CAST(substr(strftime('%f','now'),4,3) AS INTEGER)),
+  deleted_at INTEGER
 );
 CREATE TABLE sys_dict_item (
   id INTEGER PRIMARY KEY AUTOINCREMENT CHECK(id>0),
@@ -19,9 +19,9 @@ CREATE TABLE sys_dict_item (
   remark TEXT CHECK(remark IS NULL OR length(remark)<=255),
   sort_order INTEGER NOT NULL DEFAULT 0 CHECK(sort_order>=0),
   status INTEGER NOT NULL DEFAULT 1 CHECK(status IN (0,1)),
-  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
-  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
-  deleted_at TEXT,
+  created_at INTEGER NOT NULL DEFAULT (CAST(strftime('%s','now') AS INTEGER) * 1000 + CAST(substr(strftime('%f','now'),4,3) AS INTEGER)),
+  updated_at INTEGER NOT NULL DEFAULT (CAST(strftime('%s','now') AS INTEGER) * 1000 + CAST(substr(strftime('%f','now'),4,3) AS INTEGER)),
+  deleted_at INTEGER,
   UNIQUE(dict_type_id,value)
 );
 CREATE INDEX idx_dict_type_live_sort ON sys_dict_type(deleted_at,sort_order,id);

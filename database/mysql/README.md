@@ -2,6 +2,10 @@
 
 适用数据库：MySQL 8.0.16+，InnoDB，utf8mb4。本目录是正式脚手架内容，与展示页面和可选测试后端独立。
 
+所有绝对时间字段使用 `BIGINT` 保存 Unix 毫秒，与 `Date.now()` 单位一致；`created_at`、`updated_at` 的默认值为当前毫秒时间，`deleted_at` 和 `last_login_at` 未发生时为 `NULL`。`BIGINT` 不使用 `ON UPDATE CURRENT_TIMESTAMP`，后端每次写入显式维护 `updated_at`。
+
+已有旧版 `DATETIME` 库使用 [独立升级脚本](upgrades/01-millisecond-timestamps.sql)，不能重跑初始化文件。升级前暂停写入、备份，并把会话 `time_zone` 设置为历史 `DATETIME` 数据所使用的时区（历史 UTC 使用 `SET time_zone='+00:00'`，历史北京时间使用 `'+08:00'`）。脚本先校验旧类型，再暂存转换后的毫秒值、调整类型、回填并移除暂存列，保留 ID、关联与索引；MySQL DDL 隐式提交，失败时检查暂存列与已执行步骤，不能盲目重跑。新建库已经是毫秒结构，**不执行 `upgrades/`**。
+
 ## 执行顺序
 
 在自己新建的空数据库中，依次执行：
@@ -14,6 +18,8 @@
 | [04-query-indexes.sql](04-query-indexes.sql) | 核心列表、树形查询与状态筛选的联合索引                    |
 
 也可以在数据库工具里选择目标数据库后，按上述顺序导入四份文件。已有前两份初始化数据的库仅按顺序执行新增的第三、四份，每份一次。脚本不指定个人数据库名，不会连接展示服务，不会执行删表、覆盖或清空数据。
+
+可选验证器使用新增的 [05-authenticator.sql](05-authenticator.sql)，在前四份之后按需执行，已有库只执行尚未应用的新增文件。它新增 `sys_user_totp`，保存加密后的密钥、绑定状态、待绑定过期时间和已使用时间步，不改动已有用户资料；后端负责加密、二次验证、会话撤销与并发一致性。配置见 [登录与账号安全](../../docs/authentication.md)。
 
 例如，先创建并选择一个新库：
 

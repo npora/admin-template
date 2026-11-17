@@ -14,8 +14,8 @@ export const findSession = (db, tokenHash, now) =>
     .bind(tokenHash, now)
     .first()
 
-export async function saveSession(db, user, tokenHash, fingerprint, now, ttl) {
-  const timestamp = new Date(now).toISOString()
+export async function saveSession(db, user, tokenHash, fingerprint, now, ttl, totpSecret = '') {
+  const timestamp = now
   const results = await db.batch([
     db.prepare('DELETE FROM sys_auth_session WHERE expires_at <= ?1').bind(now),
     db
@@ -28,9 +28,10 @@ export async function saveSession(db, user, tokenHash, fingerprint, now, ttl) {
       .prepare(
         `INSERT INTO sys_auth_session(token_hash, user_id, credential_fingerprint, created_at, expires_at)
       SELECT ?1, id, ?2, ?3, ?4 FROM sys_user
-      WHERE id = ?5 AND password_hash = ?6 AND status = 1 AND deleted_at IS NULL`
+      WHERE id = ?5 AND password_hash = ?6 AND status = 1 AND deleted_at IS NULL
+      AND COALESCE((SELECT secret_encrypted FROM sys_user_totp WHERE user_id = ?5 AND enabled = 1), '') = ?7`
       )
-      .bind(tokenHash, fingerprint, now, now + ttl, user.id, user.password_hash),
+      .bind(tokenHash, fingerprint, now, now + ttl, user.id, user.password_hash, totpSecret),
     db
       .prepare(
         `UPDATE sys_user SET last_login_at = ?1, updated_at = ?1

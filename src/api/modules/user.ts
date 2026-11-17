@@ -27,3 +27,15 @@ export async function updateUser(id: number, input: UpdateUserInput): Promise<Ma
 export async function deleteUser(id: number): Promise<void> {
   await request.delete<null>(`/system/users/${id}`)
 }
+
+export function resetUserPassword(
+  id: number,
+  currentPassword: string,
+  newPassword: string,
+  signal?: AbortSignal
+) {
+  return request.post<null>(`/system/users/${id}/password`, {
+    json: { currentPassword, newPassword },
+    signal
+  })
+}

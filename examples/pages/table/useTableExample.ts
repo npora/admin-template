@@ -66,7 +66,7 @@ export function useTableExample() {
         ...normalized,
         id: next,
         code: `TASK-${String(next).padStart(3, '0')}`,
-        createdAt: new Date().toISOString()
+        createdAt: Date.now()
       })
     } else {
       Object.assign(existing!, normalized)

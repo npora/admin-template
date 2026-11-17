@@ -7,8 +7,17 @@ export function database() {
   sqlite.exec('PRAGMA foreign_keys = ON')
   for (const file of readdirSync(new URL('../../migrations/', import.meta.url))
     .filter((file) => file.endsWith('.sql'))
-    .sort())
-    sqlite.exec(readFileSync(new URL(`../../migrations/${file}`, import.meta.url), 'utf8'))
+    .sort()) {
+    sqlite.exec('BEGIN')
+    try {
+      sqlite.exec(readFileSync(new URL(`../../migrations/${file}`, import.meta.url), 'utf8'))
+      sqlite.exec('COMMIT')
+    } catch (error) {
+      sqlite.exec('ROLLBACK')
+      sqlite.close()
+      throw error
+    }
+  }
   const db = {
     prepare(sql) {
       // Node's binding API treats ?1 differently from D1.bind positional arguments.

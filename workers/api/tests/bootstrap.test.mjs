@@ -50,7 +50,7 @@ test('bootstrap produces private random credentials and SQL without plaintext se
         "INSERT INTO sys_menu(type,title,path,component) VALUES(3,'Bad','/button','index')"
       )
     )
-    storage.sqlite.exec("UPDATE sys_user SET deleted_at='2026-01-01' WHERE username='viewer'")
+    storage.sqlite.exec("UPDATE sys_user SET deleted_at=1767225600000 WHERE username='viewer'")
     assert.throws(() =>
       storage.sqlite.exec(
         "INSERT INTO sys_user(username,password_hash,display_name) VALUES('viewer','bad','Reuse')"

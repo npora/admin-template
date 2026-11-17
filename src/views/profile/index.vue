@@ -12,7 +12,10 @@ import { useLocale } from '@/composables/useLocale'
 import { formatNumber } from '@/locales'
 import { createLocalProfile, profileErrors, type LocalProfile } from '@/store/modules/profile/model'
 import type { ThemeMode, ComponentSize } from '@/store/modules/app/types'
+import { authConfig } from '@/config/auth'
+import AuthenticatorSettings from './components/AuthenticatorSettings.vue'
 const { t } = useI18n({ useScope: 'global' })
+const authenticatorEnabled = computed(() => authConfig.authenticatorEnabled)
 const user = useUserStore()
 const app = useAppStore()
 const profiles = useProfileStore()
@@ -239,8 +242,17 @@ function setTabs(value: unknown) {
                   @change="setTabs"
                 />
               </div>
-            </div> </ElTabPane
-        ></ElTabs>
+            </div>
+          </ElTabPane>
+          <ElTabPane
+            v-if="authenticatorEnabled"
+            :label="t('ui.authenticator')"
+            name="authenticator"
+            lazy
+          >
+            <AuthenticatorSettings />
+          </ElTabPane>
+        </ElTabs>
       </div>
     </div>
   </section>

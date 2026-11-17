@@ -31,20 +31,49 @@ function resolveTokenStorageMode(): TokenStorageMode {
 
 export function createTokenStorage(mode: TokenStorageMode = resolveTokenStorageMode()) {
   const storage = storageServices[mode]
+  function remembered() {
+    if (mode === 'memory') return null
+    const value = localStorageService.get<{ token: string; expiresAt: number }>(
+      STORAGE_KEYS.REMEMBERED_ACCESS_TOKEN
+    )
+    if (
+      value &&
+      typeof value.token === 'string' &&
+      Number.isFinite(value.expiresAt) &&
+      value.expiresAt > Date.now()
+    )
+      return value
+    localStorageService.remove(STORAGE_KEYS.REMEMBERED_ACCESS_TOKEN)
+    return null
+  }
 
   return {
     get() {
-      return storage.get<string>(STORAGE_KEYS.ACCESS_TOKEN)
+      return storage.get<string>(STORAGE_KEYS.ACCESS_TOKEN) ?? remembered()?.token ?? null
     },
 
-    set(token) {
+    set(token: string, persistent?: boolean, expiresAt?: number) {
       tokenVersion += 1
-      storage.set(STORAGE_KEYS.ACCESS_TOKEN, token)
+      const previous = remembered()
+      const keep =
+        mode !== 'memory' &&
+        (persistent === true || (persistent === undefined && previous?.token === token))
+      storage.remove(STORAGE_KEYS.ACCESS_TOKEN)
+      localStorageService.remove(STORAGE_KEYS.REMEMBERED_ACCESS_TOKEN)
+      if (keep)
+        localStorageService.set(STORAGE_KEYS.REMEMBERED_ACCESS_TOKEN, {
+          token,
+          expiresAt:
+            expiresAt ??
+            (previous?.token === token ? previous.expiresAt : Date.now() + 7 * 86400000)
+        })
+      else storage.set(STORAGE_KEYS.ACCESS_TOKEN, token)
     },
 
     remove() {
       tokenVersion += 1
       storage.remove(STORAGE_KEYS.ACCESS_TOKEN)
+      localStorageService.remove(STORAGE_KEYS.REMEMBERED_ACCESS_TOKEN)
     }
   } satisfies AuthTokenStorage
 }

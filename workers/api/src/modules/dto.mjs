@@ -50,15 +50,15 @@ export function userDto(row, state) {
   const links = state.userRoles.filter((link) => link.user_id === row.id)
   const roleIds = new Set(links.map((link) => link.role_id))
   const roles = state.roles
-    .filter((role) => roleIds.has(role.id) && !role.deleted_at)
+    .filter((role) => roleIds.has(role.id) && role.deleted_at == null)
     .map(roleOption)
   return {
     id: row.id,
     username: row.username,
     departmentId: row.department_id,
     departmentName:
-      state.departments.find((dept) => dept.id === row.department_id && !dept.deleted_at)?.name ??
-      null,
+      state.departments.find((dept) => dept.id === row.department_id && dept.deleted_at == null)
+        ?.name ?? null,
     displayName: row.display_name,
     avatar: row.avatar,
     email: row.email,
@@ -73,7 +73,7 @@ export function userDto(row, state) {
 }
 export function tree(rows, mapper) {
   const children = new Map()
-  for (const row of rows.filter((row) => !row.deleted_at)) {
+  for (const row of rows.filter((row) => row.deleted_at == null)) {
     const list = children.get(row.parent_id) || []
     list.push(row)
     children.set(row.parent_id, list)

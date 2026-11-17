@@ -3,14 +3,18 @@ import LocaleSwitch from '@/components/LocaleSwitch/index.vue'
 import { useI18n } from 'vue-i18n'
 
 import { appConfig } from '@/config/app'
+import { authConfig } from '@/config/auth'
 import { useRoute, useRouter } from 'vue-router'
 import { computed, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import 'element-plus/es/components/message-box/style/css'
 import { Lock, User } from '@element-plus/icons-vue'
 
 import { getLoginRedirect } from '@/router/utils/path'
 import { handleRequestError } from '@/api/errors/handling'
 import { useSession } from '@/composables/useSession'
+import { isApiError } from '@/api/errors/ApiError'
+import { isRequestError } from '@npora/request/core'
 
 import type { FormInstance, FormRules } from 'element-plus'
 
@@ -19,6 +23,7 @@ const { t } = useI18n({ useScope: 'global' })
 interface LoginForm {
   username: string
   password: string
+  totpCode: string
 }
 
 const route = useRoute()
@@ -29,6 +34,17 @@ const { signIn } = useSession(router)
 const formRef = ref<FormInstance>()
 
 const loading = ref(false)
+const rememberMe = ref(false)
+const showAuthenticator = ref(authConfig.authenticatorEnabled)
+function forgotPassword() {
+  void ElMessageBox.alert(
+    authConfig.passwordResetContact
+      ? t('ui.passwordResetContact', { contact: authConfig.passwordResetContact })
+      : t('ui.passwordResetAdministrator'),
+    t('ui.forgotPassword'),
+    { confirmButtonText: t('ui.gotIt') }
+  ).catch(() => undefined)
+}
 
 const appTitle = appConfig.title
 
@@ -38,7 +54,8 @@ const appInitial = computed(() => appTitle.trim().charAt(0).toUpperCase())
 
 const form = reactive<LoginForm>({
   username: '',
-  password: ''
+  password: '',
+  totpCode: ''
 })
 
 const rules = computed<FormRules<LoginForm>>(() => ({
@@ -77,13 +94,24 @@ async function handleSubmit(): Promise<void> {
   try {
     await signIn({
       username: form.username,
-      password: form.password
+      password: form.password,
+      rememberMe: authConfig.rememberLoginEnabled && rememberMe.value,
+      ...(form.totpCode ? { totpCode: form.totpCode.trim() } : {})
     })
 
     ElMessage.success(t('ui.signedInSuccessfully'))
 
     await router.replace(redirect.value)
   } catch (error) {
+    if (
+      (isApiError(error) && error.code === 10003) ||
+      (isRequestError(error) &&
+        typeof error.data === 'object' &&
+        error.data !== null &&
+        'code' in error.data &&
+        error.data.code === 10003)
+    )
+      showAuthenticator.value = true
     handleRequestError(error)
   } finally {
     loading.value = false
@@ -145,6 +173,7 @@ async function handleSubmit(): Promise<void> {
             :rules="rules"
             class="login-page__form"
             size="large"
+            :disabled="loading"
             @submit.prevent="handleSubmit"
           >
             <el-form-item prop="username">
@@ -167,6 +196,27 @@ async function handleSubmit(): Promise<void> {
                 type="password"
               />
             </el-form-item>
+
+            <el-form-item v-if="showAuthenticator">
+              <el-input
+                v-model="form.totpCode"
+                :prefix-icon="Lock"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                :maxlength="6"
+                :aria-label="t('ui.authenticatorCode')"
+                :placeholder="t('ui.authenticatorCodeOptional')"
+              />
+            </el-form-item>
+
+            <div class="login-page__options">
+              <el-checkbox v-if="authConfig.rememberLoginEnabled" v-model="rememberMe">{{
+                t('ui.rememberLogin')
+              }}</el-checkbox>
+              <el-button link type="primary" @click="forgotPassword">{{
+                t('ui.forgotPassword')
+              }}</el-button>
+            </div>
 
             <el-button
               class="login-page__submit"

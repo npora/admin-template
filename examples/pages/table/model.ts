@@ -10,7 +10,7 @@ export interface TaskInput {
 export interface DemoTask extends TaskInput {
   id: number
   code: string
-  createdAt: string
+  createdAt: number
 }
 export interface TaskFilters {
   keyword: string
@@ -25,7 +25,7 @@ export function createTaskSeed(): DemoTask[] {
     category: taskCategories[index % 3]!,
     status: taskStatuses[index % 3]!,
     budget: (index + 1) * 1200,
-    createdAt: new Date(Date.UTC(2026, 9, 1 + index, 9, 0)).toISOString()
+    createdAt: Date.UTC(2026, 9, 1 + index, 9, 0)
   }))
 }
 export function validTask(input: TaskInput): boolean {

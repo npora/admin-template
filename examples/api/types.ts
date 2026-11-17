@@ -1,7 +1,7 @@
 import type { ManagedUser } from '@/api/types/user'
 
 export interface DashboardOverview {
-  generatedAt: string
+  generatedAt: number
   account: { roleNames: string[]; departmentName: string | null; isSuperAdmin: boolean }
   capabilities: { users: boolean; roles: boolean; departments: boolean; menus: boolean }
   accessiblePages: number

@@ -33,4 +33,6 @@ npm --prefix workers/api run build
 
 数据库认证和接口授权属于后端职责，前端权限指令仅控制界面。正式 SQL 与本目录的演示数据独立维护。删除本地目录不会删除远程服务。
 
+保持登录、管理员密码重置及默认关闭的验证器接口见 [登录与账号安全](../../docs/authentication.md)。升级时先增量应用 `0007_totp.sql`、`0008_millisecond_timestamps.sql`，不重跑旧迁移；验证器加密主密钥仅配置在后端。
+
 接口契约见 [API 文档](../../docs/api.md)，接入方式见 [后端切换](../../docs/backend-replacement.md)，全项目目录说明见 [目录职责](../../docs/project-structure.md)。

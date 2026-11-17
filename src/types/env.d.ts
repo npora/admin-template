@@ -4,6 +4,8 @@ interface ImportMetaEnv {
   readonly VITE_API_URL?: string
 
   readonly VITE_TOKEN_STORAGE?: 'session' | 'local' | 'memory'
+  readonly VITE_AUTHENTICATOR_ENABLED?: 'true' | 'false'
+  readonly VITE_PASSWORD_RESET_CONTACT?: string
 
   readonly VITE_BUILD_COMPRESS?: 'true' | 'false'
   readonly VITE_BUILD_ANALYZE?: 'true' | 'false'

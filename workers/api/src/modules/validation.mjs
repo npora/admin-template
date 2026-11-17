@@ -18,7 +18,7 @@ export function fieldsOnly(input, keys) {
   if (Object.keys(input).some((key) => !keys.includes(key))) invalid('包含不允许修改的字段')
 }
 export function find(rows, target, label) {
-  const row = rows.find((row) => row.id === target && !row.deleted_at)
+  const row = rows.find((row) => row.id === target && row.deleted_at == null)
   if (!row) throw new HttpError(404, `${label}不存在或已被删除`, 10004)
   return row
 }
@@ -45,7 +45,8 @@ export function parentChain(rows, parentId, ownId) {
 export function descendants(rows, root) {
   const result = new Set([root])
   for (const parent of result)
-    for (const row of rows) if (!row.deleted_at && row.parent_id === parent) result.add(row.id)
+    for (const row of rows)
+      if (row.deleted_at == null && row.parent_id === parent) result.add(row.id)
   return result
 }
 export function requireAny(access, permissions) {

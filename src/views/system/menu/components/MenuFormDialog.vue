@@ -95,7 +95,7 @@ watch(
       createdAt: _created,
       updatedAt: _updated,
       ...fields
-    } = source ?? { ...defaults(), id: 0, createdAt: '', updatedAt: '', children: [] }
+    } = source ?? { ...defaults(), id: 0, createdAt: 0, updatedAt: 0, children: [] }
     Object.assign(form, fields, { parentId: source?.parentId ?? 0 })
     await nextTick()
     queryText.value = source?.routeQuery ? JSON.stringify(source.routeQuery, null, 2) : ''

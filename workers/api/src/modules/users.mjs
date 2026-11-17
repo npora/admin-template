@@ -49,7 +49,7 @@ function validate(input, state, existing, creating) {
     .filter(
       (link) =>
         link.user_id === existing?.id &&
-        state.roles.some((role) => role.id === link.role_id && !role.deleted_at)
+        state.roles.some((role) => role.id === link.role_id && role.deleted_at == null)
     )
     .map((link) => link.role_id)
   if (
@@ -115,7 +115,7 @@ export async function users(request, env, routeId) {
     const user = find(state.users, routeId, '用户')
     if (user.is_super_admin === 1) conflict('超级管理员不能删除')
     await commit(env.DB, actor, state, [
-      update(env.DB, 'sys_user', routeId, { deleted_at: new Date().toISOString(), ...nowFields() })
+      update(env.DB, 'sys_user', routeId, { deleted_at: Date.now(), ...nowFields() })
     ])
     return success(null)
   }

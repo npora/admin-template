@@ -4,6 +4,8 @@
 
 默认响应为 `{ code: 0, message: 'success', data }`，`code === 0` 表示业务成功。分页响应的 `data` 为 `{ list, total }`。公共类型位于 `src/api/types/common.ts`；其他后端协议可通过 `api/protocol` 适配。
 
+所有绝对时间统一返回 Unix 毫秒数字，例如 `createdAt`、`updatedAt`、`lastLoginAt`、`generatedAt`、`expiresAt`；没有发生的可空时间返回 `null`。不混用秒、ISO 字符串或格式化日期，前端显示时使用 `formatDate()`。软删除字段以 `null` 表示未删除，`0` 仍是有效时间戳，不能用真假值判断删除状态。
+
 项目使用 `@npora/request` 1.23.1 的 data-first API：`src/api/client.ts` 中的两个业务客户端会在 `onResponse` 中统一校验并解包响应。API 模块的泛型填写 `data` 的类型，调用方直接得到业务数据，不再读取 `.data` 或重复调用 `unwrapApiResponse`：
 
 ```ts
@@ -23,14 +25,16 @@ HTTP 401，以及业务 code 为 `401`、`10002`（含字符串形式），表�
 
 ## 认证与动态路由
 
-| 接口                | 请求 / 返回                                     |
-| ------------------- | ----------------------------------------------- |
-| `POST /auth/logout` | Bearer Token → `null`，撤销该会话；重复退出幂等 |
-| `POST /auth/login`  | `{ username, password }` → `{ accessToken }`    |
-| `GET /auth/user`    | 用户资料、`roles` 和实际授予的 `permissions`    |
-| `GET /auth/routes`  | 当前用户获准访问的 `DynamicRoute[]`             |
+| 接口                | 请求 / 返回                                                                     |
+| ------------------- | ------------------------------------------------------------------------------- |
+| `POST /auth/logout` | Bearer Token → `null`，撤销该会话；重复退出幂等                                 |
+| `POST /auth/login`  | `{ username, password, rememberMe?, totpCode? }` → `{ accessToken, expiresAt }` |
+| `GET /auth/user`    | 用户资料、`roles` 和实际授予的 `permissions`                                    |
+| `GET /auth/routes`  | 当前用户获准访问的 `DynamicRoute[]`                                             |
 
 完整类型见 `src/api/types/auth.ts` 与 `src/api/types/route.ts`；正式表与基础菜单见 `database/mysql/`。
+
+可选验证器、保持登录和管理员重置密码的完整契约及默认配置见 [登录与账号安全](authentication.md)。验证器默认关闭，绑定状态与校验在后端维护，不由前端配置决定。
 
 路由 `component` 相对于 `src/views`，例如 `system/user/index`，只允许页面入口，不允许内部 `components`。目录可嵌套多层 `children` 或提供 `redirect`。所有路由名称和完整路径必须唯一，不能覆盖静态路由。
 

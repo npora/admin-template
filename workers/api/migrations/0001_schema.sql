@@ -1,5 +1,5 @@
 -- D1 / SQLite: new empty test database only. Never drops existing tables.
--- Business columns follow database/mysql/01-schema.sql; timestamps are UTC ISO strings.
+-- Business columns follow database/mysql/01-schema.sql; timestamps are Unix milliseconds.
 CREATE TABLE sys_department (
   id INTEGER PRIMARY KEY AUTOINCREMENT CHECK(id > 0),
   parent_id INTEGER REFERENCES sys_department(id) ON DELETE RESTRICT,
@@ -8,9 +8,9 @@ CREATE TABLE sys_department (
   leader TEXT, phone TEXT, email TEXT,
   sort_order INTEGER NOT NULL DEFAULT 0 CHECK(sort_order >= 0),
   status INTEGER NOT NULL DEFAULT 1 CHECK(status IN (0, 1)),
-  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
-  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
-  deleted_at TEXT,
+  created_at INTEGER NOT NULL DEFAULT (CAST(strftime('%s','now') AS INTEGER) * 1000 + CAST(substr(strftime('%f','now'),4,3) AS INTEGER)),
+  updated_at INTEGER NOT NULL DEFAULT (CAST(strftime('%s','now') AS INTEGER) * 1000 + CAST(substr(strftime('%f','now'),4,3) AS INTEGER)),
+  deleted_at INTEGER,
   CHECK(parent_id IS NULL OR parent_id <> id)
 );
 CREATE TABLE sys_user (
@@ -22,10 +22,10 @@ CREATE TABLE sys_user (
   avatar TEXT, email TEXT UNIQUE COLLATE NOCASE, mobile TEXT UNIQUE,
   status INTEGER NOT NULL DEFAULT 1 CHECK(status IN (0, 1)),
   is_super_admin INTEGER NOT NULL DEFAULT 0 CHECK(is_super_admin IN (0, 1)),
-  last_login_at TEXT,
-  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
-  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
-  deleted_at TEXT
+  last_login_at INTEGER,
+  created_at INTEGER NOT NULL DEFAULT (CAST(strftime('%s','now') AS INTEGER) * 1000 + CAST(substr(strftime('%f','now'),4,3) AS INTEGER)),
+  updated_at INTEGER NOT NULL DEFAULT (CAST(strftime('%s','now') AS INTEGER) * 1000 + CAST(substr(strftime('%f','now'),4,3) AS INTEGER)),
+  deleted_at INTEGER
 );
 CREATE TABLE sys_role (
   id INTEGER PRIMARY KEY AUTOINCREMENT CHECK(id > 0),
@@ -34,9 +34,9 @@ CREATE TABLE sys_role (
   description TEXT,
   sort_order INTEGER NOT NULL DEFAULT 0 CHECK(sort_order >= 0),
   status INTEGER NOT NULL DEFAULT 1 CHECK(status IN (0, 1)),
-  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
-  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
-  deleted_at TEXT
+  created_at INTEGER NOT NULL DEFAULT (CAST(strftime('%s','now') AS INTEGER) * 1000 + CAST(substr(strftime('%f','now'),4,3) AS INTEGER)),
+  updated_at INTEGER NOT NULL DEFAULT (CAST(strftime('%s','now') AS INTEGER) * 1000 + CAST(substr(strftime('%f','now'),4,3) AS INTEGER)),
+  deleted_at INTEGER
 );
 CREATE TABLE sys_menu (
   id INTEGER PRIMARY KEY AUTOINCREMENT CHECK(id > 0),
@@ -52,9 +52,9 @@ CREATE TABLE sys_menu (
   fixed_tab INTEGER NOT NULL DEFAULT 0 CHECK(fixed_tab IN (0, 1)),
   sort_order INTEGER NOT NULL DEFAULT 0 CHECK(sort_order >= 0),
   status INTEGER NOT NULL DEFAULT 1 CHECK(status IN (0, 1)),
-  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
-  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
-  deleted_at TEXT,
+  created_at INTEGER NOT NULL DEFAULT (CAST(strftime('%s','now') AS INTEGER) * 1000 + CAST(substr(strftime('%f','now'),4,3) AS INTEGER)),
+  updated_at INTEGER NOT NULL DEFAULT (CAST(strftime('%s','now') AS INTEGER) * 1000 + CAST(substr(strftime('%f','now'),4,3) AS INTEGER)),
+  deleted_at INTEGER,
   CHECK(parent_id IS NULL OR parent_id <> id),
   CHECK((type = 3 AND permission IS NOT NULL AND length(permission) > 0 AND path IS NULL AND component IS NULL)
      OR (type IN (1, 2) AND path IS NOT NULL AND permission IS NULL)),
@@ -64,13 +64,13 @@ CREATE TABLE sys_menu (
 CREATE TABLE sys_user_role (
   user_id INTEGER NOT NULL REFERENCES sys_user(id) ON DELETE CASCADE,
   role_id INTEGER NOT NULL REFERENCES sys_role(id) ON DELETE CASCADE,
-  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  created_at INTEGER NOT NULL DEFAULT (CAST(strftime('%s','now') AS INTEGER) * 1000 + CAST(substr(strftime('%f','now'),4,3) AS INTEGER)),
   PRIMARY KEY(user_id, role_id)
 );
 CREATE TABLE sys_role_menu (
   role_id INTEGER NOT NULL REFERENCES sys_role(id) ON DELETE CASCADE,
   menu_id INTEGER NOT NULL REFERENCES sys_menu(id) ON DELETE CASCADE,
-  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  created_at INTEGER NOT NULL DEFAULT (CAST(strftime('%s','now') AS INTEGER) * 1000 + CAST(substr(strftime('%f','now'),4,3) AS INTEGER)),
   PRIMARY KEY(role_id, menu_id)
 );
 -- Authentication infrastructure, separate from the six business tables.

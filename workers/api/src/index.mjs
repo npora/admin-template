@@ -6,6 +6,13 @@ import { menus } from './modules/menus.mjs'
 import { departments } from './modules/departments.mjs'
 import { dictionaryRoute } from './modules/dictionaries.mjs'
 import { dashboard } from './modules/dashboard.mjs'
+import { resetUserPassword } from './modules/user-password.mjs'
+import {
+  authenticatorStatus,
+  setupAuthenticator,
+  enableAuthenticator,
+  disableAuthenticator
+} from './modules/authenticator.mjs'
 
 async function health(_request, env) {
   try {
@@ -22,11 +29,15 @@ const endpoints = new Map([
   ['/auth/logout', ['POST', logout]],
   ['/auth/user', ['GET', currentUser]],
   ['/auth/routes', ['GET', routes]],
+  ['/auth/totp', ['GET', authenticatorStatus]],
+  ['/auth/totp/setup', ['POST', setupAuthenticator]],
+  ['/auth/totp/enable', ['POST', enableAuthenticator]],
+  ['/auth/totp/disable', ['POST', disableAuthenticator]],
   ['/system/dashboard', ['GET', dashboard]]
 ])
 function managementRoute(path) {
   const match =
-    /^\/system\/(users|roles|menus|departments)(?:\/(options|menu-options|[1-9]\d*)(?:\/(menus))?)?$/.exec(
+    /^\/system\/(users|roles|menus|departments)(?:\/(options|menu-options|[1-9]\d*)(?:\/(menus|password))?)?$/.exec(
       path
     )
   if (!match) return undefined
@@ -34,6 +45,10 @@ function managementRoute(path) {
   const routeId = identifier && /^\d+$/.test(identifier) ? Number(identifier) : undefined
   if (routeId !== undefined && !Number.isSafeInteger(routeId)) return undefined
   const operation = suffix || (routeId ? undefined : identifier)
+  if (operation === 'password') {
+    if (resource !== 'users' || !routeId) return undefined
+    return ['POST', (request, env) => resetUserPassword(request, env, routeId)]
+  }
   if (operation === 'options' && !['roles', 'departments'].includes(resource)) return undefined
   if (operation === 'menu-options' && resource !== 'roles') return undefined
   if (operation === 'menus' && (resource !== 'roles' || !routeId)) return undefined

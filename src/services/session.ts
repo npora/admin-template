@@ -134,7 +134,7 @@ function createSession(router: Router) {
     const result = await login(credentials)
     if (version !== sessionVersion) throw new Error(t('ui.signInCancelled'))
 
-    tokenStorage.set(result.accessToken)
+    tokenStorage.set(result.accessToken, credentials.rememberMe === true, result.expiresAt)
     if (!(await initialize())) throw new Error(t('ui.signInCancelled'))
   }
 

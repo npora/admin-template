@@ -40,12 +40,12 @@ export async function departments(request, env, routeId, options = false) {
   if (request.method === 'DELETE') {
     if (
       existing.user_count ||
-      state.departments.some((row) => row.parent_id === routeId && !row.deleted_at)
+      state.departments.some((row) => row.parent_id === routeId && row.deleted_at == null)
     )
       conflict('部门仍有下级部门或关联用户，请先调整关联')
     await commit(env.DB, actor, state, [
       update(env.DB, 'sys_department', routeId, {
-        deleted_at: new Date().toISOString(),
+        deleted_at: Date.now(),
         ...nowFields()
       })
     ])
@@ -77,7 +77,7 @@ export async function departments(request, env, routeId, options = false) {
   }
   const candidate = { id: existing?.id ?? -1, ...row }
   const nodes = [
-    ...state.departments.filter((node) => !node.deleted_at && node.id !== existing?.id),
+    ...state.departments.filter((node) => node.deleted_at == null && node.id !== existing?.id),
     candidate
   ]
   for (const node of nodes) parentChain(nodes, node.parent_id, node.id)

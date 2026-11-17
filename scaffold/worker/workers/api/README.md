@@ -12,6 +12,8 @@
 
 后端使用 `DB` 数据库绑定、`AUTH_PEPPER` 密钥和 `CORS_ORIGINS` 配置。迁移及账号初始化后，把可访问的 API 地址写入根目录 `.env.development.local` 的 `VITE_API_URL`，然后执行 `npm run dev`。不会自动连接展示站 API，不附送管理员密码，不自动创建远程资源。
 
+保持登录、管理员密码重置及默认关闭的验证器接口见 [登录与账号安全](../../docs/authentication.md)。已有后端先增量应用 `0007_totp.sql`、`0008_millisecond_timestamps.sql`，新库按顺序执行全部迁移；验证器加密主密钥仅保存在后端配置。
+
 首次执行 `npm --prefix workers/api run bootstrap` 会在后端 `.local/` 创建初始化 SQL 和随机账号资料；已有目录时拒绝覆盖。迁移后执行其中的 `bootstrap.sql`，密钥与账号资料仅在本机查看。不要把真实密钥和密码写入源码。
 
 [接口契约](../../docs/api.md) · [权限模型](../../docs/rbac.md) · [正式 MySQL SQL](../../database/mysql/README.md)

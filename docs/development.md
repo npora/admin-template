@@ -35,15 +35,17 @@ API 函数、DTO、协议分别位于 `src/api/modules/`、`src/api/types/`、`s
 
 开发优先级从低到高：`.env`、可选 `.env.local`、`.env.development`、`.env.development.local`；生产替换为对应 production 文件。进程环境变量最高。修改后重启开发服务。
 
-| 变量                  | 用途                                       |
-| --------------------- | ------------------------------------------ |
-| `VITE_APP_TITLE`      | 应用标题，默认 `Npora Admin`               |
-| `VITE_API_PREFIX`     | 同源 API 前缀，默认 `/api`                 |
-| `VITE_API_URL`        | 仅开发代理的目标地址                       |
-| `VITE_DEMO_ENABLED`   | 默认 false；true 时加载 `examples/`        |
-| `VITE_TOKEN_STORAGE`  | `session`、`local`、`memory`，默认 session |
-| `VITE_BUILD_COMPRESS` | 默认 true，生成 gzip 产物                  |
-| `VITE_BUILD_ANALYZE`  | 默认 false，启用后输出体积报告             |
+| 变量                          | 用途                                               |
+| ----------------------------- | -------------------------------------------------- |
+| `VITE_APP_TITLE`              | 应用标题，默认 `Npora Admin`                       |
+| `VITE_API_PREFIX`             | 同源 API 前缀，默认 `/api`                         |
+| `VITE_API_URL`                | 仅开发代理的目标地址                               |
+| `VITE_DEMO_ENABLED`           | 默认 false；true 时加载 `examples/`                |
+| `VITE_TOKEN_STORAGE`          | `session`、`local`、`memory`，默认 session         |
+| `VITE_AUTHENTICATOR_ENABLED`  | 验证器界面入口，默认 `false`，后端独立校验绑定状态 |
+| `VITE_PASSWORD_RESET_CONTACT` | 忘记密码时展示的管理员联系方式，可留空             |
+| `VITE_BUILD_COMPRESS`         | 默认 true，生成 gzip 产物                          |
+| `VITE_BUILD_ANALYZE`          | 默认 false，启用后输出体积报告                     |
 
 `dev:demo` 和 `build:demo` 通过 `scripts/demo.mjs` 在进程环境开启展示功能，不改写环境文件。开发默认使用维护者的测试 API，可通过启动进程的 `VITE_API_URL` 覆盖。普通 `npm run dev` 仍遵循本机配置；本机已有 `VITE_DEMO_ENABLED=true` 时会进入展示模式。
 

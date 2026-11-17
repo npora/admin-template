@@ -15,7 +15,7 @@ export interface ManagedUser extends UserFields, AuditFields {
   id: number
   username: string
   isSuperAdmin: boolean
-  lastLoginAt: string | null
+  lastLoginAt: number | null
   departmentName: string | null
   roles: RoleOption[]
 }

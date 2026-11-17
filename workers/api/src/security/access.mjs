@@ -10,7 +10,7 @@ export function calculateAccess(user, { roles, menus, links }) {
     const seen = new Set()
     let current = menu
     while (current) {
-      if (seen.has(current.id) || current.deleted_at || current.status !== 1) return false
+      if (seen.has(current.id) || current.deleted_at != null || current.status !== 1) return false
       seen.add(current.id)
       if (current.parent_id === null) return true
       current = byId.get(current.parent_id)

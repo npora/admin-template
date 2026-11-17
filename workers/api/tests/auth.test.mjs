@@ -89,7 +89,7 @@ test('unknown, disabled, deleted and wrong-password accounts share one failure',
     ['missing', ''],
     ['viewer', ''],
     ['viewer', 'status=0'],
-    ['viewer', "deleted_at='2026-01-01'"]
+    ['viewer', 'deleted_at=1767225600000']
   ]) {
     if (state) sqlite.exec(`UPDATE sys_user SET ${state} WHERE id=2`)
     const result = await call('/auth/login', {
@@ -124,7 +124,7 @@ test('forged, expired and logged-out tokens cannot authorize; logout is idempote
 test('existing sessions immediately reject disabled/deleted users or changed passwords', async (t) => {
   const { sqlite, call, signIn } = fixture(t)
   const token = (await signIn()).body.data.accessToken
-  for (const update of ['status=0', "deleted_at='2026-01-01'", "password_hash='changed'"]) {
+  for (const update of ['status=0', 'deleted_at=1767225600000', "password_hash='changed'"]) {
     sqlite
       .prepare('UPDATE sys_user SET status=1, deleted_at=NULL, password_hash=? WHERE id=2')
       .run(passwordHash)
@@ -161,7 +161,7 @@ test('readonly grants only its page/buttons, role changes are fresh, admin role 
   assert.deepEqual((await call('/auth/user', { token })).body.data.permissions, [
     'system:user:list'
   ])
-  sqlite.exec("UPDATE sys_role SET deleted_at='2026-01-01' WHERE id=3")
+  sqlite.exec('UPDATE sys_role SET deleted_at=1767225600000 WHERE id=3')
   assert.deepEqual((await call('/auth/routes', { token })).body.data, [])
   sqlite.exec('INSERT INTO sys_user_role(user_id, role_id) VALUES (2, 1)')
   user = (await call('/auth/user', { token })).body.data
@@ -177,7 +177,7 @@ test('hidden menus keep access; disabled/deleted ancestors and corrupt cycles re
   assert.deepEqual((await call('/auth/user', { token })).body.data.permissions, [
     'system:user:list'
   ])
-  for (const update of ['status=0', "deleted_at='2026-01-01'", 'parent_id=10']) {
+  for (const update of ['status=0', 'deleted_at=1767225600000', 'parent_id=10']) {
     sqlite.exec('UPDATE sys_menu SET status=1, deleted_at=NULL, parent_id=NULL WHERE id=1')
     sqlite.exec(`UPDATE sys_menu SET ${update} WHERE id=1`)
     assert.deepEqual((await call('/auth/routes', { token })).body.data, [])
