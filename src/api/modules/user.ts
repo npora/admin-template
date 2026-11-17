@@ -1,3 +1,4 @@
+import type { AuthenticatorStatus, AuthenticatorSetup } from '../types/auth'
 import { request } from '../client'
 import type { PageResult } from '../types/common'
 import type { CreateUserInput, ManagedUser, UpdateUserInput, UserListQuery } from '../types/user'
@@ -36,6 +37,27 @@ export function resetUserPassword(
 ) {
   return request.post<null>(`/system/users/${id}/password`, {
     json: { currentPassword, newPassword },
+    signal
+  })
+}
+
+export function getUserAuthenticatorStatus(id: number, signal?: AbortSignal) {
+  return request.get<AuthenticatorStatus>(`/system/users/${id}/totp`, { signal })
+}
+export function setupUserAuthenticator(id: number, password: string, signal?: AbortSignal) {
+  return request.post<AuthenticatorSetup>(`/system/users/${id}/totp/setup`, {
+    json: { password },
+    signal
+  })
+}
+export function disableUserAuthenticator(
+  id: number,
+  password: string,
+  code: string,
+  signal?: AbortSignal
+) {
+  return request.post<null>(`/system/users/${id}/totp/disable`, {
+    json: { password, code },
     signal
   })
 }

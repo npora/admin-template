@@ -1,1 +1,53 @@
 @use '@/assets/styles/management.scss';
+
+.user-management-page {
+  &__contact {
+    display: grid;
+    gap: 4px;
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    small {
+      color: var(--np-text-secondary);
+      font-size: 11px;
+    }
+  }
+  &__roles {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+  }
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    white-space: nowrap;
+    :deep(.el-button + .el-button) {
+      margin-left: 0;
+    }
+    :deep(.el-icon) {
+      margin-left: 3px;
+    }
+  }
+  :deep(.management-page__identity) {
+    min-width: 0;
+    > div {
+      min-width: 0;
+    }
+    strong,
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+  :deep(td.el-table__cell) {
+    padding-block: 10px;
+  }
+}
+.user-management-page__delete {
+  color: var(--el-color-danger);
+}

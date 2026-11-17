@@ -65,6 +65,7 @@ export function userDto(row, state) {
     mobile: row.mobile,
     status: row.status,
     isSuperAdmin: row.is_super_admin === 1,
+    authenticatorEnabled: row.authenticator_enabled === 1,
     lastLoginAt: row.last_login_at,
     roles,
     roleIds: roles.map((role) => role.id),

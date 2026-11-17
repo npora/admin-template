@@ -177,3 +177,5 @@ npm run check:standalone
 表格和分页统一由 `src/components/DataTable/` 提供，通过 `pagination` 对象配置分页外观；演示专属分页逻辑位于 `examples/composables/`，纯净后台不包含该目录。请求协议集中在 `src/api/protocol/index.ts`，无需维护额外策略类。
 
 日期区间组件为 `src/components/DateRangePicker/`，按应用时区显示并输出毫秒时间戳；默认值、枚举分别位于 `src/config/datetime.ts`、`src/types/timezone.ts`。偏好保存在浏览器，详见 [日期与时区](i18n.md#时区配置与时间区间)。
+
+`src/components/AuthenticatorSettings/` 为个人中心和用户管理共用的验证器绑定组件。用户管理列表仅展示绑定状态，设置密钥只在当前绑定流程显示。

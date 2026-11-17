@@ -98,7 +98,7 @@ export async function users(request, env, routeId) {
     const result = await env.DB.batch([
       env.DB.prepare(`SELECT count(*) AS total FROM sys_user WHERE ${filter}`).bind(...params),
       env.DB.prepare(
-        `SELECT ${selectUsers} FROM sys_user WHERE ${filter} ORDER BY id DESC LIMIT ?5 OFFSET ?6`
+        `SELECT ${selectUsers}, EXISTS(SELECT 1 FROM sys_user_totp t WHERE t.user_id=sys_user.id AND t.enabled=1) AS authenticator_enabled FROM sys_user WHERE ${filter} ORDER BY id DESC LIMIT ?5 OFFSET ?6`
       ).bind(...params, query.pageSize, (query.page - 1) * query.pageSize),
       // Hydrate associations only for this bounded page, not the entire user table.
       env.DB.prepare(
@@ -160,10 +160,16 @@ export async function users(request, env, routeId) {
     update(env.DB, 'sys_user', routeId, { ...fields(input), ...nowFields() }),
     ...roleStatements(env.DB, routeId, input.roleIds)
   ])
+  const binding = await env.DB.prepare('SELECT enabled FROM sys_user_totp WHERE user_id=?1')
+    .bind(routeId)
+    .first()
   return success(
-    userDto(results[0].results[0], {
-      ...state,
-      userRoles: input.roleIds.map((role_id) => ({ user_id: routeId, role_id }))
-    })
+    userDto(
+      { ...results[0].results[0], authenticator_enabled: binding?.enabled ?? 0 },
+      {
+        ...state,
+        userRoles: input.roleIds.map((role_id) => ({ user_id: routeId, role_id }))
+      }
+    )
   )
 }

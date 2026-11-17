@@ -13,7 +13,7 @@ import { formatNumber } from '@/locales'
 import { createLocalProfile, profileErrors, type LocalProfile } from '@/store/modules/profile/model'
 import type { ThemeMode, ComponentSize } from '@/store/modules/app/types'
 import { authConfig } from '@/config/auth'
-import AuthenticatorSettings from './components/AuthenticatorSettings.vue'
+import AuthenticatorSettings from '@/components/AuthenticatorSettings/index.vue'
 const { t } = useI18n({ useScope: 'global' })
 const authenticatorEnabled = computed(() => authConfig.authenticatorEnabled)
 const user = useUserStore()

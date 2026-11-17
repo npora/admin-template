@@ -38,3 +38,5 @@
 页面与组件的样式放在同目录、同名的 SCSS 文件中：`index.vue` 搭配 `index.scss`，`DictionaryForm.vue` 搭配 `DictionaryForm.scss`。Vue 的 `<style scoped lang="scss">` 只通过 `@use './index.scss';` 等方式导入，保留原有 `scoped` 或全局作用域。公共样式继续放在 `src/assets/styles/`；没有样式的组件无需创建空文件。
 
 日期显示与时间区间统一遵循应用设置中的时区，默认北京时间（`Asia/Shanghai`）。`src/components/DateRangePicker/` 负责日期区间与毫秒时间戳转换；默认配置在 `src/config/datetime.ts`，枚举在 `src/types/timezone.ts`，参照 [日期与时区](i18n.md#时区配置与时间区间)。
+
+`src/components/AuthenticatorSettings/` 为个人中心和用户管理共用的验证器绑定组件。用户管理列表仅展示绑定状态，设置密钥只在当前绑定流程显示。

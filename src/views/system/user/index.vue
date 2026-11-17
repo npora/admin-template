@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n'
 
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
-import { Delete, EditPen, Plus, Search } from '@element-plus/icons-vue'
+import { Delete, EditPen, Plus, Search, ArrowDown, Key, Lock } from '@element-plus/icons-vue'
 import { formatDate } from '@/locales'
 import 'element-plus/es/components/message-box/style/css'
 
@@ -18,6 +18,8 @@ import UserFormDialog from './components/UserFormDialog.vue'
 import { resetUserPassword } from '@/api/modules/user'
 import { useUserStore } from '@/store/modules/user'
 import { useSession } from '@/composables/useSession'
+import AuthenticatorSettings from '@/components/AuthenticatorSettings/index.vue'
+import { authConfig } from '@/config/auth'
 import { getTokenVersion } from '@/api/auth/token-storage'
 
 const { t } = useI18n({ useScope: 'global' })
@@ -55,15 +57,47 @@ const {
   save,
   remove
 } = useUserManagement()
+const authenticatorUser = ref<ManagedUser | null>(null)
+const authenticatorBusy = ref(false)
 const dialogVisible = ref(false)
 const editingUser = ref<ManagedUser | null>(null)
 const confirmingDelete = ref(false)
 const canManage = computed(
-  () => hasPermission('system:user:update') || hasPermission('system:user:delete')
+  () =>
+    currentUser.userInfo?.isSuperAdmin ||
+    hasPermission('system:user:update') ||
+    hasPermission('system:user:delete')
 )
 const busy = computed(
   () => saving.value || deletingId.value !== undefined || resettingPassword.value
 )
+
+function canManageSecurity(user: ManagedUser) {
+  return Boolean(
+    currentUser.userInfo?.isSuperAdmin &&
+    (!user.isSuperAdmin || user.id === currentUser.userInfo.id)
+  )
+}
+function hasMoreActions(user: ManagedUser) {
+  return canManageSecurity(user) || (!user.isSuperAdmin && hasPermission('system:user:delete'))
+}
+function moreAction(command: unknown, user: ManagedUser) {
+  if (busy.value) return
+  if (command === 'password' && canManageSecurity(user)) void resetPassword(user)
+  if (
+    command === 'authenticator' &&
+    authConfig.authenticatorEnabled &&
+    canManageSecurity(user) &&
+    user.status === 1
+  ) {
+    authenticatorBusy.value = false
+    authenticatorUser.value = user
+  }
+  if (command === 'delete') void confirmDelete(user)
+}
+function authenticatorChanged() {
+  void load()
+}
 
 async function resetPassword(user: ManagedUser) {
   if (busy.value || !currentUser.userInfo?.isSuperAdmin) return
@@ -164,7 +198,7 @@ async function confirmDelete(user: ManagedUser): Promise<void> {
 </script>
 
 <template>
-  <section class="management-page">
+  <section class="management-page user-management-page">
     <header class="management-page__heading">
       <div>
         <span class="management-page__eyebrow">{{ t('ui.organizationAndAccess') }}</span>
@@ -259,6 +293,7 @@ async function confirmDelete(user: ManagedUser): Promise<void> {
         <DataTable
           :loading="loading"
           :data="rows"
+          class="user-management-page__table"
           stripe
           :pagination="{ disabled: busy }"
           :page="query.page"
@@ -268,57 +303,59 @@ async function confirmDelete(user: ManagedUser): Promise<void> {
           @update:page-size="changePageSize"
         >
           <!-- @vue-generic {ManagedUser} -->
-          <ElTableColumn :label="t('ui.user')" min-width="210">
+          <ElTableColumn :label="t('ui.user')" min-width="180">
             <template #default="{ row }">
-              <ElButton
-                v-if="
-                  currentUser.userInfo?.isSuperAdmin &&
-                  (!row.isSuperAdmin || row.id === currentUser.userInfo.id)
-                "
-                link
-                type="primary"
-                :disabled="busy"
-                @click="resetPassword(row)"
-                >{{ t('ui.resetPassword') }}</ElButton
-              >
               <div class="management-page__identity">
-                <ElAvatar :size="36">{{ row.displayName.slice(0, 1) }}</ElAvatar>
+                <ElAvatar :size="36" :src="row.avatar || undefined">{{
+                  row.displayName.slice(0, 1)
+                }}</ElAvatar>
                 <div>
-                  <strong>{{ row.displayName }}</strong><span>{{ row.username }}</span>
+                  <strong :title="row.displayName">{{ row.displayName }}</strong><span
+                    :title="row.username"
+                    >{{ row.username }}</span
+                  >
                 </div>
               </div>
             </template>
           </ElTableColumn>
           <!-- @vue-generic {ManagedUser} -->
-          <ElTableColumn
-            prop="email"
-            :label="t('ui.email')"
-            min-width="220"
-            show-overflow-tooltip
-          />
-          <!-- @vue-generic {ManagedUser} -->
-          <ElTableColumn :label="t('ui.roleLabel')" min-width="180">
+          <ElTableColumn :label="t('ui.userContact')" min-width="160">
             <template #default="{ row }">
-              <ElTag v-if="row.isSuperAdmin" type="danger" effect="plain">{{
-                t('ui.superAdministrator')
-              }}</ElTag>
-              <ElTag
-                v-for="role in row.roles"
-                :key="role.id"
-                :type="role.status === 1 ? 'info' : 'warning'"
-                effect="plain"
-                style="margin: 2px"
-                >{{ role.name }}{{ role.status === 0 ? t('ui.disabledSuffix') : '' }}</ElTag
-              >
-              <span v-if="!row.roles.length && !row.isSuperAdmin">{{
-                t('ui.noRolesAssigned')
-              }}</span>
+              <div class="user-management-page__contact">
+                <span :title="row.email || ''">{{ row.email || '—' }}</span>
+                <small v-if="row.mobile">{{ row.mobile }}</small>
+              </div>
             </template>
           </ElTableColumn>
           <!-- @vue-generic {ManagedUser} -->
-          <ElTableColumn prop="departmentName" :label="t('ui.department')" min-width="130" />
+          <ElTableColumn :label="t('ui.roleLabel')" min-width="150">
+            <template #default="{ row }">
+              <div class="user-management-page__roles">
+                <ElTag v-if="row.isSuperAdmin" type="danger" effect="plain">{{
+                  t('ui.superAdministrator')
+                }}</ElTag>
+                <ElTag
+                  v-for="role in row.roles"
+                  :key="role.id"
+                  :type="role.status === 1 ? 'info' : 'warning'"
+                  effect="plain"
+                  >{{ role.name }}{{ role.status === 0 ? t('ui.disabledSuffix') : '' }}</ElTag
+                >
+                <span v-if="!row.roles.length && !row.isSuperAdmin">{{
+                  t('ui.noRolesAssigned')
+                }}</span>
+              </div>
+            </template>
+          </ElTableColumn>
           <!-- @vue-generic {ManagedUser} -->
-          <ElTableColumn :label="t('ui.status')" min-width="90">
+          <ElTableColumn
+            prop="departmentName"
+            :label="t('ui.department')"
+            min-width="110"
+            show-overflow-tooltip
+          />
+          <!-- @vue-generic {ManagedUser} -->
+          <ElTableColumn :label="t('ui.status')" min-width="80">
             <template #default="{ row }"
               ><ElTag :type="row.status === 1 ? 'success' : 'info'" effect="light">{{
                 row.status === 1 ? t('ui.enabled') : t('ui.inactive')
@@ -326,36 +363,79 @@ async function confirmDelete(user: ManagedUser): Promise<void> {
             >
           </ElTableColumn>
           <!-- @vue-generic {ManagedUser} -->
-          <ElTableColumn :label="t('ui.createdAt')" min-width="210">
+          <ElTableColumn
+            v-if="authConfig.authenticatorEnabled"
+            :label="t('ui.authenticator')"
+            width="110"
+          >
+            <template #default="{ row }">
+              <ElTag :type="row.authenticatorEnabled ? 'success' : 'info'" effect="plain">
+                {{
+                  row.authenticatorEnabled
+                    ? t('ui.authenticatorBound')
+                    : t('ui.authenticatorUnbound')
+                }}
+              </ElTag>
+            </template>
+          </ElTableColumn>
+          <!-- @vue-generic {ManagedUser} -->
+          <ElTableColumn :label="t('ui.createdAt')" min-width="170" show-overflow-tooltip>
             <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
           </ElTableColumn>
           <!-- @vue-generic {ManagedUser} -->
-          <ElTableColumn
-            v-if="canManage"
-            :label="t('ui.actions')"
-            :width="currentUser.userInfo?.isSuperAdmin ? 260 : 160"
-            fixed="right"
-          >
+          <ElTableColumn v-if="canManage" :label="t('ui.actions')" width="140" fixed="right">
             <template #default="{ row }">
-              <ElButton
-                v-permission="'system:user:update'"
-                link
-                type="primary"
-                :icon="EditPen"
-                :disabled="busy || optionsLoading"
-                @click="openForm(row)"
-                >{{ t('ui.edit') }}</ElButton
-              >
-              <ElButton
-                v-permission="'system:user:delete'"
-                link
-                type="danger"
-                :icon="Delete"
-                :loading="deletingId === row.id"
-                :disabled="busy || row.isSuperAdmin || confirmingDelete"
-                @click="confirmDelete(row)"
-                >{{ t('ui.delete') }}</ElButton
-              >
+              <div class="user-management-page__actions">
+                <ElButton
+                  v-permission="'system:user:update'"
+                  link
+                  type="primary"
+                  :icon="EditPen"
+                  :disabled="busy || optionsLoading"
+                  @click="openForm(row)"
+                  >{{ t('ui.edit') }}</ElButton
+                >
+                <ElDropdown
+                  v-if="hasMoreActions(row)"
+                  trigger="click"
+                  :disabled="busy"
+                  @command="moreAction($event, row)"
+                >
+                  <ElButton
+                    link
+                    type="primary"
+                    :disabled="busy"
+                    :aria-label="t('ui.userMoreActions', { account: row.username })"
+                  >
+                    {{ t('ui.moreActions') }}<ElIcon><ArrowDown /></ElIcon>
+                  </ElButton>
+                  <template #dropdown>
+                    <ElDropdownMenu>
+                      <ElDropdownItem
+                        v-if="canManageSecurity(row)"
+                        command="password"
+                        :icon="Key"
+                        >{{ t('ui.resetPassword') }}</ElDropdownItem
+                      >
+                      <ElDropdownItem
+                        v-if="authConfig.authenticatorEnabled && canManageSecurity(row)"
+                        command="authenticator"
+                        :icon="Lock"
+                        :disabled="row.status !== 1"
+                        >{{ t('ui.manageAuthenticator') }}</ElDropdownItem
+                      >
+                      <ElDropdownItem
+                        v-if="!row.isSuperAdmin && hasPermission('system:user:delete')"
+                        command="delete"
+                        :icon="Delete"
+                        :disabled="confirmingDelete"
+                        class="user-management-page__delete"
+                        >{{ t('ui.delete') }}</ElDropdownItem
+                      >
+                    </ElDropdownMenu>
+                  </template>
+                </ElDropdown>
+              </div>
             </template>
           </ElTableColumn>
           <template #empty
@@ -376,6 +456,24 @@ async function confirmDelete(user: ManagedUser): Promise<void> {
       :title="t('ui.accessUnavailable')"
       :sub-title="t('ui.contactAnAdministratorToRequestAccessToTheUserList')"
     />
+
+    <ElDialog
+      v-if="authenticatorUser"
+      :model-value="true"
+      :title="t('ui.userAuthenticatorTitle', { account: authenticatorUser.username })"
+      width="min(560px, calc(100vw - 32px))"
+      :close-on-click-modal="false"
+      :show-close="!authenticatorBusy"
+      :close-on-press-escape="!authenticatorBusy"
+      @close="authenticatorUser = null"
+    >
+      <AuthenticatorSettings
+        :target-user="authenticatorUser"
+        @changed="authenticatorChanged"
+        @busy-change="authenticatorBusy = $event"
+        @close="authenticatorUser = null"
+      />
+    </ElDialog>
 
     <UserFormDialog
       v-model="dialogVisible"

@@ -324,5 +324,17 @@
   "resetPassword": "重置密码",
   "administratorPasswordHint": "请输入你当前的管理员密码以确认身份。",
   "newPasswordHint": "为账号 {account} 设置新密码（12–128 个字符）。",
-  "passwordResetSuccess": "密码已重置，该账号的旧会话已撤销。"
+  "passwordResetSuccess": "密码已重置，该账号的旧会话已撤销。",
+  "userContact": "联系方式",
+  "moreActions": "更多",
+  "userMoreActions": "{account} 的更多操作",
+  "manageAuthenticator": "管理验证器",
+  "userAuthenticatorTitle": "验证器 · {account}",
+  "administratorPassword": "管理员当前密码",
+  "userAuthenticatorDescription": "正在为 {account} 管理验证器。输入管理员密码创建后立即生效，请将本次生成的设置密钥交给用户添加到自己的验证器。",
+  "userAuthenticatorSetupHint": "已创建并启用。用户在自己的 Google Authenticator 中添加账号 {account} 和下方密钥，选择“基于时间”，即可使用动态码登录，无需再向管理员确认。密钥仅本次显示，请先保存。",
+  "userAuthenticatorChanged": "用户验证器设置已更新，该用户需要重新登录。",
+  "userAuthenticatorCreated": "验证器已创建并生效，请保存设置密钥后交给目标用户。",
+  "authenticatorSaved": "已保存，完成",
+  "createAndActivateAuthenticator": "创建并启用"
 }

@@ -324,5 +324,17 @@
   "resetPassword": "Reset password",
   "administratorPasswordHint": "Enter your current administrator password to confirm your identity.",
   "newPasswordHint": "Set a new password for {account} (12–128 characters).",
-  "passwordResetSuccess": "Password reset. Existing sessions for this account have been revoked."
+  "passwordResetSuccess": "Password reset. Existing sessions for this account have been revoked.",
+  "userContact": "Contact",
+  "moreActions": "More",
+  "userMoreActions": "More actions for {account}",
+  "manageAuthenticator": "Manage authenticator",
+  "userAuthenticatorTitle": "Authenticator · {account}",
+  "administratorPassword": "Your administrator password",
+  "userAuthenticatorDescription": "Managing the authenticator for {account}. Creating it with your administrator password activates it immediately. Give this setup key to the user to add on their own phone.",
+  "userAuthenticatorSetupHint": "Created and active. The user adds account {account} and the key below to Google Authenticator on their own phone, using Time based, then signs in with their own code. No further confirmation with the administrator is needed. Save the key now; it is shown only once.",
+  "userAuthenticatorChanged": "Authenticator updated. The target user must sign in again.",
+  "userAuthenticatorCreated": "Authenticator created and active. Save the setup key for the target user.",
+  "authenticatorSaved": "Saved, done",
+  "createAndActivateAuthenticator": "Create and activate"
 }

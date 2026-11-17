@@ -36,3 +36,5 @@ npm --prefix workers/api run build
 保持登录、管理员密码重置及默认关闭的验证器接口见 [登录与账号安全](../../docs/authentication.md)。升级时先增量应用 `0007_totp.sql`、`0008_millisecond_timestamps.sql`，不重跑旧迁移；验证器加密主密钥仅配置在后端。
 
 接口契约见 [API 文档](../../docs/api.md)，接入方式见 [后端切换](../../docs/backend-replacement.md)，全项目目录说明见 [目录职责](../../docs/project-structure.md)。
+
+管理员创建验证器直接启用并在同一事务内撤销目标会话；个人绑定保留动态码确认。两种流程复用 `0007_totp.sql` 和 `0008_millisecond_timestamps.sql` 中的 `sys_user_totp`，无需新增字段或重跑已完成迁移。按用户查询由 `user_id` 主键支持。

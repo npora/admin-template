@@ -76,3 +76,13 @@ VITE_PASSWORD_RESET_CONTACT=
 动态码缺失、错误或重复使用返回 HTTP 400、业务码 `10003`；密码错误保持原有登录错误响应。接口通过现有 API 模块调用，不在页面直接访问后端。
 
 算法与运行时依据：[RFC 6238](https://www.rfc-editor.org/rfc/rfc6238.html)、[Web Crypto](https://developers.cloudflare.com/workers/runtime-apis/web-crypto/)。
+
+## 从用户管理创建绑定
+
+开启前端入口后，超级管理员可在用户管理的“更多 → 管理验证器”中为其他用户创建绑定。输入当前管理员密码后，系统生成设置密钥并立即启用，不需要目标用户把动态码交给管理员确认。用户将这次生成的密钥添加到自己手机的 Google Authenticator，即可用密码和动态码登录。
+
+设置密钥仅本次显示，创建成功后弹窗继续显示密钥，保存后点击“已保存，完成”关闭。创建已经生效，关闭弹窗不会取消绑定；已有绑定不会被覆盖。密钥属于长期凭据，应妥善交给目标用户。列表在实际创建或解绑时刷新一次，后续关闭不重复刷新；创建前关闭不会刷新。操作仅撤销目标用户会话。
+
+个人中心与用户管理复用 `src/components/AuthenticatorSettings/`。用户在个人中心自行绑定仍通过密码和动态码确认，解绑后可重新绑定以更换验证器；用户管理中操作自己的账号也使用该个人流程。
+
+管理员接口为 `GET /system/users/:id/totp`、`POST /system/users/:id/totp/setup` 和 `POST /system/users/:id/totp/disable`。创建提交 `{ password }`（管理员当前密码），返回 `{ secret, uri }` 并立即生效；解绑提交 `{ password, code }`，`code` 为目标账号的当前动态码。后端独立检查超级管理员标记、有效会话及目标账号状态，禁止管理其他超级管理员，普通管理员角色不能调用。列表 DTO 的 `authenticatorEnabled` 只表示生效的绑定，不返回设置密钥。

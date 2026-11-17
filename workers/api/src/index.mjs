@@ -35,6 +35,16 @@ const endpoints = new Map([
   ['/auth/totp/disable', ['POST', disableAuthenticator]],
   ['/system/dashboard', ['GET', dashboard]]
 ])
+function userAuthenticatorRoute(path) {
+  const match = /^\/system\/users\/([1-9]\d*)\/totp(?:\/(setup|disable))?$/.exec(path)
+  if (!match || !Number.isSafeInteger(Number(match[1]))) return undefined
+  const operation = match[2]
+  const handler =
+    { setup: setupAuthenticator, enable: enableAuthenticator, disable: disableAuthenticator }[
+      operation
+    ] || authenticatorStatus
+  return [operation ? 'POST' : 'GET', (request, env) => handler(request, env, Number(match[1]))]
+}
 function managementRoute(path) {
   const match =
     /^\/system\/(users|roles|menus|departments)(?:\/(options|menu-options|[1-9]\d*)(?:\/(menus|password))?)?$/.exec(
@@ -79,7 +89,11 @@ export default {
       cors = corsHeaders(request, env)
       const rawPath = new URL(request.url).pathname
       const path = rawPath.startsWith('/api/') ? rawPath.slice(4) : rawPath
-      const endpoint = endpoints.get(path) || dictionaryRoute(path) || managementRoute(path)
+      const endpoint =
+        endpoints.get(path) ||
+        userAuthenticatorRoute(path) ||
+        dictionaryRoute(path) ||
+        managementRoute(path)
       if (!endpoint) throw new HttpError(404, 'Not found')
       if (request.method === 'OPTIONS') response = new Response(null, { status: 204 })
       else {

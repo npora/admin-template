@@ -17,3 +17,5 @@
 首次执行 `npm --prefix workers/api run bootstrap` 会在后端 `.local/` 创建初始化 SQL 和随机账号资料；已有目录时拒绝覆盖。迁移后执行其中的 `bootstrap.sql`，密钥与账号资料仅在本机查看。不要把真实密钥和密码写入源码。
 
 [接口契约](../../docs/api.md) · [权限模型](../../docs/rbac.md) · [正式 MySQL SQL](../../database/mysql/README.md)
+
+管理员创建验证器直接启用，用户导入生成的密钥后即可使用动态码登录；个人中心自行绑定仍需动态码确认。两种流程复用已有验证器表与主键，已应用 `0007_totp.sql`、`0008_millisecond_timestamps.sql` 的库无需新增迁移或重跑初始化。
