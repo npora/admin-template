@@ -31,8 +31,4 @@ CI 使用 `node scripts/check-presets.mjs ../create-nova-admin --install` 独立
 
 Prettier 固定使用仓库验证的精确版本，避免 npm 与 pnpm 解析到不同版本后，对同一源码产生不同格式结果；这不限制使用者选择包管理器。升级格式化工具时统一更新源码格式、依赖快照及锁文件，并执行预设的独立安装验收。
 
-## 统一版本与发布
-
-在维护仓库运行 `npm run release:prepare -- patch`，自动同步模板、生成器、纯净版及其 npm 锁文件和快照校验值。提交并推送后，先推送模板的 `v<版本>` Tag，再推送生成器同名 Tag。模板仅创建 GitHub Release，生成器验证同版本模板后通过 npm Trusted Publisher 发布 npm。首次需在 npm 配置 `npora/create-admin` 的 `release.yml`，详情见 [生成器说明](https://github.com/npora/create-admin#统一版本和自动发布)。
-
-发布脚本和工作流不进入生成项目。纯净版与 Worker 版不包含体积分析、额外 gzip 压缩及展示部署依赖；这些工具通过完整仓库的 `build/optional-tools.ts` 单独维护。
+纯净版与 Worker 版不包含体积分析、额外 gzip 压缩及展示部署依赖；这些工具通过完整仓库的 `build/optional-tools.ts` 单独维护。

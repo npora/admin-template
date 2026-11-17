@@ -96,7 +96,7 @@ Node.js 最低要求见 `package.json`，建议使用受依赖支持的 LTS 版�
 | `deploy/`            | 展示站部署实现，仅完整演示需要              |
 | `scaffold/`          | 生成器差异文件，不进入生成项目              |
 
-纯净版与 Worker 版只保留基础构建、类型和格式检查依赖，不包含额外压缩、体积分析和展示部署工具。核心代码只维护一份。修改依赖后运行 `npm run update:presets`；两个仓库通过 `npm run release:prepare -- patch` 统一版本，Tag 工作流分别发布 GitHub Release 与生成器 npm 包。维护和 CI 细节见 [模板预设维护](scaffold/README.md)。
+纯净版与 Worker 版只保留基础构建、类型和格式检查依赖，不包含额外压缩、体积分析和展示部署工具。核心代码只维护一份，目录组合与检查说明见 [模板预设维护](scaffold/README.md)。
 
 [目录职责](docs/project-structure.md) · [新增业务页面与表格配置](docs/new-business-page.md) · [登录与账号安全](docs/authentication.md) · [权限模型](docs/rbac.md) · [字典](docs/dictionaries.md) · [多语言](docs/i18n.md) · [架构](docs/architecture.md) · [示例](docs/examples.md)
 
