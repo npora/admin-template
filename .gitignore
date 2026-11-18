@@ -14,6 +14,12 @@ dist-ssr
 .wrangler/
 *.local
 
+# Local assistant configuration
+AGENTS.md
+CLAUDE.md
+.codex/
+.claude/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

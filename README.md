@@ -52,11 +52,11 @@ VITE_API_URL=http://localhost:8080
 
 环境覆盖、认证与生产转发见 [开发配置](docs/development.md)、[后端接入](docs/backend-replacement.md) 和 [通用部署](docs/deployment.md)。完整源码仓库的核心模式应保持 `VITE_DEMO_ENABLED=false`；生成后的纯净版不需要该开关。
 
-## 时区与可选验证器
+## 时区与 Google Authenticator
 
 时间显示默认北京时间（`Asia/Shanghai`），可在应用设置中切换 31 个常用时区，偏好只保存在当前浏览器。默认值在 `src/config/datetime.ts`，枚举在 `src/types/timezone.ts`；时间区间统一使用 `DateRangePicker`，接口传 Unix 毫秒，详见 [日期与时区](docs/i18n.md#时区配置与时间区间)。
 
-验证器界面由 `.env` 的 `VITE_AUTHENTICATOR_ENABLED` 控制，默认关闭。超级管理员可在“用户管理 → 更多 → 管理验证器”创建并立即启用，将仅本次显示的密钥交给用户添加到自己手机，即可使用动态码登录。用户可在个人中心自行解绑和重新绑定；后端加密密钥不进入前端配置，详见 [登录与账号安全](docs/authentication.md)。
+Google Authenticator 使用 TOTP 动态码，模板默认关闭。将前端 `.env` 的 `VITE_AUTHENTICATOR_ENABLED` 设为 `true` 可显示验证器入口。Worker 后端完成迁移后，设置 `AUTH_TOTP_ENABLED=true`，并通过后端私密配置提供 `AUTH_TOTP_KEY`。纯净版需要接入支持 TOTP 的自有后端。超级管理员可在“用户管理 → 更多 → 管理验证器”创建并立即启用，将仅本次显示的密钥交给用户添加到自己手机，即可使用动态码登录。用户可在个人中心自行解绑和重新绑定；后端加密密钥不进入前端配置，详见 [登录与账号安全](docs/authentication.md)。
 
 ## 运行本仓库
 
