@@ -8,6 +8,7 @@ import waveMarkup from '@/startup/wave.html?raw'
 import '@/startup/wave.css'
 
 import { usePageViews } from '@/composables/usePageViews'
+import { useAppStore } from '@/store/modules/app'
 import { useViewsStore } from '@/store/modules/views'
 
 usePageViews()
@@ -16,6 +17,7 @@ usePageViews()
 const cssTransitions = typeof window !== 'undefined'
 const route = useRoute()
 const loading = useNavigationLoading(useRouter())
+const { settings } = storeToRefs(useAppStore())
 const viewsStore = useViewsStore()
 const { cachedViews } = storeToRefs(viewsStore)
 const wrappers = new Map<string, { cacheName?: string; component: Component }>()
@@ -58,7 +60,11 @@ watch(
   <main class="app-main" :aria-busy="loading">
     <div class="app-main__content" :inert="loading">
       <RouterView v-slot="{ Component, route: currentRoute }">
-        <Transition name="page-switch" mode="out-in" :css="cssTransitions">
+        <Transition
+          :name="`page-switch-${settings.layout.pageTransition}`"
+          mode="out-in"
+          :css="cssTransitions && settings.layout.pageTransition !== 'none'"
+        >
           <KeepAlive :include="cachedViews">
             <component
               :is="getViewWrapper(currentRoute.path)"

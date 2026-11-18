@@ -10,7 +10,7 @@
 
 [打开展示网站](https://admin.npora.live) · [演示 API 健康检查](https://api.npora.live/health)
 
-演示账号：`admin`，密码：`123456`。这是展示站账号，不是正式 SQL 自动创建的账号。
+演示账号：`admin`，密码：`123456`。公开演示账号的密码和验证器仅供登录体验。要试用改密、找回密码或验证器绑定，可在用户管理创建自己的测试账号。
 
 演示接口为 `https://api.npora.live`；展示站内请求仍使用同源 `/api`。
 
@@ -48,13 +48,17 @@ VITE_API_URL=http://localhost:8080
 - 请求函数与 DTO：`src/api/modules/`、`src/api/types/`。
 - 响应协议：在 `src/api/protocol/index.ts` 统一适配，默认 `{ code: 0, message, data }`，调用方直接获得 `data`。
 - 登录、动态菜单及管理接口：[接口契约](docs/api.md)。账号由自己的后端初始化。
-- MySQL 表结构、基础权限、字典及索引：[正式 SQL](database/mysql/README.md)，基础功能按说明依次执行前四份 SQL；验证器按需执行 `05-authenticator.sql`。已有数据库只执行尚未应用的增量迁移。
+- MySQL 表结构、基础权限、字典及索引：[正式 SQL](database/mysql/README.md)，基础功能按说明依次执行前四份 SQL；随后应用 `06-sort-indexes.sql` 和 `07-recent-users-index.sql`，验证器按需执行 `05-authenticator.sql`。已有数据库只执行尚未应用的增量迁移。
 
 环境覆盖、认证与生产转发见 [开发配置](docs/development.md)、[后端接入](docs/backend-replacement.md) 和 [通用部署](docs/deployment.md)。完整源码仓库的核心模式应保持 `VITE_DEMO_ENABLED=false`；生成后的纯净版不需要该开关。
 
-## 时区与 Google Authenticator
+生产构建会生成 PWA 的 `sw.js`。浏览器检测到新版 Service Worker 等待激活后会提示刷新，确认后激活新版并重新加载网页。
 
-时间显示默认北京时间（`Asia/Shanghai`），可在应用设置中切换 31 个常用时区，偏好只保存在当前浏览器。默认值在 `src/config/datetime.ts`，枚举在 `src/types/timezone.ts`；时间区间统一使用 `DateRangePicker`，接口传 Unix 毫秒，详见 [日期与时区](docs/i18n.md#时区配置与时间区间)。
+## 应用设置与 Google Authenticator
+
+时间显示默认北京时间（`Asia/Shanghai`），可在应用设置中切换 32 个常用时区（含巴基斯坦），偏好只保存在当前浏览器。默认值在 `src/config/datetime.ts`，枚举在 `src/types/timezone.ts`；时间区间统一使用 `DateRangePicker`，接口传 Unix 毫秒，详见 [日期与时区](docs/i18n.md#时区配置与时间区间)。
+
+应用设置还可调整内容区切页动画，默认淡入淡出，可切换上下滑动或关闭。表单弹窗默认在视口中居中。
 
 Google Authenticator 使用 TOTP 动态码，模板默认关闭。将前端 `.env` 的 `VITE_AUTHENTICATOR_ENABLED` 设为 `true` 可显示验证器入口。Worker 后端完成迁移后，设置 `AUTH_TOTP_ENABLED=true`，并通过后端私密配置提供 `AUTH_TOTP_KEY`。纯净版需要接入支持 TOTP 的自有后端。超级管理员可在“用户管理 → 更多 → 管理验证器”创建并立即启用，将仅本次显示的密钥交给用户添加到自己手机，即可使用动态码登录。用户可在个人中心自行解绑和重新绑定；后端加密密钥不进入前端配置，详见 [登录与账号安全](docs/authentication.md)。
 

@@ -23,9 +23,18 @@ test('real frontend client/session round-trip against Worker HTTP handlers and S
   const server = await createTestServer({ demo: true })
   t.after(() => server.close())
   const originalFetch = globalThis.fetch
+  const paths = []
+  let legacyBackend = false
   globalThis.fetch = (input, init) => {
     const raw = input instanceof Request ? input.url : String(input)
     const url = new URL(raw, 'https://api.example.test')
+    const path = url.pathname.replace(/^\/api\//, '/')
+    paths.push(path)
+    if (legacyBackend && path === '/auth/session') {
+      return Promise.resolve(
+        Response.json({ code: 404, message: 'Not found', data: null }, { status: 404 })
+      )
+    }
     return worker.fetch(new Request(url, init), f.env)
   }
   t.after(() => {
@@ -41,6 +50,7 @@ test('real frontend client/session round-trip against Worker HTTP handlers and S
   const session = getSession(router)
   await router.push('/login')
   await session.signIn({ username: 'admin', password })
+  assert.deepEqual(paths, ['/auth/login', '/auth/session'])
   assert.equal(router.hasRoute('SystemUser'), true)
   const users = await load('api/modules/user.ts')
   const roles = await load('api/modules/role.ts')
@@ -120,7 +130,10 @@ test('real frontend client/session round-trip against Worker HTTP handlers and S
   assert.equal(tokenStorage.get(), null)
   assert.equal(dictionaryCache.entries.size, 0)
   assert.equal((await f.call('/auth/user', { token: oldToken })).status, 401)
+  legacyBackend = true
+  paths.length = 0
   await session.signIn({ username: 'viewer', password })
+  assert.deepEqual(paths, ['/auth/login', '/auth/session', '/auth/user', '/auth/routes'])
   assert.equal(router.hasRoute('SystemUser'), true)
   assert.equal(router.hasRoute('SystemRole'), false)
   assert.equal(router.hasRoute('SystemDict'), false)

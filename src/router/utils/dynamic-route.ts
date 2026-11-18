@@ -5,7 +5,11 @@ import { demoViews } from '@/router/extensions'
 
 // 只有页面入口可被后端引用，页面内部的表单等组件不参与动态路由。
 const viewModules = {
-  ...import.meta.glob<RouteComponent>(['/src/views/**/index.vue', '!/src/views/**/components/**']),
+  ...import.meta.glob<RouteComponent>([
+    '/src/views/**/index.vue',
+    '!/src/views/**/components/**',
+    '!/src/views/forgot-password/index.vue'
+  ]),
   ...demoViews
 }
 

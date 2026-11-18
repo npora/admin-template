@@ -14,8 +14,23 @@ export const pageComponents = new Set([
   'system/dict/index'
 ])
 export const staticNames = new Set(
-  ['Login', 'Layout', 'Dashboard', 'NotFound', 'RouteFallback', 'Profile', 'ExampleForm'].map(
-    (value) => value.toLowerCase()
-  )
+  [
+    'Login',
+    'ForgotPassword',
+    'Layout',
+    'Dashboard',
+    'NotFound',
+    'RouteFallback',
+    'Profile',
+    'ExampleForm'
+  ].map((value) => value.toLowerCase())
 )
-export const staticPaths = ['/', '/login', '/dashboard', '/404', '/profile', '/examples/form']
+export const staticPaths = [
+  '/',
+  '/login',
+  '/forgot-password',
+  '/dashboard',
+  '/404',
+  '/profile',
+  '/examples/form'
+]

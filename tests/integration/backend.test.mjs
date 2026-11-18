@@ -7,6 +7,9 @@ try {
   const { appConfig } = await server.ssrLoadModule('/src/config/app.ts')
   assert.equal(appConfig.demoEnabled, false)
   const { constantRoutes } = await server.ssrLoadModule('/src/router/routes/constant.ts')
+  const recovery = constantRoutes.find((route) => route.name === 'ForgotPassword')
+  assert.equal(recovery?.path, '/forgot-password')
+  assert.equal(recovery.meta.public, true)
   assert.equal(
     constantRoutes
       .find((route) => route.name === 'Layout')

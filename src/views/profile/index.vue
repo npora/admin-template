@@ -14,6 +14,7 @@ import { createLocalProfile, profileErrors, type LocalProfile } from '@/store/mo
 import type { ThemeMode, ComponentSize } from '@/store/modules/app/types'
 import { authConfig } from '@/config/auth'
 import AuthenticatorSettings from '@/components/AuthenticatorSettings/index.vue'
+import ChangePasswordForm from './components/ChangePasswordForm.vue'
 const { t } = useI18n({ useScope: 'global' })
 const authenticatorEnabled = computed(() => authConfig.authenticatorEnabled)
 const user = useUserStore()
@@ -243,6 +244,9 @@ function setTabs(value: unknown) {
                 />
               </div>
             </div>
+          </ElTabPane>
+          <ElTabPane :label="t('ui.changePassword')" name="password" lazy>
+            <ChangePasswordForm :active="tab === 'password'" />
           </ElTabPane>
           <ElTabPane
             v-if="authenticatorEnabled"

@@ -92,6 +92,7 @@ try {
     `/tests/integration/.check-transitions-${process.pid}.ts`
   )
   const { pinia } = await load('store/index.ts')
+  const { useAppStore } = await load('store/modules/app/index.ts')
   const { usePermissionStore } = await load('store/modules/permission/index.ts')
   const { useTabsStore } = await load('store/modules/tabs/index.ts')
   usePermissionStore(pinia).setReady(true)
@@ -149,7 +150,7 @@ try {
   const pageButton = (path) => flatten(root).find((el) => el.props['data-page'] === path)
   const settled = () =>
     !flatten(root).some((el) =>
-      [...el.classes].some((value) => /page-switch-(enter|leave)-/.test(value))
+      [...el.classes].some((value) => /page-switch-(fade|slide)-(enter|leave)-/.test(value))
     )
   async function go(path) {
     await router.push(path)
@@ -166,6 +167,15 @@ try {
     assert.ok(button.text.endsWith(':1') || instances.get(path).value > 1, '页面仍应能处理点击')
   }
   await go('/dashboard')
+  const hasAnimation = (transition) =>
+    flatten(root).some((el) =>
+      [...el.classes].some((name) => name.startsWith(`page-switch-${transition}-`))
+    )
+  const settings = useAppStore(pinia)
+  assert.equal(settings.settings.layout.pageTransition, 'fade')
+  await router.push('/users')
+  await nextTick()
+  assert.ok(hasAnimation('fade'))
   await go('/users')
   const users = instances.get('/users')
   await go('/dashboard')
@@ -203,6 +213,20 @@ try {
   assert.equal(byClass('app-main__content').props.inert, false)
   await waitFor(() => pageButton('/roles') && settled())
   stopGuard()
+  settings.updateSettings({ layout: { pageTransition: 'slide' } })
+  settings.restoreSettings()
+  assert.equal(settings.settings.layout.pageTransition, 'slide')
+  await router.push('/users')
+  await nextTick()
+  assert.ok(hasAnimation('slide'))
+  await waitFor(() => pageButton('/users') && settled())
+  assert.equal(instances.get('/users'), users)
+  settings.updateSettings({ layout: { pageTransition: 'none' } })
+  await router.push('/roles')
+  await nextTick()
+  assert.ok(pageButton('/roles') && settled(), '关闭动画后直接显示目标页面')
+  settings.resetSettings()
+  assert.equal(settings.settings.layout.pageTransition, 'fade')
   stopLoading()
   assert.deepEqual(warnings, [])
   console.log(

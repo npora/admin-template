@@ -1,4 +1,5 @@
 import { HttpError } from '../http.mjs'
+import { isProtectedDemoAccount } from '../config/auth.mjs'
 import { readAccess } from '../repositories/auth.mjs'
 
 export async function authorization(db, user) {
@@ -117,4 +118,9 @@ export function dynamicRoutes(access) {
         ]
       })
   return build(null)
+}
+
+export function assertCredentialsWritable(user, env) {
+  if (isProtectedDemoAccount(user, env))
+    throw new HttpError(403, '公开演示账号的凭据仅供体验，请使用自行创建的测试账号')
 }

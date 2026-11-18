@@ -269,3 +269,11 @@
   flex-wrap: wrap;
   margin-bottom: 18px;
 }
+
+.login-page__link {
+  color: var(--np-color-primary);
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

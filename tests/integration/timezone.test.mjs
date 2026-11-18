@@ -19,13 +19,15 @@ try {
   const { STORAGE_KEYS } = await load('constants/storage.ts')
   const { formatDate, applyLocale } = await load('locales/index.ts')
   assert.equal(dateTimeConfig.defaultTimeZone, 'Asia/Shanghai')
-  assert.equal(Object.keys(TIME_ZONE).length, 31)
+  assert.equal(Object.keys(TIME_ZONE).length, 32)
   for (const zone of Object.values(TIME_ZONE))
     assert.doesNotThrow(() => zonedDate(0, zone).format())
   const pinia = createPinia()
   setActivePinia(pinia)
   const app = useAppStore()
   assert.equal(app.settings.timeZone, TIME_ZONE.SHANGHAI)
+  app.updateSettings({ timeZone: TIME_ZONE.KARACHI })
+  assert.equal(formatDate(Date.UTC(2026, 0, 1, 0), 'dateTime'), '2026-01-01 05:00')
   app.updateSettings({ timeZone: TIME_ZONE.UTC })
   applyLocale('zh-CN')
   const value = Date.UTC(2026, 0, 1, 18)
@@ -80,7 +82,7 @@ try {
   toPickerRange(actual, TIME_ZONE.NEW_YORK, true)
   assert.deepEqual(actual, original, 'display conversion cannot mutate timestamps')
   console.log(
-    '通过：31 时区、北京默认值与 UTC 切换、本机偏好恢复与重置、响应式显示、毫秒往返、跨日及夏令时 23/25 小时区间。'
+    '通过：32 时区、北京默认值与 UTC 切换、本机偏好恢复与重置、响应式显示、毫秒往返、跨日及夏令时 23/25 小时区间。'
   )
 } finally {
   await server.close()

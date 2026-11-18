@@ -15,9 +15,11 @@ npm run dev
 
 `npm run build` 类型检查并构建到 `dist/`。生产服务器应把 `/api` 转发给自己的后端；开发代理配置不会进入生产产物。
 
+生产构建会生成 PWA 的 `sw.js`。浏览器检测到新版 Service Worker 等待激活后会提示刷新，确认后激活新版并重新加载网页。
+
 ## 时区与可选验证器
 
-默认北京时间，可在应用设置中切换常用时区，偏好保存在浏览器。默认值在 `src/config/datetime.ts`，枚举在 `src/types/timezone.ts`；时间区间使用 `DateRangePicker` 并输出毫秒时间戳，参照 [日期与时区](docs/i18n.md#时区配置与时间区间)。
+默认北京时间，可在应用设置中切换 32 个常用时区（含巴基斯坦），偏好保存在浏览器。内容区切页动画默认淡入淡出，可在应用设置中切换上下滑动或关闭。默认值在 `src/config/datetime.ts`，枚举在 `src/types/timezone.ts`；时间区间使用 `DateRangePicker` 并输出毫秒时间戳，参照 [日期与时区](docs/i18n.md#时区配置与时间区间)。
 
 `.env` 的 `VITE_AUTHENTICATOR_ENABLED` 默认为 `false`，开启前需对接支持验证器的后端。管理员创建绑定立即生效，用户导入自己手机后即可使用动态码登录；个人中心支持自行解绑、重新绑定，详见 [登录与账号安全](docs/authentication.md)。
 
@@ -31,7 +33,7 @@ npm run dev
 - `public/`：原样输出的静态资源。
 - `build/`：公共构建配置和启动加载层。
 - `scripts/`、`tests/`：验证命令与核心回归。
-- `database/mysql/`：正式权限与字典 SQL，按编号依次导入 `01-schema.sql`、`02-seed.sql`、`03-dictionaries.sql`、`04-query-indexes.sql`。可选验证器 SQL 为 `05-authenticator.sql`，所有预设保留，按需执行。密码哈希和管理员账号由自己的后端初始化。
+- `database/mysql/`：正式权限与字典 SQL，按编号依次导入 `01-schema.sql`、`02-seed.sql`、`03-dictionaries.sql`、`04-query-indexes.sql`。可选验证器 SQL 为 `05-authenticator.sql`，所有预设保留，按需执行。基础表创建后应用 `06-sort-indexes.sql` 和 `07-recent-users-index.sql` 补充排序索引。密码哈希和管理员账号由自己的后端初始化。
 - `docs/`：接口、权限、多语言、开发和目录说明。
 
 字典类型、数据、选项缓存和标签组件的使用方法见 [字典管理](docs/dictionaries.md)。

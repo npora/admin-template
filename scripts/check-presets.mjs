@@ -77,7 +77,9 @@ try {
       'database/mysql/01-schema.sql',
       'database/mysql/02-seed.sql',
       'database/mysql/03-dictionaries.sql',
-      'database/mysql/04-query-indexes.sql'
+      'database/mysql/04-query-indexes.sql',
+      'database/mysql/06-sort-indexes.sql',
+      'database/mysql/07-recent-users-index.sql'
     ])
       assert.equal(
         await readFile(join(directory, entry), 'utf8'),
@@ -155,6 +157,14 @@ try {
     }
     run(directory, ['run', preset === 'demo' ? 'check:all' : 'check'])
     run(directory, ['run', preset === 'demo' ? 'build:demo' : 'build'])
+    const serviceWorker = await readFile(join(directory, 'dist/sw.js'), 'utf8')
+    assert.match(serviceWorker, /SKIP_WAITING/)
+    assert.equal(existsSync(join(directory, 'dist/version.json')), false)
+    if (preset === 'starter') {
+      const env = await readFile(join(directory, '.env'), 'utf8')
+      assert.match(env, /^VITE_AUTHENTICATOR_ENABLED=false$/m)
+      assert.doesNotMatch(env, /^VITE_DEMO_ENABLED=true$/m)
+    }
     if (preset === 'worker') run(directory, ['run', 'check:backend'])
     console.log(`Passed generated preset: ${preset}`)
   }

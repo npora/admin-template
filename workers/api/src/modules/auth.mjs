@@ -1,8 +1,14 @@
 import { HttpError, unauthorized, readJson, success } from '../http.mjs'
-import { digest, randomHex, verifyPassword } from '../security/crypto.mjs'
+import { digest, randomHex, verifyPassword, passwordIterations } from '../security/crypto.mjs'
 import { limitLogin } from '../security/rate-limit.mjs'
 import { authorization, userInfo, dynamicRoutes } from '../security/access.mjs'
-import { findLoginUser, findSession, saveSession, deleteSession } from '../repositories/auth.mjs'
+import {
+  findLoginUser,
+  findSession,
+  saveSession,
+  deleteSession,
+  findEnabledTotp
+} from '../repositories/auth.mjs'
 import { decryptTotp, verifyTotp } from '../security/totp.mjs'
 import { resolveAuthConfig } from '../config/auth.mjs'
 
@@ -34,13 +40,14 @@ export async function login(request, env) {
     throw new HttpError(400, '用户名或密码格式错误')
   await limitLogin(request, env.DB, input.username, Date.now())
   const user = await findLoginUser(env.DB, input.username)
-  const valid = await verifyPassword(input.password, user?.password_hash, env.AUTH_PEPPER)
-  if (!valid || !user || user.status !== 1) throw new HttpError(401, '用户名或密码错误', 10001)
-  const binding = await env.DB.prepare(
-    'SELECT * FROM sys_user_totp WHERE user_id = ?1 AND enabled = 1'
+  const valid = await verifyPassword(
+    input.password,
+    user?.password_hash,
+    env.AUTH_PEPPER,
+    passwordIterations(env)
   )
-    .bind(user.id)
-    .first()
+  if (!valid || !user || user.status !== 1) throw new HttpError(401, '用户名或密码错误', 10001)
+  const binding = await findEnabledTotp(env.DB, user.id)
   // 开关仅控制新绑定；已绑定账号始终验证动态码，不能通过关闭入口绕过。
   if (binding) {
     const step = await verifyTotp(
@@ -86,4 +93,10 @@ export async function currentUser(request, env) {
 export async function routes(request, env) {
   const user = await authenticate(request, env.DB)
   return success(dynamicRoutes(await authorization(env.DB, user)))
+}
+
+export async function sessionInfo(request, env) {
+  const user = await authenticate(request, env.DB)
+  const access = await authorization(env.DB, user)
+  return success({ user: userInfo(user, access), routes: dynamicRoutes(access) })
 }

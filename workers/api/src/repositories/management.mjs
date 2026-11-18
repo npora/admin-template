@@ -3,12 +3,32 @@ import { calculateAccess } from '../security/access.mjs'
 
 const userColumns =
   'id, department_id, username, display_name, avatar, email, mobile, status, is_super_admin, last_login_at, created_at, updated_at, deleted_at'
-export async function snapshot(db, actor, { userId = 0, roleId = 0 } = {}) {
+export async function snapshot(
+  db,
+  actor,
+  {
+    userId = 0,
+    roleId = 0,
+    departments: includeDepartments = false,
+    departmentCounts = false,
+    roleCounts = false,
+    allRoles = false
+  } = {}
+) {
   const result = await db.batch([
-    db.prepare(`SELECT d.*, (SELECT count(*) FROM sys_user u WHERE u.department_id=d.id AND u.deleted_at IS NULL) AS user_count
-      FROM sys_department d ORDER BY sort_order, id`),
-    db.prepare(`SELECT r.*, (SELECT count(*) FROM sys_user_role ur JOIN sys_user u ON u.id=ur.user_id AND u.deleted_at IS NULL WHERE ur.role_id=r.id) AS user_count
-      FROM sys_role r ORDER BY sort_order, id`),
+    allRoles
+      ? db.prepare(
+          roleCounts
+            ? `SELECT r.*, (SELECT count(*) FROM sys_user_role ur JOIN sys_user u ON u.id=ur.user_id AND u.deleted_at IS NULL WHERE ur.role_id=r.id) AS user_count
+      FROM sys_role r ORDER BY sort_order, id`
+            : 'SELECT * FROM sys_role ORDER BY sort_order, id'
+        )
+      : db
+          .prepare(
+            `SELECT r.* FROM sys_role r JOIN sys_user_role ur ON ur.role_id=r.id
+      WHERE ur.user_id=?1 ORDER BY r.sort_order, r.id`
+          )
+          .bind(actor.id),
     db.prepare('SELECT * FROM sys_menu ORDER BY sort_order, id'),
     db
       .prepare(
@@ -21,13 +41,24 @@ export async function snapshot(db, actor, { userId = 0, roleId = 0 } = {}) {
     db.prepare('SELECT revision FROM sys_data_revision WHERE id=1'),
     db
       .prepare('SELECT 1 AS valid FROM sys_auth_session WHERE token_hash=?1 AND expires_at>?2')
-      .bind(actor.sessionHash, Date.now())
+      .bind(actor.sessionHash, Date.now()),
+    ...(includeDepartments
+      ? [
+          db.prepare(
+            departmentCounts
+              ? `SELECT d.*, (SELECT count(*) FROM sys_user u WHERE u.department_id=d.id AND u.deleted_at IS NULL) AS user_count
+      FROM sys_department d ORDER BY sort_order, id`
+              : 'SELECT * FROM sys_department ORDER BY sort_order, id'
+          )
+        ]
+      : [])
   ])
-  const [departments, roles, menus, roleMenus, userRoles, users] = result.map((r) => r.results)
+  const [roles, menus, roleMenus, userRoles, users, revision, session, departments = []] =
+    result.map((r) => r.results)
   const user = users.find(
     (row) => row.id === actor.id && row.status === 1 && row.deleted_at == null
   )
-  if (!user || !result[7].results.length) throw unauthorized()
+  if (!user || !session.length) throw unauthorized()
   const roleIds = new Set(
     userRoles.filter((row) => row.user_id === user.id).map((row) => row.role_id)
   )
@@ -49,7 +80,7 @@ export async function snapshot(db, actor, { userId = 0, roleId = 0 } = {}) {
     users,
     user,
     access,
-    revision: result[6].results[0].revision
+    revision: revision[0].revision
   }
 }
 const tables = new Set([

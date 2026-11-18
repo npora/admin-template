@@ -1,12 +1,12 @@
 import { HttpError, corsHeaders, success } from './http.mjs'
-import { login, logout, currentUser, routes } from './modules/auth.mjs'
+import { login, logout, currentUser, routes, sessionInfo } from './modules/auth.mjs'
 import { users } from './modules/users.mjs'
 import { roles } from './modules/roles.mjs'
 import { menus } from './modules/menus.mjs'
 import { departments } from './modules/departments.mjs'
 import { dictionaryRoute } from './modules/dictionaries.mjs'
 import { dashboard } from './modules/dashboard.mjs'
-import { resetUserPassword } from './modules/user-password.mjs'
+import { changeOwnPassword, resetOwnPassword, resetUserPassword } from './modules/user-password.mjs'
 import {
   authenticatorStatus,
   setupAuthenticator,
@@ -26,7 +26,10 @@ async function health(_request, env) {
 const endpoints = new Map([
   ['/health', ['GET', health]],
   ['/auth/login', ['POST', login]],
+  ['/auth/password/change', ['POST', changeOwnPassword]],
+  ['/auth/password/reset', ['POST', resetOwnPassword]],
   ['/auth/logout', ['POST', logout]],
+  ['/auth/session', ['GET', sessionInfo]],
   ['/auth/user', ['GET', currentUser]],
   ['/auth/routes', ['GET', routes]],
   ['/auth/totp', ['GET', authenticatorStatus]],

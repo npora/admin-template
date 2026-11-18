@@ -5,7 +5,7 @@ import { dynamicRoutes } from '../security/access.mjs'
 import { userDto } from './dto.mjs'
 export async function dashboard(request, env) {
   const actor = await authenticate(request, env.DB)
-  const state = await snapshot(env.DB, actor)
+  const state = await snapshot(env.DB, actor, { departments: true, allRoles: true })
   const can = (permission) =>
     state.access.permissions.includes('*') || state.access.permissions.includes(permission)
   const capabilities = {

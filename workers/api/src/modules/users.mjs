@@ -1,7 +1,7 @@
 import { readJson, success } from '../http.mjs'
 import { authenticate } from './auth.mjs'
 import { requirePermission } from '../security/access.mjs'
-import { hashPassword } from '../security/crypto.mjs'
+import { hashPassword, passwordIterations } from '../security/crypto.mjs'
 import {
   snapshot,
   commit,
@@ -77,33 +77,49 @@ function roleStatements(db, userId, roleIds) {
 }
 export async function users(request, env, routeId) {
   const actor = await authenticate(request, env.DB)
-  const state = await snapshot(env.DB, actor, { userId: routeId })
+  const state = await snapshot(env.DB, actor, {
+    userId: routeId,
+    departments: true,
+    allRoles: true
+  })
   const action = { GET: 'list', POST: 'create', PUT: 'update', DELETE: 'delete' }[request.method]
   requirePermission(state.access, `system:user:${action}`)
   if (request.method === 'GET') {
     const query = pagination(new URL(request.url))
     const departmentIds =
       query.departmentId === null ? null : [...descendants(state.departments, query.departmentId)]
-    const filter = `deleted_at IS NULL
-      AND (?1='' OR instr(lower(username||' '||display_name||' '||coalesce(email,'')||' '||coalesce(mobile,'')),lower(?1))>0)
-      AND (?2 IS NULL OR status=?2)
-      AND (?3 IS NULL OR EXISTS(SELECT 1 FROM sys_user_role ur JOIN sys_role r ON r.id=ur.role_id AND r.deleted_at IS NULL WHERE ur.user_id=sys_user.id AND ur.role_id=?3))
-      AND (?4 IS NULL OR department_id IN (SELECT value FROM json_each(?4)))`
-    const params = [
-      query.keyword,
-      query.status,
-      query.roleId,
-      departmentIds === null ? null : JSON.stringify(departmentIds)
-    ]
+    const filters = ['deleted_at IS NULL']
+    const params = []
+    if (query.keyword) {
+      filters.push(
+        "instr(lower(username||' '||display_name||' '||coalesce(email,'')||' '||coalesce(mobile,'')),lower(?))>0"
+      )
+      params.push(query.keyword)
+    }
+    if (query.status !== null) {
+      filters.push('status=?')
+      params.push(query.status)
+    }
+    if (query.roleId !== null) {
+      filters.push(
+        'EXISTS(SELECT 1 FROM sys_user_role ur JOIN sys_role r ON r.id=ur.role_id AND r.deleted_at IS NULL WHERE ur.user_id=sys_user.id AND ur.role_id=?)'
+      )
+      params.push(query.roleId)
+    }
+    if (departmentIds !== null) {
+      filters.push('department_id IN (SELECT value FROM json_each(?))')
+      params.push(JSON.stringify(departmentIds))
+    }
+    const filter = filters.join(' AND ')
     const result = await env.DB.batch([
       env.DB.prepare(`SELECT count(*) AS total FROM sys_user WHERE ${filter}`).bind(...params),
       env.DB.prepare(
-        `SELECT ${selectUsers}, EXISTS(SELECT 1 FROM sys_user_totp t WHERE t.user_id=sys_user.id AND t.enabled=1) AS authenticator_enabled FROM sys_user WHERE ${filter} ORDER BY id DESC LIMIT ?5 OFFSET ?6`
+        `SELECT ${selectUsers}, EXISTS(SELECT 1 FROM sys_user_totp t WHERE t.user_id=sys_user.id AND t.enabled=1) AS authenticator_enabled FROM sys_user WHERE ${filter} ORDER BY id DESC LIMIT ? OFFSET ?`
       ).bind(...params, query.pageSize, (query.page - 1) * query.pageSize),
       // Hydrate associations only for this bounded page, not the entire user table.
       env.DB.prepare(
         `SELECT ur.* FROM sys_user_role ur WHERE ur.user_id IN
-        (SELECT id FROM sys_user WHERE ${filter} ORDER BY id DESC LIMIT ?5 OFFSET ?6)`
+        (SELECT id FROM sys_user WHERE ${filter} ORDER BY id DESC LIMIT ? OFFSET ?)`
       ).bind(...params, query.pageSize, (query.page - 1) * query.pageSize)
     ])
     return success({
@@ -130,9 +146,13 @@ export async function users(request, env, routeId) {
     )
       invalid('用户名须为字母开头的 3–64 位字母数字下划线，密码须为 12–128 位')
     validate(input, state, undefined, true)
-    const passwordHash = await hashPassword(input.password, env.AUTH_PEPPER)
+    const passwordHash = await hashPassword(
+      input.password,
+      env.AUTH_PEPPER,
+      passwordIterations(env)
+    )
     // Refresh authorization and references after the asynchronous password derivation.
-    const fresh = await snapshot(env.DB, actor)
+    const fresh = await snapshot(env.DB, actor, { departments: true, allRoles: true })
     requirePermission(fresh.access, 'system:user:create')
     validate(input, fresh, undefined, true)
     const results = await commit(env.DB, actor, fresh, [

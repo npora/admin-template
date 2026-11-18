@@ -25,16 +25,23 @@ HTTP 401，以及业务 code 为 `401`、`10002`（含字符串形式），表�
 
 ## 认证与动态路由
 
-| 接口                | 请求 / 返回                                                                     |
-| ------------------- | ------------------------------------------------------------------------------- |
-| `POST /auth/logout` | Bearer Token → `null`，撤销该会话；重复退出幂等                                 |
-| `POST /auth/login`  | `{ username, password, rememberMe?, totpCode? }` → `{ accessToken, expiresAt }` |
-| `GET /auth/user`    | 用户资料、`roles` 和实际授予的 `permissions`                                    |
-| `GET /auth/routes`  | 当前用户获准访问的 `DynamicRoute[]`                                             |
+| 接口                         | 请求 / 返回                                                                     |
+| ---------------------------- | ------------------------------------------------------------------------------- |
+| `POST /auth/logout`          | Bearer Token → `null`，撤销该会话；重复退出幂等                                 |
+| `POST /auth/login`           | `{ username, password, rememberMe?, totpCode? }` → `{ accessToken, expiresAt }` |
+| `POST /auth/password/reset`  | `{ username, totpCode, newPassword }` → `null`，需已绑定验证器                  |
+| `POST /auth/password/change` | Bearer Token，提交 `{ currentPassword, newPassword, totpCode? }` → `null`       |
+| `GET /auth/session`          | Bearer Token → `{ user, routes }`，一次返回用户资料与获准路由                   |
+| `GET /auth/user`             | 用户资料、`roles` 和实际授予的 `permissions`                                    |
+| `GET /auth/routes`           | 当前用户获准访问的 `DynamicRoute[]`                                             |
+
+Worker 登录签发随机不透明 Token，D1 只保存 Token 的哈希和到期时间。受保护接口要求 `Authorization: Bearer <accessToken>`，后端独立验证会话及接口权限。
+
+当前前端优先读取 `/auth/session`。旧后端返回 HTTP 404 时，沿用 `/auth/user` 与 `/auth/routes`。
 
 完整类型见 `src/api/types/auth.ts` 与 `src/api/types/route.ts`；正式表与基础菜单见 `database/mysql/`。
 
-可选验证器、保持登录和管理员重置密码的完整契约及默认配置见 [登录与账号安全](authentication.md)。验证器默认关闭，绑定状态与校验在后端维护，不由前端配置决定。
+记住我、自助重置、个人改密和管理员重置密码的完整契约及默认配置见 [登录与账号安全](authentication.md)。验证器默认关闭，绑定状态与校验在后端维护，不由前端配置决定。
 
 路由 `component` 相对于 `src/views`，例如 `system/user/index`，只允许页面入口，不允许内部 `components`。目录可嵌套多层 `children` 或提供 `redirect`。所有路由名称和完整路径必须唯一，不能覆盖静态路由。
 

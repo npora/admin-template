@@ -21,7 +21,11 @@ import { tree, menuDto, roleOption, roleDto } from './dto.mjs'
 
 export async function roles(request, env, routeId, operation) {
   const actor = await authenticate(request, env.DB)
-  const state = await snapshot(env.DB, actor, { roleId: routeId })
+  const state = await snapshot(env.DB, actor, {
+    roleId: routeId,
+    roleCounts: !operation,
+    allRoles: true
+  })
   if (operation === 'options') {
     requireAny(state.access, ['system:user:list', 'system:user:create', 'system:user:update'])
     return success(state.roles.filter((role) => role.deleted_at == null).map(roleOption))

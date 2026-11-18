@@ -1,5 +1,8 @@
 const encoder = new TextEncoder()
-const iterations = 100_000
+const defaultIterations = 100_000
+const upgradedIterations = 600_000
+export const passwordIterations = (env) =>
+  env.AUTH_PASSWORD_ITERATIONS === '600000' ? upgradedIterations : defaultIterations
 export const randomHex = (size = 32) => hex(crypto.getRandomValues(new Uint8Array(size)))
 function hex(bytes) {
   return Array.from(new Uint8Array(bytes), (value) => value.toString(16).padStart(2, '0')).join('')
@@ -17,7 +20,7 @@ function pepperKey(pepper) {
     'sign'
   ])
 }
-async function derive(password, salt, pepper) {
+async function derive(password, salt, pepper, rounds) {
   const prehash = await crypto.subtle.sign(
     'HMAC',
     await pepperKey(pepper),
@@ -25,22 +28,25 @@ async function derive(password, salt, pepper) {
   )
   const key = await crypto.subtle.importKey('raw', prehash, 'PBKDF2', false, ['deriveBits'])
   return crypto.subtle.deriveBits(
-    { name: 'PBKDF2', hash: 'SHA-256', salt: unhex(salt), iterations },
+    { name: 'PBKDF2', hash: 'SHA-256', salt: unhex(salt), iterations: rounds },
     key,
     256
   )
 }
-export async function hashPassword(password, pepper) {
+export async function hashPassword(password, pepper, rounds = defaultIterations) {
   if (typeof password !== 'string' || password.length < 12 || password.length > 128)
     throw new Error('Password must contain 12–128 characters')
   const salt = randomHex(16)
-  return `npora-v1$${iterations}$${salt}$${hex(await derive(password, salt, pepper))}`
+  return `npora-v1$${rounds}$${salt}$${hex(await derive(password, salt, pepper, rounds))}`
 }
-export async function verifyPassword(password, stored, pepper) {
+export async function verifyPassword(password, stored, pepper, targetRounds = defaultIterations) {
   // An unknown/corrupt account still pays the same KDF cost; public response is identical.
-  const match = /^npora-v1\$100000\$([a-f0-9]{32})\$([a-f0-9]{64})$/.exec(stored || '')
-  const actual = await derive(password, match?.[1] ?? '0'.repeat(32), pepper)
-  const expected = unhex(match?.[2] ?? '0'.repeat(64))
+  const match = /^npora-v1\$(100000|600000)\$([a-f0-9]{32})\$([a-f0-9]{64})$/.exec(stored || '')
+  const rounds = match ? Number(match[1]) : targetRounds
+  const salt = match?.[2] ?? '0'.repeat(32)
+  const actual = await derive(password, salt, pepper, rounds)
+  if (rounds < targetRounds) await derive(password, salt, pepper, targetRounds - rounds)
+  const expected = unhex(match?.[3] ?? '0'.repeat(64))
   // Portable WebCrypto constant-time MAC verification (also works in Node tests).
   const algorithm = { name: 'HMAC', hash: 'SHA-256' }
   const signing = await crypto.subtle.importKey('raw', actual, algorithm, false, ['sign'])

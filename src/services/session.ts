@@ -1,8 +1,7 @@
 import type { Router } from 'vue-router'
 import { t } from '@/locales'
 
-import { getUserInfo, login, revokeSession } from '@/api/modules/auth'
-import { getDynamicRoutes } from '@/api/modules/route'
+import { getSessionInfo, login, revokeSession } from '@/api/modules/auth'
 import type { LoginRequest } from '@/api/types/auth'
 import { getTokenVersion, tokenStorage } from '@/api/auth/token-storage'
 import { transformDynamicRoutes } from '@/router/utils/dynamic-route'
@@ -62,7 +61,7 @@ function createSession(router: Router) {
     tokenVersion: number
   ): Promise<boolean> {
     try {
-      const [user, routeData] = await Promise.all([getUserInfo(), getDynamicRoutes()])
+      const { user, routes: routeData } = await getSessionInfo()
 
       // 退出或切换账号后，不允许旧请求恢复已清理的会话。
       if (

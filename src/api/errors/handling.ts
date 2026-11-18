@@ -34,6 +34,11 @@ export function isUnauthorizedError(error: unknown): boolean {
   return isApiError(error) && [401, '401', 10002, '10002'].includes(error.code)
 }
 
+export function isNotFoundError(error: unknown): boolean {
+  if (isRequestError(error)) return error.code === 'HTTP_ERROR' && error.status === 404
+  return isApiError(error) && [404, '404'].includes(error.code)
+}
+
 export function isCancelledRequest(error: unknown): boolean {
   return isRequestError(error) && error.code === 'ABORT_ERROR'
 }

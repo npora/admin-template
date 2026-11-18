@@ -11,7 +11,7 @@ import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 
 export function coreConfig(
   root: string,
-  { mode }: ConfigEnv,
+  { mode, command }: ConfigEnv,
   env: Record<string, string>
 ): UserConfig {
   const resolvePath = (path: string) => resolve(root, path)
@@ -74,7 +74,8 @@ export function coreConfig(
 
       Components({
         resolvers: [ElementPlusResolver()],
-        dts: 'src/types/generated/components.d.ts'
+        dts: command === 'serve' ? 'src/types/generated/components.d.ts' : false,
+        syncMode: 'append'
       })
     ],
 

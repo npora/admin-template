@@ -21,6 +21,10 @@
 
 可选验证器使用新增的 [05-authenticator.sql](05-authenticator.sql)，在前四份之后按需执行，已有库只执行尚未应用的新增文件。它新增 `sys_user_totp`，保存加密后的密钥、绑定状态、待绑定过期时间和已使用时间步，不改动已有用户资料；后端负责加密、二次验证、会话撤销与并发一致性。配置见 [登录与账号安全](../../docs/authentication.md)。
 
+完成基础四份 SQL 后，应用 [06-sort-indexes.sql](06-sort-indexes.sql) 为部门、角色和菜单添加 `(sort_order, id)` 索引，供全量排序查询使用。此脚本独立于可选验证器配置，已有库只需执行尚未应用的索引迁移。
+
+[07-recent-users-index.sql](07-recent-users-index.sql) 为未删除用户按创建时间和 ID 查询新增联合索引。此迁移保留按 ID 排序的列表索引。
+
 例如，先创建并选择一个新库：
 
 ```sql
@@ -36,6 +40,8 @@ mysql -u root -p npora_admin < database/mysql/01-schema.sql
 mysql -u root -p npora_admin < database/mysql/02-seed.sql
 mysql -u root -p npora_admin < database/mysql/03-dictionaries.sql
 mysql -u root -p npora_admin < database/mysql/04-query-indexes.sql
+mysql -u root -p npora_admin < database/mysql/06-sort-indexes.sql
+mysql -u root -p npora_admin < database/mysql/07-recent-users-index.sql
 ```
 
 按编号逐份执行，前一份成功后再执行下一份。每份仅执行一次，不加 `--force` 忽略错误；GUI 导入也应遇错停止。建表遇到同名表会报错，基础数据遇到重复主键或角色编码会报错，不会自动覆盖已有数据。种子数据在事务中导入，失败应回滚；MySQL DDL 隐式提交，结构和索引迁移不能依赖事务回滚，执行中断后应检查已完成步骤。已有业务库使用尚未应用的新增迁移，不能重新执行初始化文件。

@@ -20,7 +20,7 @@ import { tree, departmentDto } from './dto.mjs'
 const keys = ['parentId', 'name', 'code', 'leader', 'phone', 'email', 'sortOrder', 'status']
 export async function departments(request, env, routeId, options = false) {
   const actor = await authenticate(request, env.DB)
-  const state = await snapshot(env.DB, actor)
+  const state = await snapshot(env.DB, actor, { departments: true, departmentCounts: !options })
   if (options)
     requireAny(state.access, [
       'system:user:list',

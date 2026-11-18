@@ -1,6 +1,7 @@
 import { authenticate } from './auth.mjs'
+import { assertCredentialsWritable } from '../security/access.mjs'
 import { HttpError, readJson, success } from '../http.mjs'
-import { digest, verifyPassword } from '../security/crypto.mjs'
+import { digest, verifyPassword, passwordIterations } from '../security/crypto.mjs'
 import { limitLogin } from '../security/rate-limit.mjs'
 import { resolveAuthConfig } from '../config/auth.mjs'
 import { snapshot, commit } from '../repositories/management.mjs'
@@ -51,7 +52,12 @@ async function reauthenticate(request, env, targetId) {
   if (
     typeof input.password !== 'string' ||
     input.password.length > 128 ||
-    !(await verifyPassword(input.password, actor.password_hash, env.AUTH_PEPPER))
+    !(await verifyPassword(
+      input.password,
+      actor.password_hash,
+      env.AUTH_PEPPER,
+      passwordIterations(env)
+    ))
   )
     throw new HttpError(400, '密码或动态验证码错误')
   return { ...(await contextFor(actor, env, targetId)), input }
@@ -61,6 +67,7 @@ export async function setupAuthenticator(request, env, targetId) {
   if (!totpKeyConfigured(env)) throw new HttpError(503, '验证器功能尚未配置')
   const context = await reauthenticate(request, env, targetId)
   const { user } = context
+  assertCredentialsWritable(user, env)
   const immediate = targetId !== undefined
   const secret = createTotpSecret()
   const encrypted = await encryptTotp(secret, user.id, env)
@@ -107,6 +114,7 @@ export async function setupAuthenticator(request, env, targetId) {
 async function checkedBinding(request, env, enabled, targetId) {
   const context = await reauthenticate(request, env, targetId)
   const { user, input } = context
+  assertCredentialsWritable(user, env)
   const row = await findTotp(env.DB, user.id)
   if (
     !row ||

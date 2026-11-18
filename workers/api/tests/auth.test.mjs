@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { createHmac, pbkdf2Sync } from 'node:crypto'
 import { test } from 'node:test'
 import worker from '../src/index.mjs'
 import { database } from './helpers/database.mjs'
@@ -322,9 +323,17 @@ test('missing secrets fail without creating sessions or leaking details', async 
 })
 
 test('password derivation uses fresh salts, pepper and strict stored hash formats', async () => {
-  const first = await hashPassword(password, pepper)
-  const second = await hashPassword(password, pepper)
+  const first = await hashPassword(password, pepper, 600000)
+  const second = await hashPassword(password, pepper, 600000)
   assert.notEqual(first, second)
+  assert.match(first, /^npora-v1\$600000\$/)
+  const salt = Buffer.alloc(16, 23)
+  const prehash = createHmac('sha256', Buffer.from(pepper, 'hex')).update(password).digest()
+  const legacy = pbkdf2Sync(prehash, salt, 100000, 32, 'sha256').toString('hex')
+  assert.equal(
+    await verifyPassword(password, `npora-v1$100000$${salt.toString('hex')}$${legacy}`, pepper),
+    true
+  )
   assert.equal(await verifyPassword(password, first, pepper), true)
   assert.equal(await verifyPassword('wrong', first, pepper), false)
   assert.equal(await verifyPassword(password, first, 'b2'.repeat(32)), false)

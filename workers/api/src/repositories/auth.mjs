@@ -64,3 +64,46 @@ export async function readAccess(db, userId) {
   ])
   return { roles: roles.results, menus: menus.results, links: links.results }
 }
+
+export const findEnabledTotp = (db, userId) =>
+  db.prepare('SELECT * FROM sys_user_totp WHERE user_id = ?1 AND enabled = 1').bind(userId).first()
+
+export async function updatePassword(db, user, binding, step, passwordHash, now) {
+  // 账号密码变更触发器在同一事务撤销所有旧会话。
+  const update = db
+    .prepare(
+      `UPDATE sys_user SET password_hash = ?1, updated_at = ?2
+    WHERE id = ?3 AND password_hash = ?4 AND status = 1 AND deleted_at IS NULL
+    AND (?7 IS NULL OR EXISTS (
+      SELECT 1 FROM sys_auth_session WHERE token_hash = ?7 AND user_id = ?3 AND expires_at > ?2
+    ))
+    AND COALESCE((
+      SELECT secret_encrypted FROM sys_user_totp WHERE user_id = ?3 AND enabled = 1
+      AND (?5 = '' OR last_used_step < ?6)
+    ), '') = ?5 RETURNING id`
+    )
+    .bind(
+      passwordHash,
+      now,
+      user.id,
+      user.password_hash,
+      binding?.secret_encrypted ?? '',
+      step,
+      user.sessionHash ?? null
+    )
+  if (!binding) return (await update.all()).results.length === 1
+
+  // 只有第一条成功写入本次随机加盐的哈希，第二条才消费动态码。
+  const [password] = await db.batch([
+    update,
+    db
+      .prepare(
+        `UPDATE sys_user_totp SET last_used_step = ?1
+      WHERE user_id = ?2 AND EXISTS (
+        SELECT 1 FROM sys_user WHERE id = ?2 AND password_hash = ?3
+      )`
+      )
+      .bind(step, user.id, passwordHash)
+  ])
+  return password.results.length === 1
+}

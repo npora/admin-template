@@ -6,8 +6,7 @@ import { appConfig } from '@/config/app'
 import { authConfig } from '@/config/auth'
 import { useRoute, useRouter } from 'vue-router'
 import { computed, reactive, ref } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import 'element-plus/es/components/message-box/style/css'
+import { ElMessage } from 'element-plus'
 import { Lock, User } from '@element-plus/icons-vue'
 
 import { getLoginRedirect } from '@/router/utils/path'
@@ -36,16 +35,6 @@ const formRef = ref<FormInstance>()
 const loading = ref(false)
 const rememberMe = ref(false)
 const showAuthenticator = ref(authConfig.authenticatorEnabled)
-function forgotPassword() {
-  void ElMessageBox.alert(
-    authConfig.passwordResetContact
-      ? t('ui.passwordResetContact', { contact: authConfig.passwordResetContact })
-      : t('ui.passwordResetAdministrator'),
-    t('ui.forgotPassword'),
-    { confirmButtonText: t('ui.gotIt') }
-  ).catch(() => undefined)
-}
-
 const appTitle = appConfig.title
 
 const demoEnabled = appConfig.demoEnabled
@@ -213,9 +202,9 @@ async function handleSubmit(): Promise<void> {
               <el-checkbox v-if="authConfig.rememberLoginEnabled" v-model="rememberMe">{{
                 t('ui.rememberLogin')
               }}</el-checkbox>
-              <el-button link type="primary" @click="forgotPassword">{{
-                t('ui.forgotPassword')
-              }}</el-button>
+              <RouterLink class="login-page__link" :to="{ name: 'ForgotPassword' }">
+                {{ t('ui.forgotPassword') }}
+              </RouterLink>
             </div>
 
             <el-button

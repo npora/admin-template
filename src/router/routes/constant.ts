@@ -14,6 +14,13 @@ export const constantRoutes: RouteRecordRaw[] = [
   },
 
   {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: () => import('@/views/forgot-password/index.vue'),
+    meta: { title: '忘记密码', public: true, hidden: true }
+  },
+
+  {
     path: '/',
     name: 'Layout',
     component: () => import('@/layout/index.vue'),

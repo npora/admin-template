@@ -19,3 +19,11 @@ export function resolveAuthConfig(env = {}) {
       AUTH_DEFAULTS.authenticatorIssuer
   }
 }
+
+export function isProtectedDemoAccount(user, env) {
+  const protectedUsername = env.AUTH_DEMO_PROTECTED_USERNAME
+  return (
+    typeof protectedUsername === 'string' &&
+    protectedUsername.trim().toLowerCase() === user?.username.toLowerCase()
+  )
+}

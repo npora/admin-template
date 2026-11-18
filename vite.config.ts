@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import { fileURLToPath } from 'node:url'
+import { pwaUpdate } from './build/pwa-update.ts'
 import { coreConfig } from './build/vite.ts'
 import { optionalExamples } from './build/optional-examples.ts'
 import { optionalTools } from './build/optional-tools.ts'
@@ -20,6 +21,7 @@ export default defineConfig(async (context) => {
       cloudflarePlugin,
       examples.plugin,
       ...(core.plugins ?? []),
+      pwaUpdate(),
       ...optionalTools(env, context.command === 'build')
     ]
   }

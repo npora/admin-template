@@ -1,13 +1,15 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { resolve, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { hashPassword, randomHex } from '../src/security/crypto.mjs'
+import { hashPassword, passwordIterations, randomHex } from '../src/security/crypto.mjs'
 
 export async function createBootstrap(directory) {
   const pepper = randomHex()
   const accounts = { admin: randomHex(20), viewer: randomHex(20) }
   const [adminHash, viewerHash] = await Promise.all(
-    Object.values(accounts).map((password) => hashPassword(password, pepper))
+    Object.values(accounts).map((password) =>
+      hashPassword(password, pepper, passwordIterations(process.env))
+    )
   )
   const sql = `-- Execute once after the numbered schema migrations. No plaintext passwords or pepper here.
 INSERT INTO sys_user(department_id, username, password_hash, display_name, is_super_admin)

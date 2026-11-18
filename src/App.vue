@@ -12,7 +12,11 @@ const { settings } = storeToRefs(appStore)
 </script>
 
 <template>
-  <ElConfigProvider :size="settings.componentSize" :locale="elementLocale">
+  <ElConfigProvider
+    :size="settings.componentSize"
+    :locale="elementLocale"
+    :dialog="{ alignCenter: true }"
+  >
     <RouterView />
   </ElConfigProvider>
 </template>

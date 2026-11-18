@@ -6,6 +6,8 @@ export type DeviceType = 'desktop' | 'mobile'
 
 export type ComponentSize = 'large' | 'default' | 'small'
 
+export type PageTransition = 'fade' | 'slide' | 'none'
+
 export interface ThemeSettings {
   mode: ThemeMode
 }
@@ -14,6 +16,7 @@ export interface LayoutSettings {
   showLogo: boolean
   showBreadcrumb: boolean
   showTabs: boolean
+  pageTransition: PageTransition
 }
 
 export interface AppSettings {

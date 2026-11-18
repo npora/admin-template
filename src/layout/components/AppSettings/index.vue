@@ -8,6 +8,8 @@ import { storeToRefs } from 'pinia'
 
 import { useAppStore } from '@/store/modules/app'
 
+import { isPageTransition } from '@/store/modules/app/config'
+
 import type { ComponentSize, ThemeMode } from '@/store/modules/app/types'
 
 const { locale, localeOptions, enabled, setLocale, resetLocale } = useLocale()
@@ -106,6 +108,12 @@ function handleBreadcrumbChange(value: string | number | boolean): void {
   })
 }
 
+function handlePageTransitionChange(value: unknown): void {
+  if (isPageTransition(value)) {
+    appStore.updateSettings({ layout: { pageTransition: value } })
+  }
+}
+
 function handleTabsChange(value: string | number | boolean): void {
   appStore.updateSettings({
     layout: {
@@ -180,6 +188,19 @@ function handleTabsChange(value: string | number | boolean): void {
 
       <section class="app-settings__section">
         <h3 class="app-settings__title">{{ t('ui.layout') }}</h3>
+
+        <div class="app-settings__group">
+          <span class="app-settings__label">{{ t('ui.pageTransition') }}</span>
+          <ElSelect
+            :model-value="settings.layout.pageTransition"
+            :aria-label="t('ui.pageTransition')"
+            @change="handlePageTransitionChange"
+          >
+            <ElOption value="fade" :label="t('ui.pageTransitionFade')" />
+            <ElOption value="slide" :label="t('ui.pageTransitionSlide')" />
+            <ElOption value="none" :label="t('ui.pageTransitionNone')" />
+          </ElSelect>
+        </div>
 
         <div class="app-settings__item">
           <span>{{ t('ui.showLogo') }}</span>

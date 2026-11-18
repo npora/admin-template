@@ -13,9 +13,11 @@ npm run dev:demo
 
 展示开发默认通过真实 HTTP 连接测试 API，需要网络。`npm run build:demo` 构建完整演示；`npm run build` 构建核心模式；`npm run dev` 是否启用演示取决于 `.env.development.local` 的 `VITE_DEMO_ENABLED`。使用自己的后端时在 `.env.development.local` 配置 `VITE_API_URL`；生产需要站点 API 转发。
 
-[在线体验](https://admin.npora.live)，账号 `admin`，密码 `123456`。演示账号不是正式 SQL 自动创建的账号。
+[在线体验](https://admin.npora.live)，账号 `admin`，密码 `123456`。公开演示账号的密码和验证器仅供登录体验，可使用自行创建的测试账号体验账号安全功能。
 
 演示接口地址：`https://api.npora.live`。本地展示命令默认代理到此地址，生产页面仍请求同源 `/api`。
+
+生产构建会生成 PWA 的 `sw.js`。浏览器检测到新版 Service Worker 等待激活后会提示刷新，确认后激活新版并重新加载网页。
 
 ## 目录
 

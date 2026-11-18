@@ -10,6 +10,7 @@ export const TIME_ZONE = {
   BANGKOK: 'Asia/Bangkok',
   JAKARTA: 'Asia/Jakarta',
   KOLKATA: 'Asia/Kolkata',
+  KARACHI: 'Asia/Karachi',
   DUBAI: 'Asia/Dubai',
   RIYADH: 'Asia/Riyadh',
   LONDON: 'Europe/London',

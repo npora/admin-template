@@ -8,5 +8,9 @@
   "notFound": "The requested endpoint does not exist.",
   "rateLimited": "Too many requests. Try again later.",
   "unavailable": "The server is temporarily unavailable. Try again later.",
+  "invalidAuthenticatorCode": "Enter a valid authenticator code. Codes can only be used once.",
+  "invalidRecoveryCode": "The account or authenticator code is invalid. Try again with a fresh code.",
+  "invalidCurrentPassword": "The current password is incorrect.",
+  "passwordChangeConflict": "The account or authenticator changed. Try again.",
   "expired": "Your session expired. Sign in again."
 }

@@ -1,7 +1,12 @@
 import { publicRequest, request } from '../client'
+import { isNotFoundError } from '../errors/handling'
+import { getDynamicRoutes } from './route'
+import type { DynamicRoute } from '../types/route'
 
 import type {
   LoginRequest,
+  ResetPasswordRequest,
+  ChangePasswordRequest,
   LoginResult,
   UserInfoResult,
   AuthenticatorStatus,
@@ -16,6 +21,30 @@ export async function login(data: LoginRequest): Promise<LoginResult> {
 
 export async function getUserInfo(): Promise<UserInfoResult> {
   return request.get<UserInfoResult>('/auth/user')
+}
+
+export async function getSessionInfo(): Promise<{ user: UserInfoResult; routes: DynamicRoute[] }> {
+  try {
+    return await request.get<{ user: UserInfoResult; routes: DynamicRoute[] }>('/auth/session', {
+      context: { fallbackOnNotFound: true }
+    })
+  } catch (error) {
+    if (!isNotFoundError(error)) throw error
+    const [user, routes] = await Promise.all([getUserInfo(), getDynamicRoutes()])
+    return { user, routes }
+  }
+}
+
+export function resetPassword(json: ResetPasswordRequest, signal?: AbortSignal) {
+  return publicRequest.post<null>('/auth/password/reset', {
+    json,
+    signal,
+    context: { silentError: true }
+  })
+}
+
+export function changePassword(json: ChangePasswordRequest, signal?: AbortSignal) {
+  return request.post<null>('/auth/password/change', { json, signal })
 }
 
 export function getAuthenticatorStatus(signal?: AbortSignal) {

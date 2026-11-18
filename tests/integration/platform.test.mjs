@@ -31,7 +31,7 @@ try {
     }),
     {
       ...defaults,
-      layout: { showLogo: false, showTabs: true, showBreadcrumb: true },
+      layout: { ...defaults.layout, showLogo: false },
       componentSize: 'small'
     }
   )

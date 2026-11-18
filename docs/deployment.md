@@ -2,6 +2,8 @@
 
 模板默认从站点根路径 `/` 提供页面，使用 HTML5 History 路由。构建产物为纯静态前端；不包含内存模拟接口，管理数据需要独立后端。下面是部署说明和配置示例，本仓库未自动发布网站或修改服务器。
 
+随站点发布构建生成的 `sw.js`，为它与页面入口设置 `Cache-Control: no-cache`，带哈希的静态资源可长期缓存。Service Worker 更新需要 HTTPS，本地可使用 localhost。新版等待激活时由用户确认刷新。
+
 ## 构建
 
 ```sh
@@ -51,6 +53,11 @@ server {
 
     location = /index.html {
         add_header Cache-Control "no-cache";
+    }
+
+    location = /sw.js {
+        try_files $uri =404;
+        add_header Cache-Control "no-cache" always;
     }
 
     location ^~ /assets/ {
