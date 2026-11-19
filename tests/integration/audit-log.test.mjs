@@ -57,8 +57,8 @@ test('audit queries omit cleared filters and isolate results during a switch bet
   t.after(() => scope.stop())
   const table = scope.run(useAuditLogTable)
   const signIn = (username) => session.signIn({ username, password: 'fixture' })
-  const resolve = (requestIndex, id) => {
-    requests[requestIndex].resolve(reply({ list: [{ id }], total: 1 }))
+  const resolve = (requestIndex, id, total = 1) => {
+    requests[requestIndex].resolve(reply({ list: [{ id }], total }))
   }
 
   assert.equal(requests.length, 0)
@@ -89,4 +89,57 @@ test('audit queries omit cleared filters and isolate results during a switch bet
   resolve(2, 12)
   await cleared
   assert.deepEqual(table.rows.value, [{ id: 20 }])
+
+  table.filters.actorId = ' 12 '
+  table.filters.targetId = '9007199254740991'
+  table.filters.action = 'role_grant'
+  table.filters.result = 'success'
+  table.updateTimeRange([0, 1000])
+  const combined = table.search()
+  await waitFor(() => requests.length === 5)
+  assert.deepEqual(Object.fromEntries(requests[4].url.searchParams), {
+    page: '1',
+    pageSize: '10',
+    action: 'role_grant',
+    result: 'success',
+    actorId: '12',
+    targetId: '9007199254740991',
+    createdFrom: '0',
+    createdTo: '1000'
+  })
+  resolve(4, 30, 30)
+  await combined
+
+  const nextPage = table.changePage(2)
+  await waitFor(() => requests.length === 6)
+  assert.equal(requests[5].url.searchParams.get('page'), '2')
+  assert.equal(requests[5].url.searchParams.get('createdFrom'), '0')
+  assert.equal(requests[5].url.searchParams.get('actorId'), '12')
+  resolve(5, 31, 30)
+  await nextPage
+
+  table.filters.actorId = '1e3'
+  table.filters.targetId = '9007199254740992'
+  await table.search()
+  assert.deepEqual(table.filterErrors, { actorId: true, targetId: true, timeRange: false })
+  assert.equal(requests.length, 6)
+  assert.equal(table.query.page, 2)
+  table.filters.actorId = '12'
+  table.filters.targetId = '42'
+  table.updateTimeRange([1000, 1000])
+  await table.search()
+  assert.equal(requests.length, 6)
+  assert.equal(table.filterErrors.timeRange, true)
+
+  table.updateTimeRange([0, 1000])
+  table.rejectTimeRange()
+  await table.search()
+  assert.equal(requests.length, 6)
+
+  const reset = table.reset()
+  await waitFor(() => requests.length === 7)
+  assert.deepEqual(Object.fromEntries(requests[6].url.searchParams), { page: '1', pageSize: '10' })
+  assert.deepEqual(table.filterErrors, { actorId: false, targetId: false, timeRange: false })
+  resolve(6, 40)
+  await reset
 })

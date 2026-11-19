@@ -39,6 +39,8 @@ sh database/mysql/init.sh --user root --password npora_admin
 
 [09-session-management.sql](09-session-management.sql) 新增权限预览及会话查看、撤销的独立权限，并扩展审计动作。执行前先应用 `08-audit-logs.sql`。会话表由自有后端维护，参照 [接口契约](../../docs/api.md#会话管理与权限预览)。
 
+[10-audit-lookup-indexes.sql](10-audit-lookup-indexes.sql) 为操作者和目标 ID 查询增加联合索引。已有审计库执行此增量文件，新库先应用 `08-audit-logs.sql`。
+
 例如，先创建并选择一个新库：
 
 ```sql

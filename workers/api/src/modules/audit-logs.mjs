@@ -30,6 +30,22 @@ export async function auditOperation(db, actorId, targetId, action, run) {
   }
 }
 
+function integerFilter(searchParams, name, minimum) {
+  const inputs = searchParams.getAll(name)
+  if (!inputs.length) return null
+  const [input] = inputs
+  const value = Number(input)
+  if (
+    inputs.length !== 1 ||
+    !input ||
+    /[^0-9]/.test(input) ||
+    !Number.isSafeInteger(value) ||
+    value < minimum
+  )
+    invalid(`审计筛选参数 ${name} 不正确`)
+  return value
+}
+
 export async function auditLogs(request, env) {
   const db = env.DB
   const actor = await authenticate(request, db)
@@ -42,15 +58,26 @@ export async function auditLogs(request, env) {
   if (action && !actions.includes(action)) invalid('审计操作不正确')
   if (result && !outcomes.includes(result)) invalid('审计结果不正确')
 
+  const createdFrom = integerFilter(url.searchParams, 'createdFrom', 0)
+  const createdTo = integerFilter(url.searchParams, 'createdTo', 0)
+  const actorId = integerFilter(url.searchParams, 'actorId', 1)
+  const targetId = integerFilter(url.searchParams, 'targetId', 1)
+  if (createdFrom !== null && createdTo !== null && createdFrom >= createdTo)
+    invalid('审计开始时间必须早于结束时间')
+
   const conditions = []
   const values = []
-  if (action) {
-    conditions.push('action = ?')
-    values.push(action)
-  }
-  if (result) {
-    conditions.push('result = ?')
-    values.push(result)
+  for (const [condition, value] of [
+    ['action = ?', action || null],
+    ['result = ?', result || null],
+    ['actor_id = ?', actorId],
+    ['target_id = ?', targetId],
+    ['created_at >= ?', createdFrom],
+    ['created_at < ?', createdTo]
+  ]) {
+    if (value === null) continue
+    conditions.push(condition)
+    values.push(value)
   }
   const filter = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
   const [count, rows] = await db.batch([

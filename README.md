@@ -2,9 +2,28 @@
 
 基于 Vue 3、TypeScript、Element Plus、Pinia 和 Vite 的后台脚手架。提供动态菜单与按钮权限、用户和角色管理、字典、多语言、主题、会话管理和操作审计。
 
-[在线展示](https://admin.npora.live) · [演示 API 健康检查](https://api.npora.live/health)
+[在线展示](https://admin.npora.live) · [页面截图](docs/showcase/README.md) · [演示 API 健康检查](https://api.npora.live/health)
 
 演示账号：`admin`，密码：`123456`。体验改密、验证器绑定或会话撤销时，请使用自己创建的测试账号。
+
+## 界面预览
+
+[![操作演示 GIF：从登录进入首页，切换到用户管理和操作审计](docs/showcase/overview.gif)](docs/showcase/README.md)
+
+<details>
+<summary>查看静态截图：登录、首页、用户管理、角色管理和操作审计</summary>
+
+| 登录页                                                        | 后台首页                                                                |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| [![登录页](docs/showcase/login.png)](docs/showcase/login.png) | [![后台首页](docs/showcase/dashboard.png)](docs/showcase/dashboard.png) |
+
+![用户管理](docs/showcase/users.png)
+
+![角色管理](docs/showcase/roles.png)
+
+![操作审计](docs/showcase/audit-log.png)
+
+</details>
 
 ## 快速开始
 

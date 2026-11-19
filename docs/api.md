@@ -106,12 +106,18 @@ Worker 登录签发随机不透明 Token，D1 只保存 Token 的哈希和到期
 
 `GET /system/audit-logs` 使用 Bearer 会话，后端独立校验 `system:audit-log:list`。常规响应外层为 `{ code: 0, message, data }`，其中 `data` 为 `{ list, total }`。`total` 是筛选后的记录总数，分页固定按 `createdAt DESC, id DESC` 排序。
 
-| 查询参数   | 用途                                                                                    |
-| ---------- | --------------------------------------------------------------------------------------- |
-| `page`     | 页码，从 1 开始                                                                         |
-| `pageSize` | 每页记录数                                                                              |
-| `action`   | 可选，`password_reset`、`totp_enable`、`totp_disable`、`role_grant` 或 `session_revoke` |
-| `result`   | 可选，`success` 或 `failure`                                                            |
+| 查询参数      | 用途                                                                                    |
+| ------------- | --------------------------------------------------------------------------------------- |
+| `page`        | 页码，从 1 开始                                                                         |
+| `pageSize`    | 每页记录数                                                                              |
+| `action`      | 可选，`password_reset`、`totp_enable`、`totp_disable`、`role_grant` 或 `session_revoke` |
+| `result`      | 可选，`success` 或 `failure`                                                            |
+| `createdFrom` | 可选，包含此刻的开始时间，非负整数 Unix 毫秒                                            |
+| `createdTo`   | 可选，不包含此刻的结束时间，非负整数 Unix 毫秒                                          |
+| `actorId`     | 可选，精确匹配操作者 ID，正整数                                                         |
+| `targetId`    | 可选，精确匹配目标 ID，正整数                                                           |
+
+在“系统管理 → 操作审计日志”按应用时区选取时间范围，前端将时间换算为 Unix 毫秒。接口支持只传一个时间边界，同时提供时开始必须早于结束。数字参数须在 JavaScript 安全整数范围内，空值应省略。多个筛选条件同时生效。用户与角色的 ID 独立编号，同一个目标 ID 可能命中两种类型，可结合操作筛选。
 
 每条记录包含数字 `id`、`actorId`、`targetId`、`statusCode`、`createdAt`，以及 `targetType`（`user` 或 `role`）、`action`、`result`。时间以 Unix 毫秒表示。成功状态码为 200，失败保存原操作的 HTTP 状态码。非法查询参数返回 400，缺少有效会话返回 401，权限不足返回 403，服务不可用返回 503，均沿用通用错误响应。
 

@@ -1,6 +1,11 @@
 {
   "action": "操作",
   "result": "结果",
+  "timeRange": "时间范围（不含结束时间）",
+  "timeStart": "开始时间",
+  "timeEnd": "结束时间",
+  "invalidTimeRange": "请选择有效的时间范围，开始时间须早于结束时间。",
+  "invalidId": "请输入有效的正整数。",
   "actorId": "操作者 ID",
   "targetId": "目标 ID",
   "targetType": "目标类型",

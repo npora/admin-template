@@ -82,7 +82,8 @@ try {
       'database/mysql/06-sort-indexes.sql',
       'database/mysql/07-recent-users-index.sql',
       'database/mysql/08-audit-logs.sql',
-      'database/mysql/09-session-management.sql'
+      'database/mysql/09-session-management.sql',
+      'database/mysql/10-audit-lookup-indexes.sql'
     ])
       assert.equal(
         await readFile(join(directory, entry), 'utf8'),
@@ -100,6 +101,10 @@ try {
     )
     assert.equal(
       existsSync(join(directory, 'workers/api/migrations/0012_session_management.sql')),
+      preset !== 'starter'
+    )
+    assert.equal(
+      existsSync(join(directory, 'workers/api/migrations/0013_audit_lookup_indexes.sql')),
       preset !== 'starter'
     )
     for (const entry of [

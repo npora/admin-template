@@ -38,6 +38,8 @@ npm run dev:demo
 
 ## 文档与检查
 
+[查看登录、首页、用户、角色和审计页面截图](docs/showcase/README.md)。
+
 [会话管理与权限预览](docs/account-management.md) 介绍个人会话、用户权限和管理员撤销流程。
 
 [目录职责](docs/project-structure.md) · [接口契约](docs/api.md) · [权限](docs/rbac.md) · [多语言](docs/i18n.md) · [开发配置](docs/development.md) · [后端切换](docs/backend-replacement.md) · [正式 SQL](database/mysql/README.md)

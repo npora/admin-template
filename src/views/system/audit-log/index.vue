@@ -2,14 +2,20 @@
 import { useI18n } from 'vue-i18n'
 import { AUDIT_ACTIONS, AUDIT_RESULTS, type AuditLogEntry } from '@/api/types/audit-log'
 import DataTable from '@/components/DataTable/index.vue'
+import DateRangePicker from '@/components/DateRangePicker/index.vue'
 import TableToolbar from '@/components/TableToolbar/index.vue'
 import { formatDate } from '@/locales'
+import { useAppStore } from '@/store/modules/app'
 import { useAuditLogTable } from './useAuditLogTable'
 
 const { t } = useI18n({ useScope: 'global' })
+const app = useAppStore()
 const {
   canList,
   filters,
+  filterErrors,
+  updateTimeRange,
+  rejectTimeRange,
   query,
   rows,
   total,
@@ -33,10 +39,27 @@ const {
     <template v-if="canList()">
       <ElForm
         :model="filters"
-        class="management-page__filters management-page__filters--compact"
+        class="management-page__filters audit-log__filters"
         label-position="top"
         @submit.prevent="search"
       >
+        <ElFormItem
+          class="audit-log__time-range"
+          :label="t('auditLog.timeRange')"
+          :error="filterErrors.timeRange ? t('auditLog.invalidTimeRange') : undefined"
+        >
+          <DateRangePicker
+            :model-value="filters.timeRange"
+            type="datetimerange"
+            :start-placeholder="t('auditLog.timeStart')"
+            :end-placeholder="t('auditLog.timeEnd')"
+            :single-panel="app.isMobile"
+            popper-class="audit-log__time-popper"
+            unlink-panels
+            @update:model-value="updateTimeRange"
+            @invalid="rejectTimeRange"
+          />
+        </ElFormItem>
         <ElFormItem :label="t('auditLog.action')">
           <ElSelect v-model="filters.action" clearable :placeholder="t('auditLog.allActions')">
             <ElOption
@@ -56,6 +79,18 @@ const {
               :value="result"
             />
           </ElSelect>
+        </ElFormItem>
+        <ElFormItem
+          :label="t('auditLog.actorId')"
+          :error="filterErrors.actorId ? t('auditLog.invalidId') : undefined"
+        >
+          <ElInput v-model="filters.actorId" inputmode="numeric" clearable />
+        </ElFormItem>
+        <ElFormItem
+          :label="t('auditLog.targetId')"
+          :error="filterErrors.targetId ? t('auditLog.invalidId') : undefined"
+        >
+          <ElInput v-model="filters.targetId" inputmode="numeric" clearable />
         </ElFormItem>
         <div class="management-page__filter-actions">
           <ElButton type="primary" native-type="submit" :loading="loading">{{
@@ -115,4 +150,41 @@ const {
 
 <style scoped lang="scss">
 @use '@/assets/styles/management.scss';
+
+.audit-log__filters {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  .management-page__filter-actions {
+    grid-column: span 2;
+  }
+}
+
+.audit-log__time-range {
+  grid-column: span 2;
+
+  :deep(.el-date-editor) {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 1100px) {
+  .audit-log__filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  :global(.audit-log__time-popper .el-date-range-picker.single-panel) {
+    width: min(322px, calc(100vw - 24px));
+  }
+
+  :global(.audit-log__time-popper .el-date-range-picker.single-panel .el-picker-panel__body) {
+    min-width: 0;
+  }
+
+  :global(.audit-log__time-popper .el-date-range-picker.single-panel .el-picker-panel__content) {
+    width: auto;
+  }
+}
 </style>

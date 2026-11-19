@@ -4,11 +4,26 @@ import { handleRequestError } from '@/api/errors/handling'
 import { getAuditLogs } from '@/api/modules/audit-log'
 import type { AuditLogEntry, AuditLogListQuery } from '@/api/types/audit-log'
 import { usePermission } from '@/composables/usePermission'
+import type { TimestampRange } from '@/types/timezone'
+
+type AuditLogFilters = Pick<AuditLogListQuery, 'action' | 'result'> & {
+  actorId: string
+  targetId: string
+  timeRange: TimestampRange | null
+}
+
+function parseId(value: string): number | null | undefined {
+  const input = value.trim()
+  if (!input) return undefined
+  const id = Number(input)
+  return /^\d+$/.test(input) && Number.isSafeInteger(id) && id > 0 ? id : null
+}
 
 export function useAuditLogTable() {
   const { hasPermission } = usePermission()
   const canList = () => hasPermission('system:audit-log:list')
-  const filters = reactive<Pick<AuditLogListQuery, 'action' | 'result'>>({})
+  const filters = reactive<AuditLogFilters>({ actorId: '', targetId: '', timeRange: null })
+  const filterErrors = reactive({ actorId: false, targetId: false, timeRange: false })
   const query = reactive<AuditLogListQuery>({ page: 1, pageSize: 10 })
   const rows = shallowRef<AuditLogEntry[]>([])
   const total = ref(0)
@@ -64,15 +79,43 @@ export function useAuditLogTable() {
     }
   }
 
+  function updateTimeRange(value: TimestampRange | null) {
+    filters.timeRange = value
+    filterErrors.timeRange = false
+  }
+
+  function rejectTimeRange() {
+    filterErrors.timeRange = true
+  }
+
   function search() {
-    query.action = filters.action || undefined
-    query.result = filters.result || undefined
+    const actorId = parseId(filters.actorId)
+    const targetId = parseId(filters.targetId)
+    const range = filters.timeRange
+    if (range && (!range.every(Number.isSafeInteger) || range[0] < 0 || range[0] >= range[1])) {
+      rejectTimeRange()
+    }
+    filterErrors.actorId = actorId === null
+    filterErrors.targetId = targetId === null
+    if (actorId === null || targetId === null || filterErrors.timeRange) return
+
+    Object.assign(query, {
+      action: filters.action || undefined,
+      result: filters.result || undefined,
+      actorId,
+      targetId,
+      createdFrom: range?.[0],
+      createdTo: range?.[1]
+    })
     return changePage(1)
   }
 
   function reset() {
     filters.action = undefined
     filters.result = undefined
+    filters.actorId = ''
+    filters.targetId = ''
+    updateTimeRange(null)
     return search()
   }
 
@@ -89,6 +132,9 @@ export function useAuditLogTable() {
   return {
     canList,
     filters,
+    filterErrors,
+    updateTimeRange,
+    rejectTimeRange,
     query,
     rows,
     total,

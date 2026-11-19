@@ -94,6 +94,17 @@ test('real frontend client/session round-trip against Worker HTTP handlers and S
   assert.equal(router.hasRoute('SystemAuditLog'), true)
   const audit = await getAuditLogs({ page: 1, pageSize: 10, action: 'role_grant' })
   assert.equal(audit.total, 1)
+  const [entry] = audit.list
+  const filtered = await getAuditLogs({
+    page: 1,
+    pageSize: 1,
+    action: 'role_grant',
+    actorId: entry.actorId,
+    targetId: entry.targetId,
+    createdFrom: entry.createdAt,
+    createdTo: entry.createdAt + 1
+  })
+  assert.deepEqual(filtered, { total: 1, list: [entry] })
   assert.equal(audit.list[0].targetId, role.id)
   assert.equal(audit.list[0].targetType, 'role')
   assert.equal(audit.list[0].result, 'success')

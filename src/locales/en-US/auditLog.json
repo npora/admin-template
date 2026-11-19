@@ -1,6 +1,11 @@
 {
   "action": "Action",
   "result": "Result",
+  "timeRange": "Time range (end exclusive)",
+  "timeStart": "Start time",
+  "timeEnd": "End time",
+  "invalidTimeRange": "Choose a valid range with the start before the end.",
+  "invalidId": "Enter a valid positive integer.",
   "actorId": "Actor ID",
   "targetId": "Target ID",
   "targetType": "Target type",

@@ -27,4 +27,8 @@ export interface AuditLogEntry {
 export interface AuditLogListQuery extends PageParams {
   action?: AuditAction
   result?: AuditResult
+  createdFrom?: number
+  createdTo?: number
+  actorId?: number
+  targetId?: number
 }

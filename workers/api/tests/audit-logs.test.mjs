@@ -138,18 +138,82 @@ test('TOTP mutations log outcomes while pending self-enrollment and read-only en
   assert.equal(sqlite.prepare('SELECT count(*) AS count FROM sys_audit_log').get().count, 4)
 })
 
+test('audit filters intersect exact IDs, time boundaries, action and result before pagination', async (t) => {
+  const { call, sqlite } = await service(t)
+  sqlite.exec(`
+    INSERT INTO sys_audit_log(actor_id,target_type,target_id,action,result,status_code,created_at)
+    VALUES
+      (1,'user',2,'password_reset','success',200,0),
+      (1,'user',2,'password_reset','success',200,100),
+      (1,'user',2,'password_reset','success',200,150),
+      (1,'user',2,'password_reset','success',200,200),
+      (2,'user',2,'password_reset','success',200,150),
+      (1,'user',3,'password_reset','success',200,150),
+      (1,'user',2,'totp_disable','success',200,150),
+      (1,'user',2,'password_reset','failure',403,150)
+  `)
+  const get = async (query) => {
+    const { status, body } = await call(auditPath + '?' + query)
+    assert.equal(status, 200)
+    return { total: body.data.total, ids: body.data.list.map((row) => row.id) }
+  }
+  const allFilters =
+    'actorId=1&targetId=2&createdFrom=100&createdTo=200&action=password_reset&result=success'
+  assert.deepEqual(await get(allFilters + '&pageSize=1'), { total: 2, ids: [3] })
+  assert.deepEqual(await get(allFilters + '&pageSize=1&page=2'), { total: 2, ids: [2] })
+  assert.deepEqual(await get('createdFrom=200'), { total: 1, ids: [4] })
+  assert.deepEqual(await get('createdTo=100'), { total: 1, ids: [1] })
+  assert.deepEqual(await get('createdFrom=0&createdTo=100'), { total: 1, ids: [1] })
+  assert.deepEqual(await get('createdTo=0'), { total: 0, ids: [] })
+  assert.deepEqual(await get('actorId=2'), { total: 1, ids: [5] })
+  assert.deepEqual(await get('targetId=3'), { total: 1, ids: [6] })
+  assert.deepEqual(await get('actorId=9007199254740991'), { total: 0, ids: [] })
+})
+
+test('malformed audit filters return 400 only after authorization', async (t) => {
+  const { call, viewer } = await service(t)
+  for (const query of [
+    'actorId=',
+    'actorId=0',
+    'actorId=1.0',
+    'actorId=1%0A',
+    'actorId=9007199254740992',
+    'actorId=1&actorId=2',
+    'targetId=-1',
+    'targetId=%201',
+    'targetId=0x10',
+    'targetId=1e2',
+    'createdFrom=',
+    'createdFrom=-1',
+    'createdFrom=0.5',
+    'createdTo=9007199254740992',
+    'createdTo=1&createdTo=2',
+    'createdFrom=10&createdTo=10',
+    'createdFrom=11&createdTo=10'
+  ]) {
+    const response = await call(auditPath + '?' + query)
+    assert.equal(response.status, 400, query)
+    assert.equal(response.body.code, 400, query)
+  }
+  assert.equal((await call(auditPath + '?actorId=', { token: null })).status, 401)
+  assert.equal((await call(auditPath + '?actorId=', { token: viewer })).status, 403)
+})
+
 test('audit filter and sort shapes use indexes without a temporary sort', async (t) => {
   const { sqlite } = await service(t)
-  for (const [predicate, index] of [
+  for (const [predicate, index, binds = []] of [
     ['', 'idx_audit_log_time'],
     ["WHERE action='role_grant'", 'idx_audit_log_action_time'],
     ["WHERE result='success'", 'idx_audit_log_result_time'],
-    ["WHERE action='role_grant' AND result='success'", 'idx_audit_log_action_result_time']
+    ["WHERE action='role_grant' AND result='success'", 'idx_audit_log_action_result_time'],
+    ['WHERE created_at >= ? AND created_at < ?', 'idx_audit_log_time', [0, 200]],
+    ['WHERE actor_id = ? AND created_at >= ?', 'idx_audit_log_actor_time', [1, 100]],
+    ['WHERE target_id = ? AND created_at < ?', 'idx_audit_log_target_time', [2, 200]]
   ]) {
     const sql = `SELECT * FROM sys_audit_log ${predicate} ORDER BY created_at DESC,id DESC LIMIT 10`
     const detail = sqlite
       .prepare(`EXPLAIN QUERY PLAN ${sql}`)
-      .all()
+      .all(...binds)
       .map((row) => row.detail)
       .join(' ')
     assert.ok(detail.includes(index), detail)
