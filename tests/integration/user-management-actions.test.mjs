@@ -24,17 +24,17 @@ try {
     ['AuthenticatorSettings', '@/components/AuthenticatorSettings/index.vue']
   ])
     source = source.replace(`import ${name} from '${path}'`, `import { ${name} } from '${bridge}'`)
-  for (const path of ['./useUserManagement', '@/composables/useSession', 'element-plus'])
+  for (const path of ['./useUserManagement', './useResetUserPassword', 'element-plus'])
     source = source.replaceAll(`from '${path}'`, `from '${bridge}'`)
   source = source.replace("import 'element-plus/es/components/message-box/style/css'", '')
   await writeFile(files[0], source)
   await writeFile(
     files[1],
     `
-    import {defineComponent,h} from 'vue'
+    import {defineComponent,h,ref} from 'vue'
     const f=globalThis.__userActions
     export const useUserManagement=()=>f.state
-    export const useSession=()=>({logout:async()=>{}})
+    export const useResetUserPassword=()=>({resettingPassword:ref(false),resetPassword:async(user)=>{f.resetTargets.push(user.id)}})
     export const ElMessage={success(){}}
     export const ElMessageBox={confirm:async()=>{},prompt:async()=>{throw 'cancel'}}
     export const DataTable=defineComponent({setup:(_, {slots})=>()=>h('table',slots.default?.())})
@@ -76,7 +76,8 @@ try {
   }
   for (const name of ['search', 'reset', 'changePage', 'changePageSize', 'save', 'remove'])
     state[name] = () => {}
-  globalThis.__userActions = { state }
+  const resetTargets = []
+  globalThis.__userActions = { state, resetTargets }
   server = await createTestServer()
   const { default: Page } = await server.ssrLoadModule(
     `/tests/integration/${files[0].pathname.split('/').at(-1)}`
@@ -185,6 +186,8 @@ try {
   const actions = all(root, 'column').find((column) => column.props.label === '操作')
   assert.ok(text(actions).includes('重置密码'))
   assert.ok(text(actions).includes('管理验证器'))
+  all(root, 'dropdown')[0].props.command('password')
+  assert.deepEqual(resetTargets, [2])
   all(root, 'dropdown')[0].props.command('authenticator')
   await nextTick()
   assert.equal(all(root, 'authenticator')[0].props.targetId, 2)

@@ -1,4 +1,4 @@
-import type { AppSettings, PageTransition } from './types'
+import type { AppSettings, ComponentSize, PageTransition, ThemeMode } from './types'
 import { dateTimeConfig } from '@/config/datetime'
 import { isAppTimeZone } from '@/utils/datetime'
 
@@ -18,6 +18,14 @@ export function createDefaultSettings(): AppSettings {
   }
 }
 
+export function isThemeMode(value: unknown): value is ThemeMode {
+  return value === 'light' || value === 'dark' || value === 'system'
+}
+
+export function isComponentSize(value: unknown): value is ComponentSize {
+  return value === 'large' || value === 'default' || value === 'small'
+}
+
 export function isPageTransition(value: unknown): value is PageTransition {
   return value === 'fade' || value === 'slide' || value === 'none'
 }
@@ -29,9 +37,9 @@ export function resolveAppSettings(value: unknown): AppSettings {
   const saved = value as Partial<AppSettings>
   if (isAppTimeZone(saved.timeZone)) result.timeZone = saved.timeZone
   const mode = saved.theme?.mode
-  if (mode === 'light' || mode === 'dark' || mode === 'system') result.theme.mode = mode
+  if (isThemeMode(mode)) result.theme.mode = mode
   const size = saved.componentSize
-  if (size === 'large' || size === 'default' || size === 'small') result.componentSize = size
+  if (isComponentSize(size)) result.componentSize = size
   for (const key of ['showLogo', 'showBreadcrumb', 'showTabs'] as const) {
     if (typeof saved.layout?.[key] === 'boolean') result.layout[key] = saved.layout[key]
   }

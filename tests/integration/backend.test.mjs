@@ -16,9 +16,12 @@ try {
       .children.some((route) => route.name === 'ExampleForm'),
     false
   )
-  const { transformDynamicRoutes } = await server.ssrLoadModule(
+  const { dynamicViewPaths, transformDynamicRoutes } = await server.ssrLoadModule(
     '/src/router/utils/dynamic-route.ts'
   )
+  assert.ok(dynamicViewPaths.includes('system/user/index'))
+  assert.ok(!dynamicViewPaths.includes('forgot-password/index'))
+  assert.ok(!dynamicViewPaths.includes('login/index'))
   assert.equal(
     transformDynamicRoutes([
       { path: '/system/user', name: 'SystemUser', title: 'User', component: 'system/user/index' }

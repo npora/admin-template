@@ -130,6 +130,19 @@ try {
   dark.matches = true
   dark.listeners.forEach((listener) => listener({ matches: true }))
   assert.equal(app.isDark, true)
+  app.setTheme('light')
+  app.setComponentSize('small')
+  app.setLayoutFlag('showTabs', false)
+  app.setPageTransition('slide')
+  app.setTheme('invalid')
+  app.setComponentSize(true)
+  app.setLayoutFlag('showTabs', 'false')
+  app.setPageTransition(0)
+  app.restoreSettings()
+  assert.equal(app.settings.theme.mode, 'light')
+  assert.equal(app.settings.componentSize, 'small')
+  assert.equal(app.settings.layout.showTabs, false)
+  assert.equal(app.settings.layout.pageTransition, 'slide')
   app.dispose()
   assert.equal(
     [...media.values()].reduce((count, item) => count + item.listeners.size, 0),

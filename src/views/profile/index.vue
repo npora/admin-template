@@ -11,18 +11,18 @@ import { useProfileStore } from '@/store/modules/profile'
 import { useLocale } from '@/composables/useLocale'
 import { formatNumber } from '@/locales'
 import { createLocalProfile, profileErrors, type LocalProfile } from '@/store/modules/profile/model'
-import type { ThemeMode, ComponentSize } from '@/store/modules/app/types'
 import { authConfig } from '@/config/auth'
 import AuthenticatorSettings from '@/components/AuthenticatorSettings/index.vue'
 import ChangePasswordForm from './components/ChangePasswordForm.vue'
 const { t } = useI18n({ useScope: 'global' })
 const authenticatorEnabled = computed(() => authConfig.authenticatorEnabled)
 const user = useUserStore()
-const app = useAppStore()
+const appStore = useAppStore()
+const { setTheme, setComponentSize, setLayoutFlag } = appStore
 const profiles = useProfileStore()
 const { enabled: localeEnabled, locale, localeOptions, setLocale } = useLocale()
 const languageEnabled = computed(() => localeEnabled)
-const { settings } = storeToRefs(app)
+const { settings } = storeToRefs(appStore)
 const { userInfo, displayName, avatar } = storeToRefs(user)
 const form = ref(createLocalProfile())
 const formRef = ref<FormInstance>()
@@ -98,19 +98,6 @@ async function reset() {
   } catch (error) {
     if (error !== 'cancel' && error !== 'close') throw error
   }
-}
-function setTheme(value: unknown) {
-  if (['light', 'dark', 'system'].includes(String(value))) app.setTheme(value as ThemeMode)
-}
-function setSize(value: unknown) {
-  if (['small', 'default', 'large'].includes(String(value)))
-    app.updateSettings({ componentSize: value as ComponentSize })
-}
-function setBreadcrumb(value: unknown) {
-  app.updateSettings({ layout: { showBreadcrumb: Boolean(value) } })
-}
-function setTabs(value: unknown) {
-  app.updateSettings({ layout: { showTabs: Boolean(value) } })
 }
 </script>
 <template>
@@ -225,7 +212,7 @@ function setTabs(value: unknown) {
               </div>
               <div>
                 <h3>{{ t('ui.componentSize') }}</h3>
-                <ElRadioGroup :model-value="settings.componentSize" @change="setSize"
+                <ElRadioGroup :model-value="settings.componentSize" @change="setComponentSize"
                   ><ElRadioButton v-for="value in sizeValues" :key="value" :value="value">{{
                     t(`ui.${value}`)
                   }}</ElRadioButton></ElRadioGroup
@@ -234,13 +221,13 @@ function setTabs(value: unknown) {
               <div class="profile-preferences__switch">
                 <span>{{ t('ui.showBreadcrumbs') }}</span><ElSwitch
                   :model-value="settings.layout.showBreadcrumb"
-                  @change="setBreadcrumb"
+                  @change="setLayoutFlag('showBreadcrumb', $event)"
                 />
               </div>
               <div class="profile-preferences__switch">
                 <span>{{ t('ui.showTabs') }}</span><ElSwitch
                   :model-value="settings.layout.showTabs"
-                  @change="setTabs"
+                  @change="setLayoutFlag('showTabs', $event)"
                 />
               </div>
             </div>

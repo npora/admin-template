@@ -4,12 +4,18 @@ import { defineStore } from 'pinia'
 import { STORAGE_KEYS } from '@/constants/storage'
 import { localStorageService } from '@/utils/storage'
 
-import { createDefaultSettings, resolveAppSettings } from './config'
+import {
+  createDefaultSettings,
+  resolveAppSettings,
+  isThemeMode,
+  isComponentSize,
+  isPageTransition
+} from './config'
 import { getDevice, watchDevice } from './responsive'
 import { applyDarkMode, getSystemDarkMode, resolveDarkMode, watchSystemTheme } from './theme'
 import { applyTimeZone, isAppTimeZone } from '@/utils/datetime'
 
-import type { AppSettings, AppSettingsPatch, DeviceType, ThemeMode } from './types'
+import type { AppSettings, AppSettingsPatch, DeviceType, LayoutSettings } from './types'
 
 export const useAppStore = defineStore('app', () => {
   const device = ref<DeviceType>(getDevice())
@@ -68,11 +74,23 @@ export const useAppStore = defineStore('app', () => {
     desktopSidebarCollapsed.value = true
   }
 
-  function setTheme(mode: ThemeMode): void {
-    settings.value.theme.mode = mode
+  function setTheme(mode: unknown): void {
+    if (isThemeMode(mode)) updateSettings({ theme: { mode } })
+  }
 
-    applyTheme()
-    saveSettings()
+  function setComponentSize(size: unknown): void {
+    if (isComponentSize(size)) updateSettings({ componentSize: size })
+  }
+
+  function setPageTransition(transition: unknown): void {
+    if (isPageTransition(transition)) updateSettings({ layout: { pageTransition: transition } })
+  }
+
+  function setLayoutFlag(
+    key: Exclude<keyof LayoutSettings, 'pageTransition'>,
+    value: unknown
+  ): void {
+    if (typeof value === 'boolean') updateSettings({ layout: { [key]: value } })
   }
 
   function updateSettings(value: AppSettingsPatch): void {
@@ -199,6 +217,9 @@ export const useAppStore = defineStore('app', () => {
     closeSidebar,
 
     setTheme,
+    setComponentSize,
+    setPageTransition,
+    setLayoutFlag,
     updateSettings,
 
     setup,

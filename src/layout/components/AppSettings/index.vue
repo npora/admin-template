@@ -8,8 +8,6 @@ import { storeToRefs } from 'pinia'
 
 import { useAppStore } from '@/store/modules/app'
 
-import { isPageTransition } from '@/store/modules/app/config'
-
 import type { ComponentSize, ThemeMode } from '@/store/modules/app/types'
 
 const { locale, localeOptions, enabled, setLocale, resetLocale } = useLocale()
@@ -77,50 +75,6 @@ function resetPreferences(): void {
 function handleVisibleChange(value: boolean): void {
   emit('update:modelValue', value)
 }
-
-function handleThemeChange(value: string | number | boolean): void {
-  if (value === 'light' || value === 'dark' || value === 'system') {
-    appStore.setTheme(value)
-  }
-}
-
-function handleSizeChange(value: string | number | boolean): void {
-  if (value === 'large' || value === 'default' || value === 'small') {
-    appStore.updateSettings({
-      componentSize: value
-    })
-  }
-}
-
-function handleLogoChange(value: string | number | boolean): void {
-  appStore.updateSettings({
-    layout: {
-      showLogo: Boolean(value)
-    }
-  })
-}
-
-function handleBreadcrumbChange(value: string | number | boolean): void {
-  appStore.updateSettings({
-    layout: {
-      showBreadcrumb: Boolean(value)
-    }
-  })
-}
-
-function handlePageTransitionChange(value: unknown): void {
-  if (isPageTransition(value)) {
-    appStore.updateSettings({ layout: { pageTransition: value } })
-  }
-}
-
-function handleTabsChange(value: string | number | boolean): void {
-  appStore.updateSettings({
-    layout: {
-      showTabs: Boolean(value)
-    }
-  })
-}
 </script>
 
 <template>
@@ -170,7 +124,7 @@ function handleTabsChange(value: string | number | boolean): void {
             :model-value="settings.theme.mode"
             :options="themeOptions"
             block
-            @change="handleThemeChange"
+            @change="appStore.setTheme"
           />
         </div>
 
@@ -181,7 +135,7 @@ function handleTabsChange(value: string | number | boolean): void {
             :model-value="settings.componentSize"
             :options="sizeOptions"
             block
-            @change="handleSizeChange"
+            @change="appStore.setComponentSize"
           />
         </div>
       </section>
@@ -194,7 +148,7 @@ function handleTabsChange(value: string | number | boolean): void {
           <ElSelect
             :model-value="settings.layout.pageTransition"
             :aria-label="t('ui.pageTransition')"
-            @change="handlePageTransitionChange"
+            @change="appStore.setPageTransition"
           >
             <ElOption value="fade" :label="t('ui.pageTransitionFade')" />
             <ElOption value="slide" :label="t('ui.pageTransitionSlide')" />
@@ -205,7 +159,10 @@ function handleTabsChange(value: string | number | boolean): void {
         <div class="app-settings__item">
           <span>{{ t('ui.showLogo') }}</span>
 
-          <ElSwitch :model-value="settings.layout.showLogo" @change="handleLogoChange" />
+          <ElSwitch
+            :model-value="settings.layout.showLogo"
+            @change="appStore.setLayoutFlag('showLogo', $event)"
+          />
         </div>
 
         <div class="app-settings__item">
@@ -213,14 +170,17 @@ function handleTabsChange(value: string | number | boolean): void {
 
           <ElSwitch
             :model-value="settings.layout.showBreadcrumb"
-            @change="handleBreadcrumbChange"
+            @change="appStore.setLayoutFlag('showBreadcrumb', $event)"
           />
         </div>
 
         <div class="app-settings__item">
           <span>{{ t('ui.showTabs') }}</span>
 
-          <ElSwitch :model-value="settings.layout.showTabs" @change="handleTabsChange" />
+          <ElSwitch
+            :model-value="settings.layout.showTabs"
+            @change="appStore.setLayoutFlag('showTabs', $event)"
+          />
         </div>
       </section>
 

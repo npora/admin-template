@@ -4,7 +4,7 @@ Vue 3 + TypeScript + Element Plus + Pinia 后台脚手架的完整演示版本�
 
 ## 启动
 
-需要 Node.js 22.12+，可使用 npm、pnpm 或 Yarn，不限制包管理器版本。
+建议使用 Node.js 24 LTS 的最新补丁版本，可使用 npm、pnpm 或 Yarn。展示版包含 Cloudflare CLI，使用 Node 24 时其锁定版本要求 24.22.0 或更高。
 
 ```sh
 npm install

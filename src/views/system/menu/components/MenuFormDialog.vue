@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { dynamicViewPaths } from '@/router/utils/dynamic-route'
 import { useFormSubmit } from '@/composables/useFormSubmit'
 import { useI18n } from 'vue-i18n'
 
@@ -41,9 +42,6 @@ const defaults = (): MenuInput => ({
 const form = reactive(defaults()),
   queryText = ref(''),
   formRef = ref<FormInstance>()
-const pages = Object.keys(import.meta.glob('/src/views/**/index.vue'))
-  .filter((path) => !path.includes('/components/') && !path.includes('/login/'))
-  .map((path) => path.replace('/src/views/', '').replace('.vue', ''))
 interface ParentOption {
   id: number
   title: string
@@ -217,7 +215,11 @@ function submit() {
           filterable
           :disabled="saving || submission.submitting.value"
           style="width: 100%"
-          ><ElOption v-for="page in pages" :key="page" :label="page" :value="page" /></ElSelect
+          ><ElOption
+            v-for="page in dynamicViewPaths"
+            :key="page"
+            :label="page"
+            :value="page" /></ElSelect
       ></ElFormItem>
       <ElFormItem v-if="form.type === 1" :label="t('ui.redirect')"
         ><ElInput

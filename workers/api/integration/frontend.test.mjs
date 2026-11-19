@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import worker from '../src/index.mjs'
+import { pageComponents } from '../src/config/pages.mjs'
 import {
   service,
   userInput,
@@ -43,6 +44,8 @@ test('real frontend client/session round-trip against Worker HTTP handlers and S
   const load = (path) => server.ssrLoadModule(`/src/${path}`)
   const { appConfig } = await load('config/app.ts')
   assert.equal(appConfig.demoEnabled, true)
+  const { dynamicViewPaths } = await load('router/utils/dynamic-route.ts')
+  assert.deepEqual(dynamicViewPaths, [...pageComponents].sort())
   const { constantRoutes } = await load('router/routes/constant.ts')
   const router = createStubRouter(constantRoutes)
   const { getSession } = await load('services/session.ts')

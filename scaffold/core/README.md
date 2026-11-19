@@ -4,7 +4,7 @@ Vue 3 + TypeScript + Element Plus + Pinia 后台脚手架，保留登录页、�
 
 ## 开始开发
 
-需要 Node.js 22.12+，可使用 npm、pnpm 或 Yarn，不限制包管理器版本。
+建议使用 Node.js 24 LTS，可使用 npm、pnpm 或 Yarn。
 
 ```sh
 npm install
@@ -22,6 +22,8 @@ npm run dev
 默认北京时间，可在应用设置中切换 32 个常用时区（含巴基斯坦），偏好保存在浏览器。内容区切页动画默认淡入淡出，可在应用设置中切换上下滑动或关闭。默认值在 `src/config/datetime.ts`，枚举在 `src/types/timezone.ts`；时间区间使用 `DateRangePicker` 并输出毫秒时间戳，参照 [日期与时区](docs/i18n.md#时区配置与时间区间)。
 
 `.env` 的 `VITE_AUTHENTICATOR_ENABLED` 默认为 `false`，开启前需对接支持验证器的后端。管理员创建绑定立即生效，用户导入自己手机后即可使用动态码登录；个人中心支持自行解绑、重新绑定，详见 [登录与账号安全](docs/authentication.md)。
+
+已绑定验证器的用户可通过登录页的“忘记密码”自助重置。个人中心改密需要原密码，已绑定时还需动态码，改密成功后重新登录。登录和忘记密码通过固定路由访问，菜单管理只列出支持动态加载的业务页面。
 
 ## 在线体验
 

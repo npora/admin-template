@@ -8,10 +8,15 @@ const viewModules = {
   ...import.meta.glob<RouteComponent>([
     '/src/views/**/index.vue',
     '!/src/views/**/components/**',
+    '!/src/views/login/index.vue',
     '!/src/views/forgot-password/index.vue'
   ]),
   ...demoViews
 }
+
+export const dynamicViewPaths = Object.keys(viewModules)
+  .map((path) => path.slice('/src/views/'.length, -'.vue'.length))
+  .sort()
 
 export function transformDynamicRoutes(routes: readonly DynamicRoute[]): RouteRecordRaw[] {
   return routes

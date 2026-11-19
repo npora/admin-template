@@ -4,7 +4,7 @@ import TableToolbar from '@/components/TableToolbar/index.vue'
 import { useI18n } from 'vue-i18n'
 
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { Delete, EditPen, Plus, Search, ArrowDown, Key, Lock } from '@element-plus/icons-vue'
 import { formatDate } from '@/locales'
 import 'element-plus/es/components/message-box/style/css'
@@ -14,13 +14,11 @@ import { handleRequestError } from '@/api/errors/handling'
 import type { CreateUserInput, ManagedUser } from '@/api/types/user'
 import { usePermission } from '@/composables/usePermission'
 import { useUserManagement } from './useUserManagement'
+import { useResetUserPassword } from './useResetUserPassword'
 import UserFormDialog from './components/UserFormDialog.vue'
-import { resetUserPassword } from '@/api/modules/user'
 import { useUserStore } from '@/store/modules/user'
-import { useSession } from '@/composables/useSession'
 import AuthenticatorSettings from '@/components/AuthenticatorSettings/index.vue'
 import { authConfig } from '@/config/auth'
-import { getTokenVersion } from '@/api/auth/token-storage'
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -28,14 +26,7 @@ defineOptions({ name: 'SystemUser' })
 
 const { hasPermission } = usePermission()
 const currentUser = useUserStore()
-const session = useSession()
-const resettingPassword = ref(false)
-let resetController: AbortController | undefined
-let disposed = false
-onBeforeUnmount(() => {
-  disposed = true
-  resetController?.abort()
-})
+const { resettingPassword, resetPassword } = useResetUserPassword()
 const {
   roleOptions,
   departments,
@@ -97,49 +88,6 @@ function moreAction(command: unknown, user: ManagedUser) {
 }
 function authenticatorChanged() {
   void load()
-}
-
-async function resetPassword(user: ManagedUser) {
-  if (busy.value || !currentUser.userInfo?.isSuperAdmin) return
-  resettingPassword.value = true
-  const version = getTokenVersion()
-  const active = () => !disposed && version === getTokenVersion()
-  try {
-    const current = await ElMessageBox.prompt(
-      t('ui.administratorPasswordHint'),
-      t('ui.resetPassword'),
-      {
-        inputType: 'password',
-        inputValidator: (value) =>
-          Boolean(value && value.length <= 128) || t('ui.enterYourPassword'),
-        confirmButtonText: t('ui.gotIt'),
-        cancelButtonText: t('ui.cancel')
-      }
-    )
-    if (!active()) return
-    const next = await ElMessageBox.prompt(
-      t('ui.newPasswordHint', { account: user.username }),
-      t('ui.resetPassword'),
-      {
-        inputType: 'password',
-        inputValidator: (value) =>
-          Boolean(value && value.length >= 12 && value.length <= 128) ||
-          t('ui.passwordMustContain12128Characters'),
-        confirmButtonText: t('ui.resetPassword'),
-        cancelButtonText: t('ui.cancel')
-      }
-    )
-    if (!active()) return
-    resetController = new AbortController()
-    await resetUserPassword(user.id, current.value, next.value, resetController.signal)
-    if (!active()) return
-    ElMessage.success(t('ui.passwordResetSuccess'))
-    if (currentUser.userInfo?.id === user.id) await session.logout()
-  } catch (error) {
-    if (active() && error !== 'cancel' && error !== 'close') handleRequestError(error)
-  } finally {
-    resettingPassword.value = false
-  }
 }
 
 onMounted(() => {

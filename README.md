@@ -33,6 +33,8 @@ npm run dev
 
 也可通过 `--preset starter`、`--preset worker` 或 `--preset demo` 明确选择。生成器默认使用同版本模板 Tag，可用 `--ref main` 跟随开发分支。生成器按需组合目录，创建后无需删除演示文件；纯净版保留登录和首页，不附带 Mock 或 Worker 接口。所有预设都保留用户权限及字典 SQL。
 
+新项目建议使用 Node.js 24 LTS。纯净版默认关闭 Google Authenticator，登录和系统管理数据由接入的后端提供。
+
 [生成器用法](https://github.com/npora/create-admin) · [npm 包](https://www.npmjs.com/package/@npora/create-admin)
 
 ## 接入自己的后端
@@ -61,6 +63,8 @@ VITE_API_URL=http://localhost:8080
 应用设置还可调整内容区切页动画，默认淡入淡出，可切换上下滑动或关闭。表单弹窗默认在视口中居中。
 
 Google Authenticator 使用 TOTP 动态码，模板默认关闭。将前端 `.env` 的 `VITE_AUTHENTICATOR_ENABLED` 设为 `true` 可显示验证器入口。Worker 后端完成迁移后，设置 `AUTH_TOTP_ENABLED=true`，并通过后端私密配置提供 `AUTH_TOTP_KEY`。纯净版需要接入支持 TOTP 的自有后端。超级管理员可在“用户管理 → 更多 → 管理验证器”创建并立即启用，将仅本次显示的密钥交给用户添加到自己手机，即可使用动态码登录。用户可在个人中心自行解绑和重新绑定；后端加密密钥不进入前端配置，详见 [登录与账号安全](docs/authentication.md)。
+
+已绑定验证器的用户可在登录页通过“忘记密码”自助重置。个人中心改密需要原密码，已绑定验证器时还需输入动态码，改密成功后重新登录。菜单管理只列出支持动态加载的业务页面，登录和忘记密码通过固定路由访问。
 
 ## 运行本仓库
 

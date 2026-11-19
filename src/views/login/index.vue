@@ -156,7 +156,7 @@ async function handleSubmit(): Promise<void> {
             </p>
           </header>
 
-          <el-form
+          <ElForm
             ref="formRef"
             :model="form"
             :rules="rules"
@@ -165,18 +165,18 @@ async function handleSubmit(): Promise<void> {
             :disabled="loading"
             @submit.prevent="handleSubmit"
           >
-            <el-form-item prop="username">
-              <el-input
+            <ElFormItem prop="username">
+              <ElInput
                 v-model="form.username"
                 :prefix-icon="User"
                 autocomplete="username"
                 clearable
                 :placeholder="t('ui.username')"
               />
-            </el-form-item>
+            </ElFormItem>
 
-            <el-form-item prop="password">
-              <el-input
+            <ElFormItem prop="password">
+              <ElInput
                 v-model="form.password"
                 :prefix-icon="Lock"
                 autocomplete="current-password"
@@ -184,10 +184,10 @@ async function handleSubmit(): Promise<void> {
                 show-password
                 type="password"
               />
-            </el-form-item>
+            </ElFormItem>
 
-            <el-form-item v-if="showAuthenticator">
-              <el-input
+            <ElFormItem v-if="showAuthenticator">
+              <ElInput
                 v-model="form.totpCode"
                 :prefix-icon="Lock"
                 inputmode="numeric"
@@ -196,25 +196,25 @@ async function handleSubmit(): Promise<void> {
                 :aria-label="t('ui.authenticatorCode')"
                 :placeholder="t('ui.authenticatorCodeOptional')"
               />
-            </el-form-item>
+            </ElFormItem>
 
             <div class="login-page__options">
-              <el-checkbox v-if="authConfig.rememberLoginEnabled" v-model="rememberMe">{{
+              <ElCheckbox v-if="authConfig.rememberLoginEnabled" v-model="rememberMe">{{
                 t('ui.rememberLogin')
-              }}</el-checkbox>
+              }}</ElCheckbox>
               <RouterLink class="login-page__link" :to="{ name: 'ForgotPassword' }">
                 {{ t('ui.forgotPassword') }}
               </RouterLink>
             </div>
 
-            <el-button
+            <ElButton
               class="login-page__submit"
               :loading="loading"
               native-type="submit"
               type="primary"
-              >{{ t('ui.signIn') }}</el-button
+              >{{ t('ui.signIn') }}</ElButton
             >
-          </el-form>
+          </ElForm>
 
           <div v-if="demoEnabled" class="login-page__demo">
             <span class="login-page__demo-label"> Demo </span>
