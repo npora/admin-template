@@ -20,5 +20,20 @@
   "mobileRule": "手机号不能超过 32 个字符",
   "bioRule": "简介不能超过 400 个字符",
   "avatarRule": "头像须为 HTTP(S) 图片地址，最多 500 个字符",
-  "resetConfirm": "清除当前账号保存在浏览器中的个人资料，并恢复账号默认显示吗？"
+  "resetConfirm": "清除当前账号保存在浏览器中的个人资料，并恢复账号默认显示吗？",
+  "sessions": "登录会话",
+  "sessionsStatus": "会话",
+  "sessionsCreatedAt": "登录时间",
+  "sessionsExpiresAt": "到期时间",
+  "sessionsActions": "操作",
+  "sessionsCurrent": "当前会话",
+  "sessionsOther": "其他会话",
+  "sessionsRevoke": "退出此会话",
+  "sessionsRevokeOthers": "退出其他会话",
+  "sessionsConfirmOne": "确认退出此会话？当前会话会继续有效。",
+  "sessionsConfirmOthers": "确认退出此账号的所有其他会话吗？",
+  "sessionsRevoked": "已退出 {count} 个会话",
+  "sessionsEmpty": "暂无有效登录会话",
+  "sessionsUnavailable": "当前后端暂未提供会话管理。",
+  "sessionsLoadFailed": "加载会话失败，请刷新重试。"
 }

@@ -12,9 +12,11 @@ export async function snapshot(
     departments: includeDepartments = false,
     departmentCounts = false,
     roleCounts = false,
-    allRoles = false
+    allRoles = false,
+    targetAccess = false
   } = {}
 ) {
+  const accessTargetId = targetAccess ? userId : 0
   const result = await db.batch([
     allRoles
       ? db.prepare(
@@ -25,17 +27,18 @@ export async function snapshot(
         )
       : db
           .prepare(
-            `SELECT r.* FROM sys_role r JOIN sys_user_role ur ON ur.role_id=r.id
-      WHERE ur.user_id=?1 ORDER BY r.sort_order, r.id`
+            `SELECT r.* FROM sys_role r WHERE id IN
+      (SELECT role_id FROM sys_user_role WHERE user_id=?1 OR user_id=?2)
+      ORDER BY r.sort_order, r.id`
           )
-          .bind(actor.id),
+          .bind(actor.id, accessTargetId),
     db.prepare('SELECT * FROM sys_menu ORDER BY sort_order, id'),
     db
       .prepare(
         `SELECT * FROM sys_role_menu WHERE role_id IN
-      (SELECT role_id FROM sys_user_role WHERE user_id=?1) OR role_id=?2`
+      (SELECT role_id FROM sys_user_role WHERE user_id=?1 OR user_id=?3) OR role_id=?2`
       )
-      .bind(actor.id, roleId),
+      .bind(actor.id, roleId, accessTargetId),
     db.prepare('SELECT * FROM sys_user_role WHERE user_id=?1 OR user_id=?2').bind(actor.id, userId),
     db.prepare(`SELECT ${userColumns} FROM sys_user WHERE id=?1 OR id=?2`).bind(actor.id, userId),
     db.prepare('SELECT revision FROM sys_data_revision WHERE id=1'),

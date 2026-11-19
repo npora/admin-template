@@ -4,8 +4,18 @@ import TableToolbar from '@/components/TableToolbar/index.vue'
 import { useI18n } from 'vue-i18n'
 
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { computed, onMounted, ref } from 'vue'
-import { Delete, EditPen, Plus, Search, ArrowDown, Key, Lock } from '@element-plus/icons-vue'
+import { computed, onDeactivated, onMounted, ref, watch } from 'vue'
+import {
+  Delete,
+  EditPen,
+  Plus,
+  Search,
+  ArrowDown,
+  Key,
+  Lock,
+  View,
+  Monitor
+} from '@element-plus/icons-vue'
 import { formatDate } from '@/locales'
 import 'element-plus/es/components/message-box/style/css'
 
@@ -16,6 +26,8 @@ import { usePermission } from '@/composables/usePermission'
 import { useUserManagement } from './useUserManagement'
 import { useResetUserPassword } from './useResetUserPassword'
 import UserFormDialog from './components/UserFormDialog.vue'
+import UserPermissionPreviewDialog from './components/UserPermissionPreviewDialog.vue'
+import UserSessionsDialog from './components/UserSessionsDialog.vue'
 import { useUserStore } from '@/store/modules/user'
 import AuthenticatorSettings from '@/components/AuthenticatorSettings/index.vue'
 import { authConfig } from '@/config/auth'
@@ -49,6 +61,8 @@ const {
   remove
 } = useUserManagement()
 const authenticatorUser = ref<ManagedUser | null>(null)
+const permissionPreviewUser = ref<ManagedUser | null>(null)
+const sessionsUser = ref<ManagedUser | null>(null)
 const authenticatorBusy = ref(false)
 const dialogVisible = ref(false)
 const editingUser = ref<ManagedUser | null>(null)
@@ -57,7 +71,9 @@ const canManage = computed(
   () =>
     currentUser.userInfo?.isSuperAdmin ||
     hasPermission('system:user:update') ||
-    hasPermission('system:user:delete')
+    hasPermission('system:user:delete') ||
+    hasPermission('system:user:permission-preview') ||
+    hasPermission('system:user-session:list')
 )
 const busy = computed(
   () => saving.value || deletingId.value !== undefined || resettingPassword.value
@@ -69,11 +85,25 @@ function canManageSecurity(user: ManagedUser) {
     (!user.isSuperAdmin || user.id === currentUser.userInfo.id)
   )
 }
+function canViewSessions(user: ManagedUser) {
+  return (
+    hasPermission('system:user-session:list') &&
+    (!user.isSuperAdmin || user.id === currentUser.userInfo?.id)
+  )
+}
 function hasMoreActions(user: ManagedUser) {
-  return canManageSecurity(user) || (!user.isSuperAdmin && hasPermission('system:user:delete'))
+  return (
+    canManageSecurity(user) ||
+    hasPermission('system:user:permission-preview') ||
+    canViewSessions(user) ||
+    (!user.isSuperAdmin && hasPermission('system:user:delete'))
+  )
 }
 function moreAction(command: unknown, user: ManagedUser) {
   if (busy.value) return
+  if (command === 'permission-preview' && hasPermission('system:user:permission-preview'))
+    permissionPreviewUser.value = user
+  if (command === 'sessions' && canViewSessions(user)) sessionsUser.value = user
   if (command === 'password' && canManageSecurity(user)) void resetPassword(user)
   if (
     command === 'authenticator' &&
@@ -89,6 +119,13 @@ function moreAction(command: unknown, user: ManagedUser) {
 function authenticatorChanged() {
   void load()
 }
+
+function closeInspectionDialogs() {
+  permissionPreviewUser.value = null
+  sessionsUser.value = null
+}
+watch(() => currentUser.userInfo?.id, closeInspectionDialogs, { flush: 'sync' })
+onDeactivated(closeInspectionDialogs)
 
 onMounted(() => {
   if (hasPermission('system:user:list')) {
@@ -360,6 +397,18 @@ async function confirmDelete(user: ManagedUser): Promise<void> {
                   <template #dropdown>
                     <ElDropdownMenu>
                       <ElDropdownItem
+                        v-if="hasPermission('system:user:permission-preview')"
+                        command="permission-preview"
+                        :icon="View"
+                        >{{ t('ui.userPermissionPreview') }}</ElDropdownItem
+                      >
+                      <ElDropdownItem
+                        v-if="canViewSessions(row)"
+                        command="sessions"
+                        :icon="Monitor"
+                        >{{ t('ui.userSessions') }}</ElDropdownItem
+                      >
+                      <ElDropdownItem
                         v-if="canManageSecurity(row)"
                         command="password"
                         :icon="Key"
@@ -423,6 +472,18 @@ async function confirmDelete(user: ManagedUser): Promise<void> {
       />
     </ElDialog>
 
+    <UserPermissionPreviewDialog
+      v-if="permissionPreviewUser && hasPermission('system:user:permission-preview')"
+      :key="permissionPreviewUser.id"
+      :user="permissionPreviewUser"
+      @close="permissionPreviewUser = null"
+    />
+    <UserSessionsDialog
+      v-if="sessionsUser && canViewSessions(sessionsUser)"
+      :key="sessionsUser.id"
+      :user="sessionsUser"
+      @close="sessionsUser = null"
+    />
     <UserFormDialog
       v-model="dialogVisible"
       :user="editingUser"

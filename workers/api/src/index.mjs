@@ -5,6 +5,8 @@ import { roles } from './modules/roles.mjs'
 import { menus } from './modules/menus.mjs'
 import { departments } from './modules/departments.mjs'
 import { dictionaryRoute } from './modules/dictionaries.mjs'
+import { sessionManagementRoute } from './modules/session-management.mjs'
+import { permissionPreview } from './modules/permission-preview.mjs'
 import { auditLogs } from './modules/audit-logs.mjs'
 import { dashboard } from './modules/dashboard.mjs'
 import { changeOwnPassword, resetOwnPassword, resetUserPassword } from './modules/user-password.mjs'
@@ -52,7 +54,7 @@ function userAuthenticatorRoute(path) {
 }
 function managementRoute(path) {
   const match =
-    /^\/system\/(users|roles|menus|departments)(?:\/(options|menu-options|[1-9]\d*)(?:\/(menus|password))?)?$/.exec(
+    /^\/system\/(users|roles|menus|departments)(?:\/(options|menu-options|[1-9]\d*)(?:\/(menus|password|permission-preview))?)?$/.exec(
       path
     )
   if (!match) return undefined
@@ -63,6 +65,10 @@ function managementRoute(path) {
   if (operation === 'password') {
     if (resource !== 'users' || !routeId) return undefined
     return ['POST', (request, env) => resetUserPassword(request, env, routeId)]
+  }
+  if (operation === 'permission-preview') {
+    if (resource !== 'users' || !routeId) return undefined
+    return ['GET', (request, env) => permissionPreview(request, env, routeId)]
   }
   if (operation === 'options' && !['roles', 'departments'].includes(resource)) return undefined
   if (operation === 'menu-options' && resource !== 'roles') return undefined
@@ -96,6 +102,7 @@ export default {
       const path = rawPath.startsWith('/api/') ? rawPath.slice(4) : rawPath
       const endpoint =
         endpoints.get(path) ||
+        sessionManagementRoute(path) ||
         userAuthenticatorRoute(path) ||
         dictionaryRoute(path) ||
         managementRoute(path)

@@ -16,6 +16,7 @@
   "action_totp_enable": "Enable authenticator",
   "action_totp_disable": "Disable authenticator",
   "action_role_grant": "Change role permissions",
+  "action_session_revoke": "Administrator session revocation",
   "result_success": "Success",
   "result_failure": "Failure",
   "target_user": "User",

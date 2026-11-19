@@ -5,6 +5,10 @@ import { readAccess } from '../repositories/auth.mjs'
 export async function authorization(db, user) {
   return calculateAccess(user, await readAccess(db, user.id))
 }
+export function isPermissionCode(value) {
+  return typeof value === 'string' && /^[a-z][a-z0-9-]*(?::[a-z][a-z0-9-]*)+$/.test(value)
+}
+
 export function calculateAccess(user, { roles, menus, links }) {
   const byId = new Map(menus.map((menu) => [menu.id, menu]))
   const active = (menu) => {
@@ -32,9 +36,7 @@ export function calculateAccess(user, { roles, menus, links }) {
             menus
               .filter(
                 (menu) =>
-                  grants.has(menu.id) &&
-                  menu.type === 3 &&
-                  /^[a-z][a-z0-9-]*(?::[a-z][a-z0-9-]*)+$/.test(menu.permission)
+                  grants.has(menu.id) && menu.type === 3 && isPermissionCode(menu.permission)
               )
               .map((menu) => menu.permission)
           )
@@ -73,7 +75,7 @@ function routeQuery(value) {
     throw new Error('Invalid route query in database')
   return data
 }
-export function dynamicRoutes(access) {
+export function effectiveRouteTree(access) {
   const ids = new Set(access.grants)
   // Restore ancestors of a granted node, but never grant its siblings/descendants.
   for (const id of access.grants) {
@@ -83,41 +85,47 @@ export function dynamicRoutes(access) {
       node = access.byId.get(node.parent_id)
     }
   }
-  const build = (parentId) =>
-    access.menus
-      .filter(
-        (menu) =>
-          menu.parent_id === parentId && menu.type !== 3 && ids.has(menu.id) && access.active(menu)
-      )
-      .flatMap((menu) => {
-        const children = build(menu.id)
-        if (menu.type === 1 && !children.length) return []
-        return [
-          {
-            path: menu.path,
-            name: menu.name ?? undefined,
-            title: menu.title,
-            component: menu.component ?? undefined,
-            redirect: menu.redirect ?? undefined,
-            icon: menu.icon ?? undefined,
-            routeQuery: routeQuery(menu.route_query),
-            activeMenu: menu.active_menu ?? undefined,
-            hidden: menu.visible !== 1,
-            alwaysShow: menu.always_show === 1,
-            keepAlive: menu.keep_alive === 1,
-            fixedTab: menu.fixed_tab === 1,
-            order: menu.sort_order,
-            ...(children.length ? { children } : {}),
-            permissions: access.menus
-              .filter(
-                (node) =>
-                  node.parent_id === menu.id && node.type === 3 && access.grants.has(node.id)
-              )
-              .map((node) => ({ name: node.title, permission: node.permission }))
-          }
-        ]
-      })
+  const childrenByParent = new Map()
+  for (const menu of access.menus) {
+    if (menu.type === 3 || !ids.has(menu.id) || !access.active(menu)) continue
+    const children = childrenByParent.get(menu.parent_id) ?? []
+    children.push(menu)
+    childrenByParent.set(menu.parent_id, children)
+  }
+  function build(parentId) {
+    return (childrenByParent.get(parentId) ?? []).flatMap((menu) => {
+      const children = build(menu.id)
+      if (menu.type === 1 && !children.length) return []
+      return [{ menu, children }]
+    })
+  }
   return build(null)
+}
+
+export function dynamicRoutes(access) {
+  const build = (nodes) =>
+    nodes.map(({ menu, children }) => ({
+      path: menu.path,
+      name: menu.name ?? undefined,
+      title: menu.title,
+      component: menu.component ?? undefined,
+      redirect: menu.redirect ?? undefined,
+      icon: menu.icon ?? undefined,
+      routeQuery: routeQuery(menu.route_query),
+      activeMenu: menu.active_menu ?? undefined,
+      hidden: menu.visible !== 1,
+      alwaysShow: menu.always_show === 1,
+      keepAlive: menu.keep_alive === 1,
+      fixedTab: menu.fixed_tab === 1,
+      order: menu.sort_order,
+      ...(children.length ? { children: build(children) } : {}),
+      permissions: access.menus
+        .filter(
+          (node) => node.parent_id === menu.id && node.type === 3 && access.grants.has(node.id)
+        )
+        .map((node) => ({ name: node.title, permission: node.permission }))
+    }))
+  return build(effectiveRouteTree(access))
 }
 
 export function assertCredentialsWritable(user, env) {

@@ -81,7 +81,8 @@ try {
       'database/mysql/04-query-indexes.sql',
       'database/mysql/06-sort-indexes.sql',
       'database/mysql/07-recent-users-index.sql',
-      'database/mysql/08-audit-logs.sql'
+      'database/mysql/08-audit-logs.sql',
+      'database/mysql/09-session-management.sql'
     ])
       assert.equal(
         await readFile(join(directory, entry), 'utf8'),
@@ -97,6 +98,18 @@ try {
       existsSync(join(directory, 'workers/api/migrations/0011_audit_logs.sql')),
       preset !== 'starter'
     )
+    assert.equal(
+      existsSync(join(directory, 'workers/api/migrations/0012_session_management.sql')),
+      preset !== 'starter'
+    )
+    for (const entry of [
+      'docs/account-management.md',
+      'docs/images/personal-sessions.png',
+      'docs/images/permission-preview.png',
+      'docs/images/admin-sessions.png'
+    ]) {
+      assert.ok(existsSync(join(directory, entry)), `${preset} must retain ${entry}`)
+    }
     for (const entry of [
       'src/views/login/index.vue',
       'src/views/dashboard/index.vue',
@@ -167,6 +180,15 @@ try {
     }
     run(directory, ['run', preset === 'demo' ? 'check:all' : 'check'])
     run(directory, ['run', preset === 'demo' ? 'build:demo' : 'build'])
+    if (preset === 'starter') {
+      const output = await readdir(join(directory, 'dist'), { recursive: true })
+      assert.ok(
+        output.every(
+          (entry) => !/(personal-sessions|permission-preview|admin-sessions)\.png$/.test(entry)
+        ),
+        'Starter must keep screenshots outside its runtime build'
+      )
+    }
     const serviceWorker = await readFile(join(directory, 'dist/sw.js'), 'utf8')
     assert.match(serviceWorker, /SKIP_WAITING/)
     assert.equal(existsSync(join(directory, 'dist/version.json')), false)

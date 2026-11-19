@@ -14,6 +14,7 @@ import { createLocalProfile, profileErrors, type LocalProfile } from '@/store/mo
 import { authConfig } from '@/config/auth'
 import AuthenticatorSettings from '@/components/AuthenticatorSettings/index.vue'
 import ChangePasswordForm from './components/ChangePasswordForm.vue'
+import SessionSettings from './components/SessionSettings.vue'
 const { t } = useI18n({ useScope: 'global' })
 const authenticatorEnabled = computed(() => authConfig.authenticatorEnabled)
 const user = useUserStore()
@@ -234,6 +235,9 @@ async function reset() {
           </ElTabPane>
           <ElTabPane :label="t('ui.changePassword')" name="password" lazy>
             <ChangePasswordForm :active="tab === 'password'" />
+          </ElTabPane>
+          <ElTabPane :label="t('profile.sessions')" name="sessions" lazy>
+            <SessionSettings v-if="tab === 'sessions'" />
           </ElTabPane>
           <ElTabPane
             v-if="authenticatorEnabled"

@@ -21,6 +21,8 @@ try {
     ['DataTable', '@/components/DataTable/index.vue'],
     ['TableToolbar', '@/components/TableToolbar/index.vue'],
     ['UserFormDialog', './components/UserFormDialog.vue'],
+    ['UserPermissionPreviewDialog', './components/UserPermissionPreviewDialog.vue'],
+    ['UserSessionsDialog', './components/UserSessionsDialog.vue'],
     ['AuthenticatorSettings', '@/components/AuthenticatorSettings/index.vue']
   ])
     source = source.replace(`import ${name} from '${path}'`, `import { ${name} } from '${bridge}'`)
@@ -40,6 +42,8 @@ try {
     export const DataTable=defineComponent({setup:(_, {slots})=>()=>h('table',slots.default?.())})
     export const TableToolbar=defineComponent({render:()=>h('toolbar')})
     export const UserFormDialog=defineComponent({render:()=>h('user-form')})
+    export const UserPermissionPreviewDialog=defineComponent({props:['user'],emits:['close'],setup:(p,{emit})=>()=>h('permission-preview',{targetId:p.user.id,close:()=>emit('close')})})
+    export const UserSessionsDialog=defineComponent({props:['user'],emits:['close'],setup:(p,{emit})=>()=>h('user-sessions',{targetId:p.user.id,close:()=>emit('close')})})
     export const AuthenticatorSettings=defineComponent({props:['targetUser'],emits:['changed','close'],setup:(p,{emit})=>()=>h('authenticator',{targetId:p.targetUser.id,change:()=>emit('changed'),close:()=>emit('close')})})
   `
   )
@@ -209,6 +213,30 @@ try {
   await nextTick()
   assert.equal(all(root, 'dialog').length, 0)
   assert.equal(loads, 2, 'finishing must not refresh again')
+  for (const action of ['permission-preview', 'sessions']) {
+    const dialog = action === 'sessions' ? 'user-sessions' : action
+    all(root, 'dropdown')[0].props.command(action)
+    await nextTick()
+    assert.equal(all(root, dialog)[0].props.targetId, 2)
+    all(root, dialog)[0].props.close()
+    await nextTick()
+    assert.equal(all(root, dialog).length, 0)
+    assert.equal(loads, 2)
+  }
+  useUserStore(pinia).setUser({ id: 3, isSuperAdmin: false, roles: [], permissions: [] })
+  permission.permissions = ['system:user:list', 'system:user:permission-preview']
+  await nextTick()
+  assert.ok(text(all(root, 'dropdown')[0]).includes('权限预览'))
+  assert.ok(!text(all(root, 'dropdown')[0]).includes('会话管理'))
+  all(root, 'dropdown')[0].props.command('sessions')
+  await nextTick()
+  assert.equal(all(root, 'user-sessions').length, 0)
+  all(root, 'dropdown')[0].props.command('permission-preview')
+  await nextTick()
+  assert.equal(all(root, 'permission-preview').length, 1)
+  useUserStore(pinia).reset()
+  await nextTick()
+  assert.equal(all(root, 'permission-preview').length, 0)
   console.log('通过：用户列无密码操作、更多菜单正确传递目标账号、关闭不刷新、保存只刷新一次。')
 } finally {
   app?.unmount()

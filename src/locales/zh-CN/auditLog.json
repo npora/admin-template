@@ -16,6 +16,7 @@
   "action_totp_enable": "启用验证器",
   "action_totp_disable": "停用验证器",
   "action_role_grant": "修改角色权限",
+  "action_session_revoke": "管理员撤销会话",
   "result_success": "成功",
   "result_failure": "失败",
   "target_user": "用户",

@@ -4,7 +4,7 @@ import { snapshot } from '../repositories/management.mjs'
 import { authenticate } from './auth.mjs'
 import { invalid, pagination } from './validation.mjs'
 
-const actions = ['password_reset', 'totp_enable', 'totp_disable', 'role_grant']
+const actions = ['password_reset', 'totp_enable', 'totp_disable', 'role_grant', 'session_revoke']
 const outcomes = ['success', 'failure']
 
 export async function auditOperation(db, actorId, targetId, action, run) {

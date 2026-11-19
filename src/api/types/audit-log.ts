@@ -4,7 +4,8 @@ export const AUDIT_ACTIONS = [
   'password_reset',
   'totp_enable',
   'totp_disable',
-  'role_grant'
+  'role_grant',
+  'session_revoke'
 ] as const
 export const AUDIT_RESULTS = ['success', 'failure'] as const
 

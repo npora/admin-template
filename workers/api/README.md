@@ -42,3 +42,5 @@ npm --prefix workers/api run build
 接口契约见 [API 文档](../../docs/api.md)，接入方式见 [后端切换](../../docs/backend-replacement.md)，全项目目录说明见 [目录职责](../../docs/project-structure.md)。
 
 管理员创建验证器直接启用并在同一事务内撤销目标会话；个人绑定保留动态码确认。两种流程复用 `0007_totp.sql` 和 `0008_millisecond_timestamps.sql` 中的 `sys_user_totp`，无需新增字段或重跑已完成迁移。按用户查询由 `user_id` 主键支持。
+
+会话管理和权限预览需要应用 `0012_session_management.sql`。升级保留已有会话与审计记录。新增权限及页面入口见 [会话管理与权限预览](../../docs/account-management.md)。

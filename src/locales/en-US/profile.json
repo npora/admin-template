@@ -20,5 +20,20 @@
   "mobileRule": "Mobile number must not exceed 32 characters",
   "bioRule": "Bio must not exceed 400 characters",
   "avatarRule": "Use an HTTP(S) image URL, up to 500 characters",
-  "resetConfirm": "Clear this account’s local profile and restore its default display?"
+  "resetConfirm": "Clear this account’s local profile and restore its default display?",
+  "sessions": "Login sessions",
+  "sessionsStatus": "Session",
+  "sessionsCreatedAt": "Signed in",
+  "sessionsExpiresAt": "Expires",
+  "sessionsActions": "Actions",
+  "sessionsCurrent": "Current session",
+  "sessionsOther": "Other session",
+  "sessionsRevoke": "Sign out",
+  "sessionsRevokeOthers": "Sign out other sessions",
+  "sessionsConfirmOne": "Sign out this session? Your current session will stay active.",
+  "sessionsConfirmOthers": "Sign out every other session for your account?",
+  "sessionsRevoked": "No sessions signed out | One session signed out | {count} sessions signed out",
+  "sessionsEmpty": "No active sessions",
+  "sessionsUnavailable": "Session management is unavailable on this server.",
+  "sessionsLoadFailed": "Could not load sessions. Refresh to try again."
 }

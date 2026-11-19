@@ -106,16 +106,16 @@ Worker 登录签发随机不透明 Token，D1 只保存 Token 的哈希和到期
 
 `GET /system/audit-logs` 使用 Bearer 会话，后端独立校验 `system:audit-log:list`。常规响应外层为 `{ code: 0, message, data }`，其中 `data` 为 `{ list, total }`。`total` 是筛选后的记录总数，分页固定按 `createdAt DESC, id DESC` 排序。
 
-| 查询参数   | 用途                                                                  |
-| ---------- | --------------------------------------------------------------------- |
-| `page`     | 页码，从 1 开始                                                       |
-| `pageSize` | 每页记录数                                                            |
-| `action`   | 可选，`password_reset`、`totp_enable`、`totp_disable` 或 `role_grant` |
-| `result`   | 可选，`success` 或 `failure`                                          |
+| 查询参数   | 用途                                                                                    |
+| ---------- | --------------------------------------------------------------------------------------- |
+| `page`     | 页码，从 1 开始                                                                         |
+| `pageSize` | 每页记录数                                                                              |
+| `action`   | 可选，`password_reset`、`totp_enable`、`totp_disable`、`role_grant` 或 `session_revoke` |
+| `result`   | 可选，`success` 或 `failure`                                                            |
 
 每条记录包含数字 `id`、`actorId`、`targetId`、`statusCode`、`createdAt`，以及 `targetType`（`user` 或 `role`）、`action`、`result`。时间以 Unix 毫秒表示。成功状态码为 200，失败保存原操作的 HTTP 状态码。非法查询参数返回 400，缺少有效会话返回 401，权限不足返回 403，服务不可用返回 503，均沿用通用错误响应。
 
-记录范围是已认证的管理员密码重置、用户或管理员实际启停验证器及角色权限保存。管理员为用户立即创建绑定计为启用，个人中心生成的待确认密钥在确认绑定后计为启用。落库字段只取服务端确认的 ID、固定枚举、状态码和时间，排除密码、验证码、验证器密钥、Token、请求内容、IP 地址和原始错误消息。成功记录与业务写入在同一事务提交。已认证的失败操作会尝试单独记录，审计存储不可用时仍返回原操作错误。
+记录范围是已认证的管理员密码重置、用户或管理员实际启停验证器、角色权限保存和管理员撤销用户会话。管理员为用户立即创建绑定计为启用，个人中心生成的待确认密钥在确认绑定后计为启用。落库字段只取服务端确认的 ID、固定枚举、状态码和时间，排除密码、验证码、验证器密钥、Token、请求内容、IP 地址和原始错误消息。成功记录与业务写入在同一事务提交。已认证的失败操作会尝试单独记录，审计存储不可用时仍返回原操作错误。
 
 动态菜单位于“系统管理”下，路由名为 `SystemAuditLog`，相对路径为 `audit-log`，页面组件为 `system/audit-log/index`。给普通角色开放查询时，需同时授权对应目录、页面与查看权限。
 
@@ -134,3 +134,20 @@ Worker 预设的 `workers/api/` 提供独立后端，不参与普通前端构建
 类型、数据 CRUD、业务选项接口与 DTO 字段见 [字典管理接口契约](dictionaries.md#接口契约)。管理权限与业务选项读取分开，后端须独立校验登录和操作权限。
 
 用户验证器的管理员接口见 [从用户管理创建绑定](authentication.md#从用户管理创建绑定)。仅超级管理员可调用；创建时校验管理员密码并立即生效；解绑校验管理员密码和目标用户动态码，绑定状态不等于前端入口开关。
+
+## 会话管理与权限预览
+
+以下接口使用现有 Bearer 会话和通用响应外层。
+
+| 方法和路径                                         | 成功时的 `data`          | 权限                                                       |
+| -------------------------------------------------- | ------------------------ | ---------------------------------------------------------- |
+| `GET /auth/sessions`                               | 当前账号活跃会话列表     | 已登录                                                     |
+| `DELETE /auth/sessions/:sessionId`                 | `{ revoked: number }`    | 已登录，仅自己的其他会话                                   |
+| `DELETE /auth/sessions/others`                     | `{ revoked: number }`    | 已登录，保留当前会话                                       |
+| `GET /system/users/:userId/sessions`               | 目标账号活跃会话列表     | `system:user-session:list`                                 |
+| `DELETE /system/users/:userId/sessions/:sessionId` | `{ revoked: number }`    | `system:user-session:list` 与 `system:user-session:revoke` |
+| `GET /system/users/:userId/permission-preview`     | 用户实际生效的权限与来源 | `system:user:permission-preview`                           |
+
+会话记录为 `{ id, createdAt, expiresAt, current }`。`id` 是独立生成的 32 位小写十六进制管理标识。时间为 Unix 毫秒，当前会话以调用者身份判断。接口排除会话凭据、哈希、设备指纹、IP 地址和请求头。删除无需请求体，撤销当前会话返回 409，格式无效返回 400，不存在、过期或不属于当前账号的会话返回 404。会话无效返回 401，权限不足或目标受保护返回 403。管理员撤销写入 `session_revoke` 审计记录，目标类型为 `user`。
+
+权限预览返回 `{ userId, isSuperAdmin, roles, entries }`。`roles` 为有效角色数组，元素为 `{ id, name }`；`entries` 元素为 `{ id, parentId, type, title, permission, roleIds, source }`。类型为 `directory`、`menu` 或 `permission`，来源为 `role`、`inherited` 或 `superAdmin`。无上级或无按钮权限码时，对应字段为 `null`。停用用户的有效权限为空，接口不返回用户凭据、资料及路由参数。

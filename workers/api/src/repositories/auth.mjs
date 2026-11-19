@@ -1,3 +1,5 @@
+import { randomHex } from '../security/crypto.mjs'
+
 export const findLoginUser = (db, username) =>
   db
     .prepare('SELECT * FROM sys_user WHERE username = ?1 COLLATE NOCASE AND deleted_at IS NULL')
@@ -7,7 +9,7 @@ export const findLoginUser = (db, username) =>
 export const findSession = (db, tokenHash, now) =>
   db
     .prepare(
-      `SELECT u.*, s.credential_fingerprint FROM sys_auth_session s
+      `SELECT u.*, s.credential_fingerprint, s.public_id AS session_id FROM sys_auth_session s
     JOIN sys_user u ON u.id = s.user_id
     WHERE s.token_hash = ?1 AND s.expires_at > ?2 AND u.status = 1 AND u.deleted_at IS NULL`
     )
@@ -26,12 +28,21 @@ export async function saveSession(db, user, tokenHash, fingerprint, now, ttl, to
       .bind(user.id),
     db
       .prepare(
-        `INSERT INTO sys_auth_session(token_hash, user_id, credential_fingerprint, created_at, expires_at)
-      SELECT ?1, id, ?2, ?3, ?4 FROM sys_user
+        `INSERT INTO sys_auth_session(token_hash, user_id, credential_fingerprint, created_at, expires_at, public_id)
+      SELECT ?1, id, ?2, ?3, ?4, ?8 FROM sys_user
       WHERE id = ?5 AND password_hash = ?6 AND status = 1 AND deleted_at IS NULL
       AND COALESCE((SELECT secret_encrypted FROM sys_user_totp WHERE user_id = ?5 AND enabled = 1), '') = ?7`
       )
-      .bind(tokenHash, fingerprint, now, now + ttl, user.id, user.password_hash, totpSecret),
+      .bind(
+        tokenHash,
+        fingerprint,
+        now,
+        now + ttl,
+        user.id,
+        user.password_hash,
+        totpSecret,
+        randomHex(16)
+      ),
     db
       .prepare(
         `UPDATE sys_user SET last_login_at = ?1, updated_at = ?1

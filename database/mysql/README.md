@@ -37,6 +37,8 @@ sh database/mysql/init.sh --user root --password npora_admin
 
 [08-audit-logs.sql](08-audit-logs.sql) 新增操作审计表、查询索引、系统管理菜单及独立查看权限 `system:audit-log:list`。接入审计时应用该增量迁移，自有后端负责记录和查询，按 [审计接口契约](../../docs/api.md#操作审计日志) 实现。普通角色需显式获得该页面和查看权限。
 
+[09-session-management.sql](09-session-management.sql) 新增权限预览及会话查看、撤销的独立权限，并扩展审计动作。执行前先应用 `08-audit-logs.sql`。会话表由自有后端维护，参照 [接口契约](../../docs/api.md#会话管理与权限预览)。
+
 例如，先创建并选择一个新库：
 
 ```sql
