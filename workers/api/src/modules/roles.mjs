@@ -1,4 +1,5 @@
 import { readJson, success } from '../http.mjs'
+import { auditOperation } from './audit-logs.mjs'
 import { authenticate } from './auth.mjs'
 import { requirePermission } from '../security/access.mjs'
 import { snapshot, commit, insert, update, nowFields } from '../repositories/management.mjs'
@@ -21,6 +22,14 @@ import { tree, menuDto, roleOption, roleDto } from './dto.mjs'
 
 export async function roles(request, env, routeId, operation) {
   const actor = await authenticate(request, env.DB)
+  if (operation === 'menus' && request.method === 'PUT')
+    return auditOperation(env.DB, actor.id, routeId, 'role_grant', (auditSuccess) =>
+      roleRequest(request, env, routeId, operation, actor, auditSuccess)
+    )
+  return roleRequest(request, env, routeId, operation, actor)
+}
+
+async function roleRequest(request, env, routeId, operation, actor, auditSuccess) {
   const state = await snapshot(env.DB, actor, {
     roleId: routeId,
     roleCounts: !operation,
@@ -58,7 +67,8 @@ export async function roles(request, env, routeId, operation) {
       env.DB.prepare('DELETE FROM sys_role_menu WHERE role_id=?1').bind(routeId),
       env.DB.prepare(
         'INSERT INTO sys_role_menu(role_id, menu_id) SELECT ?1, value FROM json_each(?2)'
-      ).bind(routeId, JSON.stringify([...menuIds]))
+      ).bind(routeId, JSON.stringify([...menuIds])),
+      auditSuccess()
     ])
     return success([...menuIds])
   }

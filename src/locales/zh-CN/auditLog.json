@@ -1,0 +1,23 @@
+{
+  "action": "操作",
+  "result": "结果",
+  "actorId": "操作者 ID",
+  "targetId": "目标 ID",
+  "targetType": "目标类型",
+  "statusCode": "HTTP 状态码",
+  "createdAt": "操作时间",
+  "allActions": "全部操作",
+  "allResults": "全部结果",
+  "records": "审计记录",
+  "loadFailed": "无法加载审计日志，请刷新重试",
+  "empty": "没有匹配的审计记录",
+  "forbidden": "当前账号无权查看审计日志",
+  "action_password_reset": "管理员重置密码",
+  "action_totp_enable": "启用验证器",
+  "action_totp_disable": "停用验证器",
+  "action_role_grant": "修改角色权限",
+  "result_success": "成功",
+  "result_failure": "失败",
+  "target_user": "用户",
+  "target_role": "角色"
+}

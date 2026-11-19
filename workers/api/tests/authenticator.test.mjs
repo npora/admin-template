@@ -157,6 +157,18 @@ test('enrollment, replay protection, disabled feature enforcement and unlinking 
   assert.equal(disable.status, 200)
   assert.equal((await call('/auth/user', { token })).status, 401)
   assert.equal(sqlite.prepare('SELECT count(*) n FROM sys_user_totp').get().n, 0)
+  assert.deepEqual(
+    sqlite
+      .prepare(
+        "SELECT action, actor_id, target_id FROM sys_audit_log WHERE result='success' ORDER BY id"
+      )
+      .all()
+      .map((row) => ({ ...row })),
+    [
+      { action: 'totp_enable', actor_id: 1, target_id: 1 },
+      { action: 'totp_disable', actor_id: 1, target_id: 1 }
+    ]
+  )
 })
 test('pending enrollment expires, and default versus remembered sessions have bounded lifetimes', async (t) => {
   const { env, call, sqlite } = await service(t)

@@ -19,6 +19,8 @@ npm run dev:demo
 
 生产构建会生成 PWA 的 `sw.js`。浏览器检测到新版 Service Worker 等待激活后会提示刷新，确认后激活新版并重新加载网页。
 
+应用 Worker 审计迁移 `0011_audit_logs.sql` 后，有 `system:audit-log:list` 权限的用户可在“系统管理 → 操作审计日志”查询账号安全和角色授权记录。接口字段见 [审计接口契约](docs/api.md#操作审计日志)。
+
 ## 目录
 
 | 目录                 | 用途                                           |
@@ -32,7 +34,7 @@ npm run dev:demo
 | `scripts/`、`tests/` | 开发与验证命令                                 |
 | `docs/`              | 目录、接口、权限、开发与通用部署说明           |
 
-正式 MySQL 按 [正式 SQL 说明](database/mysql/README.md) 依次导入四个编号文件；账号和密码哈希由自己的后端初始化。Worker SQLite 迁移与 MySQL SQL 独立使用。没有本地 Mock，普通前端构建不启动或部署后端。
+正式 MySQL 的新库初始化及增量迁移见 [正式 SQL 说明](database/mysql/README.md)。账号和密码哈希由自己的后端初始化。Worker SQLite 迁移与 MySQL SQL 独立使用。没有本地 Mock，普通前端构建不启动或部署后端。
 
 ## 文档与检查
 

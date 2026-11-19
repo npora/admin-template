@@ -5,6 +5,7 @@
   "System": "系统管理",
   "SystemUser": "用户管理",
   "SystemRole": "角色管理",
+  "SystemAuditLog": "操作审计日志",
   "SystemMenu": "菜单管理",
   "SystemDepartment": "部门管理",
   "Examples": "操作示例",

@@ -50,7 +50,7 @@ VITE_API_URL=http://localhost:8080
 - 请求函数与 DTO：`src/api/modules/`、`src/api/types/`。
 - 响应协议：在 `src/api/protocol/index.ts` 统一适配，默认 `{ code: 0, message, data }`，调用方直接获得 `data`。
 - 登录、动态菜单及管理接口：[接口契约](docs/api.md)。账号由自己的后端初始化。
-- MySQL 表结构、基础权限、字典及索引：[正式 SQL](database/mysql/README.md)，基础功能按说明依次执行前四份 SQL；随后应用 `06-sort-indexes.sql` 和 `07-recent-users-index.sql`，验证器按需执行 `05-authenticator.sql`。已有数据库只执行尚未应用的增量迁移。
+- MySQL 新库运行 `sh database/mysql/init.sh --user root --password npora_admin` 一次导入表结构、基础权限、字典及索引。可选功能和已有库升级见 [正式 SQL](database/mysql/README.md)。
 
 环境覆盖、认证与生产转发见 [开发配置](docs/development.md)、[后端接入](docs/backend-replacement.md) 和 [通用部署](docs/deployment.md)。完整源码仓库的核心模式应保持 `VITE_DEMO_ENABLED=false`；生成后的纯净版不需要该开关。
 
@@ -65,6 +65,12 @@ VITE_API_URL=http://localhost:8080
 Google Authenticator 使用 TOTP 动态码，模板默认关闭。将前端 `.env` 的 `VITE_AUTHENTICATOR_ENABLED` 设为 `true` 可显示验证器入口。Worker 后端完成迁移后，设置 `AUTH_TOTP_ENABLED=true`，并通过后端私密配置提供 `AUTH_TOTP_KEY`。纯净版需要接入支持 TOTP 的自有后端。超级管理员可在“用户管理 → 更多 → 管理验证器”创建并立即启用，将仅本次显示的密钥交给用户添加到自己手机，即可使用动态码登录。用户可在个人中心自行解绑和重新绑定；后端加密密钥不进入前端配置，详见 [登录与账号安全](docs/authentication.md)。
 
 已绑定验证器的用户可在登录页通过“忘记密码”自助重置。个人中心改密需要原密码，已绑定验证器时还需输入动态码，改密成功后重新登录。菜单管理只列出支持动态加载的业务页面，登录和忘记密码通过固定路由访问。
+
+## 操作审计日志
+
+有 `system:audit-log:list` 权限的用户可在“系统管理 → 操作审计日志”按操作和结果筛选。日志覆盖管理员重置密码、启停 Google Authenticator 和修改角色权限，保存操作者与目标 ID、结果、状态码和时间。
+
+Worker 参考后端应用 `0011_audit_logs.sql` 后提供记录和查询。纯净版保留查询页，自有后端可应用 [MySQL 审计迁移](database/mysql/08-audit-logs.sql)，按 [审计接口契约](docs/api.md#操作审计日志) 接入。
 
 ## 运行本仓库
 

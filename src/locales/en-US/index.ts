@@ -10,10 +10,11 @@ import form from './form.json'
 import profile from './profile.json'
 import dict from './dict.json'
 import timezone from './timezone.json'
+import auditLog from './auditLog.json'
 
 export default {
   label: 'English',
-  messages: { ui, routes, language, errors, table, form, profile, dict, timezone },
+  messages: { ui, routes, language, errors, table, form, profile, dict, timezone, auditLog },
   elementLocale,
   dayjsLocale: 'en',
   dateFormats: {

@@ -37,6 +37,8 @@ npm --prefix workers/api run build
 
 已应用 `0008_millisecond_timestamps.sql` 的库可继续增量应用 `0009_sort_indexes.sql`，添加全量排序与会话保留查询的索引。再应用 `0010_recent_users_index.sql`，支持按创建时间查询最近用户。
 
+应用 `0011_audit_logs.sql` 后，Worker 会记录管理员重置密码、启停验证器和角色授权结果。审计查询使用独立权限 `system:audit-log:list`，普通角色须显式授权。见 [审计接口契约](../../docs/api.md#操作审计日志)。
+
 接口契约见 [API 文档](../../docs/api.md)，接入方式见 [后端切换](../../docs/backend-replacement.md)，全项目目录说明见 [目录职责](../../docs/project-structure.md)。
 
 管理员创建验证器直接启用并在同一事务内撤销目标会话；个人绑定保留动态码确认。两种流程复用 `0007_totp.sql` 和 `0008_millisecond_timestamps.sql` 中的 `sys_user_totp`，无需新增字段或重跑已完成迁移。按用户查询由 `user_id` 主键支持。

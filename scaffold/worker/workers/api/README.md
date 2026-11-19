@@ -19,3 +19,5 @@
 [接口契约](../../docs/api.md) · [权限模型](../../docs/rbac.md) · [正式 MySQL SQL](../../database/mysql/README.md)
 
 管理员创建验证器直接启用，用户导入生成的密钥后即可使用动态码登录；个人中心自行绑定仍需动态码确认。两种流程复用已有验证器表与主键，已完成验证器迁移的库可增量应用 `0009_sort_indexes.sql` 补充查询索引。
+
+应用 `0011_audit_logs.sql` 后，Worker 会记录管理员重置密码、启停验证器和角色授权结果。有 `system:audit-log:list` 权限的用户可在系统管理中查询。见 [审计接口契约](../../docs/api.md#操作审计日志)。

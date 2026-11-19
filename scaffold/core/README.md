@@ -25,6 +25,10 @@ npm run dev
 
 已绑定验证器的用户可通过登录页的“忘记密码”自助重置。个人中心改密需要原密码，已绑定时还需动态码，改密成功后重新登录。登录和忘记密码通过固定路由访问，菜单管理只列出支持动态加载的业务页面。
 
+## 操作审计日志
+
+“系统管理 → 操作审计日志”可按操作和结果筛选账号安全与角色授权记录。纯净版页面由自有后端提供数据，按需应用 [MySQL 审计迁移](database/mysql/08-audit-logs.sql)，遵循 [审计接口契约](docs/api.md#操作审计日志) 并授予 `system:audit-log:list`。
+
 ## 在线体验
 
 [完整展示网站](https://admin.npora.live)，演示账号 `admin`，密码 `123456`。这是展示站账号，不是正式 SQL 自动创建的账号。
@@ -35,7 +39,7 @@ npm run dev
 - `public/`：原样输出的静态资源。
 - `build/`：公共构建配置和启动加载层。
 - `scripts/`、`tests/`：验证命令与核心回归。
-- `database/mysql/`：正式权限与字典 SQL，按编号依次导入 `01-schema.sql`、`02-seed.sql`、`03-dictionaries.sql`、`04-query-indexes.sql`。可选验证器 SQL 为 `05-authenticator.sql`，所有预设保留，按需执行。基础表创建后应用 `06-sort-indexes.sql` 和 `07-recent-users-index.sql` 补充排序索引。密码哈希和管理员账号由自己的后端初始化。
+- `database/mysql/`：纯净版的数据库文件仅采用 MySQL，包含 [新库初始化入口和已有库迁移](database/mysql/README.md)。密码哈希和管理员账号由自己的后端初始化。
 - `docs/`：接口、权限、多语言、开发和目录说明。
 
 字典类型、数据、选项缓存和标签组件的使用方法见 [字典管理](docs/dictionaries.md)。

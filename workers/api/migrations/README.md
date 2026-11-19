@@ -12,7 +12,8 @@
 8. `0008_millisecond_timestamps.sql`：将旧 ISO 时间转换为整数毫秒并重建表，保留 ID、自增序号、数据关联、会话、索引及触发器。
 9. `0009_sort_indexes.sql`：增加部门、角色、菜单的全量排序索引，完善会话保留查询的联合索引。
 10. `0010_recent_users_index.sql`：新增未删除用户按创建时间和 ID 排序的索引。
-11. `../.local/bootstrap.sql`：`npm run bootstrap` 在本机生成的随机账号哈希与关联角色。
+11. `0011_audit_logs.sql`：新增操作审计表、查询索引、审计日志页面和独立查看权限。
+12. `../.local/bootstrap.sql`：`npm run bootstrap` 在本机生成的随机账号哈希与关联角色。
 
 每份只执行一次；这些文件没有自动迁移执行器。后续已部署数据库的结构变更须新增编号迁移，执行前检查已应用版本，不改写旧文件、不重新初始化、不覆盖原表。
 

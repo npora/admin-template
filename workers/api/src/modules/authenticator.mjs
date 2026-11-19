@@ -1,3 +1,4 @@
+import { auditOperation } from './audit-logs.mjs'
 import { authenticate } from './auth.mjs'
 import { assertCredentialsWritable } from '../security/access.mjs'
 import { HttpError, readJson, success } from '../http.mjs'
@@ -31,9 +32,9 @@ async function contextFor(actor, env, targetId) {
 }
 async function writeBinding(env, context, statement, additional = []) {
   // 管理员操作复用事务修订号和会话守卫，防止异步密码校验后权限已变化。
-  return context.state
-    ? (await commit(env.DB, context.actor, context.state, [statement, ...additional]))[0]
-    : statement.all()
+  const statements = [statement, ...additional]
+  if (context.state) return (await commit(env.DB, context.actor, context.state, statements))[0]
+  return additional.length ? (await env.DB.batch(statements))[0] : statement.all()
 }
 export async function authenticatorStatus(request, env, targetId) {
   const context = await contextFor(await authenticate(request, env.DB), env, targetId)
@@ -43,8 +44,7 @@ export async function authenticatorStatus(request, env, targetId) {
     enabled: row?.enabled === 1
   })
 }
-async function reauthenticate(request, env, targetId) {
-  const actor = await authenticate(request, env.DB)
+async function reauthenticate(request, env, targetId, actor) {
   if (targetId !== undefined && actor.is_super_admin !== 1)
     throw new HttpError(403, '仅超级管理员可管理用户验证器')
   await limitLogin(request, env.DB, `totp:${actor.id}`, Date.now())
@@ -62,10 +62,40 @@ async function reauthenticate(request, env, targetId) {
     throw new HttpError(400, '密码或动态验证码错误')
   return { ...(await contextFor(actor, env, targetId)), input }
 }
-export async function setupAuthenticator(request, env, targetId) {
+function requireAuthenticatorEnabled(env) {
   if (!resolveAuthConfig(env).authenticatorEnabled) throw new HttpError(404, '验证器功能未开启')
+}
+
+function requireAuthenticatorSetup(env) {
+  requireAuthenticatorEnabled(env)
   if (!totpKeyConfigured(env)) throw new HttpError(503, '验证器功能尚未配置')
-  const context = await reauthenticate(request, env, targetId)
+}
+
+async function authenticateMutation(request, env, requireFeature) {
+  try {
+    return await authenticate(request, env.DB)
+  } catch (error) {
+    // Keep the feature response for unauthenticated callers without retrying authentication.
+    if (error instanceof HttpError && error.status === 401) requireFeature(env)
+    throw error
+  }
+}
+
+export async function setupAuthenticator(request, env, targetId) {
+  if (targetId === undefined) {
+    requireAuthenticatorSetup(env)
+    const actor = await authenticate(request, env.DB)
+    return createBinding(request, env, targetId, actor)
+  }
+  const actor = await authenticateMutation(request, env, requireAuthenticatorSetup)
+  return auditOperation(env.DB, actor.id, targetId, 'totp_enable', (auditSuccess) => {
+    requireAuthenticatorSetup(env)
+    return createBinding(request, env, targetId, actor, auditSuccess)
+  })
+}
+
+async function createBinding(request, env, targetId, actor, auditSuccess) {
+  const context = await reauthenticate(request, env, targetId, actor)
   const { user } = context
   assertCredentialsWritable(user, env)
   const immediate = targetId !== undefined
@@ -90,6 +120,7 @@ export async function setupAuthenticator(request, env, targetId) {
     ),
     immediate
       ? [
+          auditSuccess(true),
           env.DB.prepare(
             `DELETE FROM sys_auth_session WHERE user_id=?1 AND EXISTS
       (SELECT 1 FROM sys_user_totp WHERE user_id=?1 AND secret_encrypted=?2 AND enabled=1)`
@@ -111,8 +142,8 @@ export async function setupAuthenticator(request, env, targetId) {
     uri: `otpauth://totp/${encodeURIComponent(`${issuer}:${user.username}`)}?${query}`
   })
 }
-async function checkedBinding(request, env, enabled, targetId) {
-  const context = await reauthenticate(request, env, targetId)
+async function checkedBinding(request, env, enabled, targetId, actor) {
+  const context = await reauthenticate(request, env, targetId, actor)
   const { user, input } = context
   assertCredentialsWritable(user, env)
   const row = await findTotp(env.DB, user.id)
@@ -134,8 +165,15 @@ async function checkedBinding(request, env, enabled, targetId) {
   return { ...context, row, step }
 }
 export async function enableAuthenticator(request, env, targetId) {
-  if (!resolveAuthConfig(env).authenticatorEnabled) throw new HttpError(404, '验证器功能未开启')
-  const context = await checkedBinding(request, env, 0, targetId)
+  const actor = await authenticateMutation(request, env, requireAuthenticatorEnabled)
+  return auditOperation(env.DB, actor.id, targetId ?? actor.id, 'totp_enable', (auditSuccess) =>
+    activateBinding(request, env, targetId, actor, auditSuccess)
+  )
+}
+
+async function activateBinding(request, env, targetId, actor, auditSuccess) {
+  requireAuthenticatorEnabled(env)
+  const context = await checkedBinding(request, env, 0, targetId, actor)
   const { user, row, step } = context
   const result = await writeBinding(
     env,
@@ -145,13 +183,21 @@ export async function enableAuthenticator(request, env, targetId) {
     WHERE user_id = ?2 AND enabled = 0 AND secret_encrypted = ?3 AND pending_expires_at > ?4
     AND EXISTS(SELECT 1 FROM sys_user WHERE id = ?2 AND password_hash = ?5 AND status = 1 AND deleted_at IS NULL)
     RETURNING user_id`
-    ).bind(step, user.id, row.secret_encrypted, Date.now(), user.password_hash)
+    ).bind(step, user.id, row.secret_encrypted, Date.now(), user.password_hash),
+    [auditSuccess(true)]
   )
   if (result.results.length !== 1) throw new HttpError(409, '绑定状态已变化，请重新操作')
   return success(null)
 }
 export async function disableAuthenticator(request, env, targetId) {
-  const context = await checkedBinding(request, env, 1, targetId)
+  const actor = await authenticate(request, env.DB)
+  return auditOperation(env.DB, actor.id, targetId ?? actor.id, 'totp_disable', (auditSuccess) =>
+    removeBinding(request, env, targetId, actor, auditSuccess)
+  )
+}
+
+async function removeBinding(request, env, targetId, actor, auditSuccess) {
+  const context = await checkedBinding(request, env, 1, targetId, actor)
   const { user, row, step } = context
   const result = await writeBinding(
     env,
@@ -160,7 +206,8 @@ export async function disableAuthenticator(request, env, targetId) {
       `DELETE FROM sys_user_totp WHERE user_id = ?1 AND enabled = 1 AND secret_encrypted = ?2 AND last_used_step < ?3
     AND EXISTS(SELECT 1 FROM sys_user WHERE id = ?1 AND password_hash = ?4 AND status = 1 AND deleted_at IS NULL)
     RETURNING user_id`
-    ).bind(user.id, row.secret_encrypted, step, user.password_hash)
+    ).bind(user.id, row.secret_encrypted, step, user.password_hash),
+    [auditSuccess(true)]
   )
   if (result.results.length !== 1) throw new HttpError(409, '绑定状态已变化，请重新操作')
   return success(null)

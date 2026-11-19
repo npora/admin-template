@@ -5,6 +5,7 @@ import { roles } from './modules/roles.mjs'
 import { menus } from './modules/menus.mjs'
 import { departments } from './modules/departments.mjs'
 import { dictionaryRoute } from './modules/dictionaries.mjs'
+import { auditLogs } from './modules/audit-logs.mjs'
 import { dashboard } from './modules/dashboard.mjs'
 import { changeOwnPassword, resetOwnPassword, resetUserPassword } from './modules/user-password.mjs'
 import {
@@ -36,6 +37,7 @@ const endpoints = new Map([
   ['/auth/totp/setup', ['POST', setupAuthenticator]],
   ['/auth/totp/enable', ['POST', enableAuthenticator]],
   ['/auth/totp/disable', ['POST', disableAuthenticator]],
+  ['/system/audit-logs', ['GET', auditLogs]],
   ['/system/dashboard', ['GET', dashboard]]
 ])
 function userAuthenticatorRoute(path) {

@@ -19,7 +19,7 @@
 
 ## SQL 和升级
 
-- 新 MySQL 数据库：依次执行 `database/mysql/01-schema.sql`、`02-seed.sql`、`03-dictionaries.sql`、`04-query-indexes.sql`。
+- 新 MySQL 数据库：使用 [新库初始化入口](../database/mysql/README.md#新库初始化) 安装基础结构、字典与索引。
 - 已执行前两份的数据库：仅按顺序执行新增的 `03-dictionaries.sql`、`04-query-indexes.sql`，每份一次。
 - 可选后端已有前四份迁移：按顺序增量执行 `workers/api/migrations/0005_dictionaries.sql`、`0006_query_indexes.sql`，每份一次；新库按编号执行全部迁移。
 

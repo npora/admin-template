@@ -6,7 +6,17 @@
 
 已有旧版 `DATETIME` 库使用 [独立升级脚本](upgrades/01-millisecond-timestamps.sql)，不能重跑初始化文件。升级前暂停写入、备份，并把会话 `time_zone` 设置为历史 `DATETIME` 数据所使用的时区（历史 UTC 使用 `SET time_zone='+00:00'`，历史北京时间使用 `'+08:00'`）。脚本先校验旧类型，再暂存转换后的毫秒值、调整类型、回填并移除暂存列，保留 ID、关联与索引；MySQL DDL 隐式提交，失败时检查暂存列与已执行步骤，不能盲目重跑。新建库已经是毫秒结构，**不执行 `upgrades/`**。
 
-## 执行顺序
+## 新库初始化
+
+创建空数据库后，从仓库根目录执行一次。用户名和数据库名按实际环境替换，密码由 MySQL 客户端提示输入：
+
+```sh
+sh database/mysql/init.sh --user root --password npora_admin
+```
+
+脚本按顺序导入 `01`–`04`、`06` 和 `07`。通过数据库工具手动导入时使用相同顺序。验证器 `05` 和审计 `08` 按需单独导入。已有库按下方编号补齐尚未应用的迁移。
+
+## 迁移文件
 
 在自己新建的空数据库中，依次执行：
 
@@ -25,23 +35,14 @@
 
 [07-recent-users-index.sql](07-recent-users-index.sql) 为未删除用户按创建时间和 ID 查询新增联合索引。此迁移保留按 ID 排序的列表索引。
 
+[08-audit-logs.sql](08-audit-logs.sql) 新增操作审计表、查询索引、系统管理菜单及独立查看权限 `system:audit-log:list`。接入审计时应用该增量迁移，自有后端负责记录和查询，按 [审计接口契约](../../docs/api.md#操作审计日志) 实现。普通角色需显式获得该页面和查看权限。
+
 例如，先创建并选择一个新库：
 
 ```sql
 CREATE DATABASE npora_admin
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_0900_ai_ci;
-```
-
-在仓库根目录通过命令行分别导入；用户名和数据库名按自己的环境替换，密码由客户端提示输入：
-
-```sh
-mysql -u root -p npora_admin < database/mysql/01-schema.sql
-mysql -u root -p npora_admin < database/mysql/02-seed.sql
-mysql -u root -p npora_admin < database/mysql/03-dictionaries.sql
-mysql -u root -p npora_admin < database/mysql/04-query-indexes.sql
-mysql -u root -p npora_admin < database/mysql/06-sort-indexes.sql
-mysql -u root -p npora_admin < database/mysql/07-recent-users-index.sql
 ```
 
 按编号逐份执行，前一份成功后再执行下一份。每份仅执行一次，不加 `--force` 忽略错误；GUI 导入也应遇错停止。建表遇到同名表会报错，基础数据遇到重复主键或角色编码会报错，不会自动覆盖已有数据。种子数据在事务中导入，失败应回滚；MySQL DDL 隐式提交，结构和索引迁移不能依赖事务回滚，执行中断后应检查已完成步骤。已有业务库使用尚未应用的新增迁移，不能重新执行初始化文件。
@@ -101,6 +102,8 @@ mysql -u root -p npora_admin < database/mysql/07-recent-users-index.sql
 | 编码或字典值精确定位         | 字典编码唯一键、`(dict_type_id, value)` 唯一键                        |
 
 `04-query-indexes.sql` 用联合索引替换被覆盖的旧单列索引，外键关联列保留为索引最左列。两张权限关联表已有正反方向索引，保持原样。字典索引随 `03` 建表提供，不在 `04` 重复增加。
+
+`08-audit-logs.sql` 为审计分页提供四个索引，分别覆盖按 `created_at, id` 倒序查询、按操作筛选、按结果筛选，以及同时按操作和结果筛选。
 
 状态可选时，有状态与无状态查询分开组织条件，避免 `status = ? OR ? IS NULL` 妨碍索引选择。排序使用 `sort_order, id` 保证稳定分页。包含式关键词搜索（例如 `%关键词%`）仍需扫描候选记录，普通 B-tree 索引不解决任意子串搜索；当前实现不声称关键词查询无扫描。接入真实后端后用 `EXPLAIN` 结合实际数据量复核。
 

@@ -42,3 +42,7 @@ Vue 单文件组件的模板使用 PascalCase 组件标签，例如 `<ElTable>` 
 日期显示与时间区间统一遵循应用设置中的时区，默认北京时间（`Asia/Shanghai`）。`src/components/DateRangePicker/` 负责日期区间与毫秒时间戳转换；默认配置在 `src/config/datetime.ts`，枚举在 `src/types/timezone.ts`，参照 [日期与时区](i18n.md#时区配置与时间区间)。
 
 `src/components/AuthenticatorSettings/` 为个人中心和用户管理共用的验证器绑定组件。用户管理列表仅展示绑定状态，设置密钥只在当前绑定流程显示。
+
+## 操作审计日志
+
+审计查询页位于 `src/views/system/audit-log/`，请求和 DTO 位于 `src/api/modules/audit-log.ts`、`src/api/types/audit-log.ts`。所有预设保留前端页面，Worker 实现负责写入和查询，纯净版按 [审计接口契约](api.md#操作审计日志) 接入自有后端。

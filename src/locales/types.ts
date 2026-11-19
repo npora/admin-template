@@ -8,6 +8,7 @@ import type form from './zh-CN/form.json'
 import type profile from './zh-CN/profile.json'
 import type dict from './zh-CN/dict.json'
 import type timezone from './zh-CN/timezone.json'
+import type auditLog from './zh-CN/auditLog.json'
 
 export interface LocaleMessages {
   ui: typeof ui
@@ -19,6 +20,7 @@ export interface LocaleMessages {
   profile: typeof profile
   dict: typeof dict
   timezone: typeof timezone
+  auditLog: typeof auditLog
 }
 
 export type DateFormat = 'date' | 'dateTime' | 'short' | 'time' | 'heading'

@@ -5,6 +5,7 @@
   "System": "System management",
   "SystemUser": "Users",
   "SystemRole": "Roles",
+  "SystemAuditLog": "Audit log",
   "SystemMenu": "Menus",
   "SystemDepartment": "Departments",
   "Examples": "Examples",

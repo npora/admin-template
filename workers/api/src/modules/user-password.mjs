@@ -1,3 +1,4 @@
+import { auditOperation } from './audit-logs.mjs'
 import { authenticate } from './auth.mjs'
 import { HttpError, readJson, success, unauthorized } from '../http.mjs'
 import { verifyPassword, hashPassword, passwordIterations } from '../security/crypto.mjs'
@@ -15,6 +16,12 @@ import { snapshot, commit, update, nowFields } from '../repositories/management.
 
 export async function resetUserPassword(request, env, userId) {
   const actor = await authenticate(request, env.DB)
+  return auditOperation(env.DB, actor.id, userId, 'password_reset', (auditSuccess) =>
+    applyPasswordReset(request, env, userId, actor, auditSuccess)
+  )
+}
+
+async function applyPasswordReset(request, env, userId, actor, auditSuccess) {
   if (actor.is_super_admin !== 1) throw new HttpError(403, '仅超级管理员可重置密码')
   await limitLogin(request, env.DB, `password-reset:${actor.id}`, Date.now())
   const input = await readJson(request)
@@ -45,9 +52,11 @@ export async function resetUserPassword(request, env, userId) {
   assertCredentialsWritable(target, env)
   if (target.is_super_admin === 1 && actor.id !== userId)
     throw new HttpError(403, '不能重置其他超级管理员的密码')
-  await commit(env.DB, actor, state, [
-    update(env.DB, 'sys_user', userId, { password_hash: passwordHash, ...nowFields() })
+  const [result] = await commit(env.DB, actor, state, [
+    update(env.DB, 'sys_user', userId, { password_hash: passwordHash, ...nowFields() }),
+    auditSuccess(true)
   ])
+  if (result.results.length !== 1) throw new HttpError(409, '账号状态已变化，请刷新')
   return success(null)
 }
 

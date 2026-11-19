@@ -74,12 +74,14 @@ try {
     for (const entry of [
       'LICENSE',
       'CHANGELOG.md',
+      'database/mysql/init.sh',
       'database/mysql/01-schema.sql',
       'database/mysql/02-seed.sql',
       'database/mysql/03-dictionaries.sql',
       'database/mysql/04-query-indexes.sql',
       'database/mysql/06-sort-indexes.sql',
-      'database/mysql/07-recent-users-index.sql'
+      'database/mysql/07-recent-users-index.sql',
+      'database/mysql/08-audit-logs.sql'
     ])
       assert.equal(
         await readFile(join(directory, entry), 'utf8'),
@@ -88,9 +90,17 @@ try {
     assert.equal(existsSync(join(directory, 'examples')), preset === 'demo')
     assert.equal(existsSync(join(directory, 'deploy')), preset === 'demo')
     assert.equal(existsSync(join(directory, 'workers')), preset !== 'starter')
+    if (preset === 'starter') {
+      assert.deepEqual((await readdir(join(directory, 'database'))).sort(), ['README.md', 'mysql'])
+    }
+    assert.equal(
+      existsSync(join(directory, 'workers/api/migrations/0011_audit_logs.sql')),
+      preset !== 'starter'
+    )
     for (const entry of [
       'src/views/login/index.vue',
       'src/views/dashboard/index.vue',
+      'src/views/system/audit-log/index.vue',
       'src/layout/index.vue'
     ])
       assert.ok(existsSync(join(directory, entry)), `${preset} must retain ${entry}`)

@@ -1,0 +1,23 @@
+{
+  "action": "Action",
+  "result": "Result",
+  "actorId": "Actor ID",
+  "targetId": "Target ID",
+  "targetType": "Target type",
+  "statusCode": "HTTP status",
+  "createdAt": "Time",
+  "allActions": "All actions",
+  "allResults": "All results",
+  "records": "Audit records",
+  "loadFailed": "Could not load the audit log. Refresh to try again.",
+  "empty": "No matching audit records",
+  "forbidden": "Your account cannot view the audit log",
+  "action_password_reset": "Administrator password reset",
+  "action_totp_enable": "Enable authenticator",
+  "action_totp_disable": "Disable authenticator",
+  "action_role_grant": "Change role permissions",
+  "result_success": "Success",
+  "result_failure": "Failure",
+  "target_user": "User",
+  "target_role": "Role"
+}

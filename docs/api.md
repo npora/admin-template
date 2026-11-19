@@ -102,6 +102,23 @@ Worker 登录签发随机不透明 Token，D1 只保存 Token 的哈希和到期
 
 字段为 `parentId`、`name`、`code`、`leader`、`phone`、`email`、`sortOrder`、`status`，可空字段传 `null`。父级不得为自身或后代；部门编码在软删除后仍保留唯一性。筛选在完整树上进行并保留匹配节点的祖先。部门禁用不级联改变用户状态；新分配用户时不能选择禁用部门，编辑已有用户允许保留原部门。
 
+## 操作审计日志
+
+`GET /system/audit-logs` 使用 Bearer 会话，后端独立校验 `system:audit-log:list`。常规响应外层为 `{ code: 0, message, data }`，其中 `data` 为 `{ list, total }`。`total` 是筛选后的记录总数，分页固定按 `createdAt DESC, id DESC` 排序。
+
+| 查询参数   | 用途                                                                  |
+| ---------- | --------------------------------------------------------------------- |
+| `page`     | 页码，从 1 开始                                                       |
+| `pageSize` | 每页记录数                                                            |
+| `action`   | 可选，`password_reset`、`totp_enable`、`totp_disable` 或 `role_grant` |
+| `result`   | 可选，`success` 或 `failure`                                          |
+
+每条记录包含数字 `id`、`actorId`、`targetId`、`statusCode`、`createdAt`，以及 `targetType`（`user` 或 `role`）、`action`、`result`。时间以 Unix 毫秒表示。成功状态码为 200，失败保存原操作的 HTTP 状态码。非法查询参数返回 400，缺少有效会话返回 401，权限不足返回 403，服务不可用返回 503，均沿用通用错误响应。
+
+记录范围是已认证的管理员密码重置、用户或管理员实际启停验证器及角色权限保存。管理员为用户立即创建绑定计为启用，个人中心生成的待确认密钥在确认绑定后计为启用。落库字段只取服务端确认的 ID、固定枚举、状态码和时间，排除密码、验证码、验证器密钥、Token、请求内容、IP 地址和原始错误消息。成功记录与业务写入在同一事务提交。已认证的失败操作会尝试单独记录，审计存储不可用时仍返回原操作错误。
+
+动态菜单位于“系统管理”下，路由名为 `SystemAuditLog`，相对路径为 `audit-log`，页面组件为 `system/audit-log/index`。给普通角色开放查询时，需同时授权对应目录、页面与查看权限。
+
 ## 展示工作台概览（核心可不实现）
 
 `GET /system/dashboard` 要求登录，返回当前账号、可访问页面数及 `capabilities`。仅具有对应查询权限时返回 `users`、`roles`、`departments` 汇总；用户汇总包含最近五位用户、启用/禁用人数和部门分布，不提供密码字段。统计来自测试后端数据库，排除软删除记录。返回类型见 `examples/api/types.ts`。
