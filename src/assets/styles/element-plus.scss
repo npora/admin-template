@@ -59,6 +59,21 @@ html.dark {
     --el-button-active-text-color: #132147;
   }
 }
+html[data-np-accent]:not([data-np-accent='indigo']) {
+  @each $level in 3, 5, 7, 8, 9 {
+    --el-color-primary-light-#{$level}: color-mix(
+      in srgb,
+      var(--np-color-primary) #{100% - $level * 10%},
+      var(--np-bg-container)
+    );
+  }
+  --el-color-primary-dark-2: color-mix(in srgb, var(--np-color-primary) 80%, black);
+
+  &.dark {
+    --el-color-primary-dark-2: color-mix(in srgb, var(--np-color-primary) 80%, white);
+  }
+}
+
 .el-button {
   font-weight: 500;
   transition:
@@ -76,7 +91,6 @@ html.dark {
 }
 .el-input__wrapper,
 .el-select__wrapper {
-  min-height: 36px;
   border-radius: 8px;
   box-shadow: 0 0 0 1px var(--np-border-color) inset;
 }

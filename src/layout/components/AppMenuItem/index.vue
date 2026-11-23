@@ -4,6 +4,7 @@ import { computed } from 'vue'
 import { Document, FolderOpened } from '@element-plus/icons-vue'
 
 import { getIcon } from '@/icons'
+import { containsMenuPath, firstMenuPage, menuLocation } from '@/layout/menu'
 
 import type { MenuItem } from '@/router/types'
 
@@ -14,21 +15,15 @@ defineOptions({
 const props = defineProps<{
   item: MenuItem
   activePath?: string
+  rootOnly?: boolean
 }>()
 
 // A collapsed popup may not mount its children until first opened.
-// Resolve the current branch from menu data so its highlight stays visible.
-function containsActivePath(item: MenuItem): boolean {
-  return item.path === props.activePath || Boolean(item.children?.some(containsActivePath))
-}
-const isCurrentBranch = computed(() => Boolean(props.item.children?.some(containsActivePath)))
+const isCurrentBranch = computed(() =>
+  Boolean(props.item.children?.some((child) => containsMenuPath(child, props.activePath)))
+)
 
-const target = computed(() => ({
-  path: props.item.path,
-  query: Object.fromEntries(
-    Object.entries(props.item.routeQuery ?? {}).map(([key, value]) => [key, String(value)])
-  )
-}))
+const target = computed(() => menuLocation(props.rootOnly ? firstMenuPage(props.item) : props.item))
 
 const icon = computed(
   () => getIcon(props.item.icon) ?? (props.item.children?.length ? FolderOpened : Document)
@@ -37,7 +32,7 @@ const icon = computed(
 
 <template>
   <ElSubMenu
-    v-if="item.children?.length"
+    v-if="!rootOnly && item.children?.length"
     :index="item.path"
     :class="{ 'is-current-branch': isCurrentBranch }"
     :aria-label="translateRouteTitle(item.title, item.name)"

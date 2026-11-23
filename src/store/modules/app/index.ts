@@ -9,11 +9,14 @@ import {
   resolveAppSettings,
   isThemeMode,
   isComponentSize,
-  isPageTransition
+  isPageTransition,
+  isThemeAccent,
+  isMenuLayout,
+  isTabStyle
 } from './config'
 import { getDevice, watchDevice } from './responsive'
-import { applyDarkMode, getSystemDarkMode, resolveDarkMode, watchSystemTheme } from './theme'
-import { applyTimeZone, isAppTimeZone } from '@/utils/datetime'
+import { applyThemeAppearance, getSystemDarkMode, resolveDarkMode, watchSystemTheme } from './theme'
+import { applyTimeZone } from '@/utils/datetime'
 
 import type { AppSettings, AppSettingsPatch, DeviceType, LayoutSettings } from './types'
 
@@ -86,32 +89,31 @@ export const useAppStore = defineStore('app', () => {
     if (isPageTransition(transition)) updateSettings({ layout: { pageTransition: transition } })
   }
 
+  function setThemeAccent(accent: unknown): void {
+    if (isThemeAccent(accent)) updateSettings({ theme: { accent } })
+  }
+
+  function setThemeFlag(key: 'grayscale' | 'colorVision', value: unknown): void {
+    if (typeof value === 'boolean') updateSettings({ theme: { [key]: value } })
+  }
+
+  function setMenuLayout(menuLayout: unknown): void {
+    if (isMenuLayout(menuLayout)) updateSettings({ layout: { menuLayout } })
+  }
+
+  function setTabStyle(tabStyle: unknown): void {
+    if (isTabStyle(tabStyle)) updateSettings({ layout: { tabStyle } })
+  }
+
   function setLayoutFlag(
-    key: Exclude<keyof LayoutSettings, 'pageTransition'>,
+    key: Exclude<keyof LayoutSettings, 'pageTransition' | 'menuLayout' | 'tabStyle'>,
     value: unknown
   ): void {
     if (typeof value === 'boolean') updateSettings({ layout: { [key]: value } })
   }
 
   function updateSettings(value: AppSettingsPatch): void {
-    if (isAppTimeZone(value.timeZone)) settings.value.timeZone = value.timeZone
-    if (value.theme) {
-      settings.value.theme = {
-        ...settings.value.theme,
-        ...value.theme
-      }
-    }
-
-    if (value.layout) {
-      settings.value.layout = {
-        ...settings.value.layout,
-        ...value.layout
-      }
-    }
-
-    if (value.componentSize) {
-      settings.value.componentSize = value.componentSize
-    }
+    settings.value = resolveAppSettings(value, settings.value)
 
     applyTheme()
     saveSettings()
@@ -119,7 +121,7 @@ export const useAppStore = defineStore('app', () => {
 
   function applyTheme(): void {
     applyTimeZone(settings.value.timeZone)
-    applyDarkMode(isDark.value)
+    applyThemeAppearance(settings.value.theme, isDark.value)
   }
 
   function setupSystemThemeWatcher(): void {
@@ -217,8 +219,12 @@ export const useAppStore = defineStore('app', () => {
     closeSidebar,
 
     setTheme,
+    setThemeAccent,
+    setThemeFlag,
     setComponentSize,
     setPageTransition,
+    setMenuLayout,
+    setTabStyle,
     setLayoutFlag,
     updateSettings,
 

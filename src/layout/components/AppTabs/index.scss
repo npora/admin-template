@@ -91,3 +91,50 @@
 :deep(.el-scrollbar__view) {
   height: 100%;
 }
+
+.app-tabs--underline {
+  .app-tabs__item {
+    height: 38px;
+    border-radius: 5px 5px 0 0;
+
+    &.is-active {
+      background: transparent;
+      border-color: transparent;
+      box-shadow: inset 0 -2px var(--np-color-primary);
+    }
+
+    &:focus-within {
+      border-color: var(--np-color-primary);
+    }
+  }
+}
+
+.app-tabs--card {
+  .app-tabs__list {
+    align-items: flex-end;
+    gap: 5px;
+  }
+
+  .app-tabs__item {
+    height: 35px;
+    border-color: var(--np-border-color-light);
+    border-bottom: 0;
+    border-radius: 7px 7px 0 0;
+    background: var(--np-bg-subtle);
+
+    &.is-active {
+      border-color: var(--np-primary-border);
+      background: var(--np-primary-soft);
+    }
+
+    &:focus-within {
+      border-color: var(--np-color-primary);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-tabs__item {
+    transition: none;
+  }
+}

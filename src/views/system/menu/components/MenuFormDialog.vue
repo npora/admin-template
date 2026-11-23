@@ -10,6 +10,7 @@ import type { ManagedMenu, MenuInput } from '@/api/types/menu'
 import type { RouteQuery } from '@/api/types/route'
 import { MENU_TYPE_OPTIONS } from '@/constants/menu'
 import { SYSTEM_STATUS_OPTIONS } from '@/constants/system'
+import MenuIconPicker from '@/components/MenuIconPicker/index.vue'
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -60,6 +61,21 @@ const parentOptions = computed(() => {
       }))
   }
   return [{ id: 0, title: t('ui.rootNode'), disabled: form.type === 3, children: map(props.tree) }]
+})
+const componentUsage = computed(() => {
+  const usage = new Map<string, string[]>()
+  function collect(items: ManagedMenu[]) {
+    for (const item of items) {
+      if (item.id !== props.menu?.id && item.type === 2 && item.component) {
+        const owners = usage.get(item.component) ?? []
+        owners.push(item.title)
+        usage.set(item.component, owners)
+      }
+      if (item.children) collect(item.children)
+    }
+  }
+  collect(props.tree)
+  return usage
 })
 const rules = computed<FormRules<MenuInput>>(() => ({
   title: [{ required: true, whitespace: true, message: t('ui.enterAName'), trigger: 'blur' }],
@@ -215,12 +231,19 @@ function submit() {
           filterable
           :disabled="saving || submission.submitting.value"
           style="width: 100%"
-          ><ElOption
-            v-for="page in dynamicViewPaths"
-            :key="page"
-            :label="page"
-            :value="page" /></ElSelect
-      ></ElFormItem>
+          ><ElOption v-for="page in dynamicViewPaths" :key="page" :label="page" :value="page">
+            <span class="menu-component-option" :title="componentUsage.get(page)?.join('、')">
+              <span class="menu-component-option__path">{{ page }}</span>
+              <ElTag v-if="componentUsage.has(page)" size="small" type="warning" effect="plain">
+                {{ t('ui.pageComponentInUse') }}
+              </ElTag>
+              <ElTag v-else-if="menu?.component === page" size="small" type="info" effect="plain">
+                {{ t('ui.pageComponentCurrent') }}
+              </ElTag>
+            </span>
+          </ElOption></ElSelect
+        ></ElFormItem
+      >
       <ElFormItem v-if="form.type === 1" :label="t('ui.redirect')"
         ><ElInput
           v-model="form.redirect"
@@ -237,11 +260,7 @@ function submit() {
       /></ElFormItem>
       <template v-if="form.type !== 3">
         <ElFormItem :label="t('ui.iconName')"
-          ><ElInput
-            v-model="form.icon"
-            :disabled="saving || submission.submitting.value"
-            maxlength="100"
-            :placeholder="t('ui.forExampleHouseUserOrSetting')"
+          ><MenuIconPicker v-model="form.icon" :disabled="saving || submission.submitting.value"
         /></ElFormItem>
         <ElFormItem :label="t('ui.activeMenuPath')"
           ><ElInput

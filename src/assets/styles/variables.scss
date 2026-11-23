@@ -1,3 +1,5 @@
+@use 'sass:list';
+
 :root {
   --np-color-primary: #4361ee;
   --np-color-success: #249d7c;
@@ -102,4 +104,56 @@ html.dark {
   --np-scrollbar-thumb: rgb(170 185 212 / 18%);
   --np-scrollbar-thumb-hover: rgb(170 185 212 / 30%);
   --np-scrollbar-thumb-active: rgb(170 185 212 / 40%);
+}
+
+$theme-accents: (
+  'blue': (
+    #1462b6,
+    #8cc1ff
+  ),
+  'teal': (
+    #087c71,
+    #62cbbb
+  ),
+  'emerald': (
+    #337535,
+    #8bce88
+  ),
+  'violet': (
+    #6d45c2,
+    #b69af8
+  ),
+  'rose': (
+    #b23a66,
+    #ff98b7
+  ),
+  'amber': (
+    #916008,
+    #efbf63
+  ),
+  'orange': (
+    #af4920,
+    #ffa474
+  )
+);
+
+@each $accent, $colors in $theme-accents {
+  html[data-np-accent='#{$accent}'] {
+    --np-color-primary: #{list.nth($colors, 1)};
+    --np-primary-soft: color-mix(in srgb, var(--np-color-primary) 10%, var(--np-bg-container));
+    --np-primary-border: color-mix(in srgb, var(--np-color-primary) 25%, var(--np-bg-container));
+  }
+
+  html.dark[data-np-accent='#{$accent}'] {
+    --np-color-primary: #{list.nth($colors, 2)};
+  }
+}
+
+// 应用到根元素，保持弹窗等固定定位元素的视口定位。
+html.np-grayscale {
+  filter: grayscale(1);
+}
+
+html.np-color-vision:not(.np-grayscale) {
+  filter: saturate(0.82) contrast(1.12);
 }

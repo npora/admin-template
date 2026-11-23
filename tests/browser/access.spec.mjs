@@ -70,6 +70,234 @@ test('restores an authorized deep link after login and browser reload', async ({
   await expect(account).toBeVisible()
 })
 
+test('shows the themed progress bar while a lazy management page is loading', async ({
+  context,
+  app
+}) => {
+  const page = await localPage(context, app)
+  await signIn(page, app, app.admin, '/system/user')
+  await expandSystemMenu(page)
+  let releaseChunks
+  const pending = new Promise((resolve) => {
+    releaseChunks = resolve
+  })
+  await page.route('**/assets/js/*.js', async (route) => {
+    if (new URL(route.request().url()).origin !== app.origin) return route.abort()
+    await pending
+    await route.continue()
+  })
+  const progress = page.locator('.app-navigation-progress')
+  await expect(progress).toHaveCount(0)
+  try {
+    await page.getByRole('menuitem', { name: '角色管理', exact: true }).click()
+    await expect(progress).toBeVisible()
+    await expect(page.getByRole('main')).toHaveAttribute('aria-busy', 'true')
+  } finally {
+    releaseChunks()
+  }
+  await expect(page.getByRole('heading', { name: '角色管理', exact: true })).toBeVisible()
+  await expect(progress).toHaveCount(0)
+})
+
+test('applies local appearance settings, falls back on narrow screens and keeps preferences through cache clearing', async ({
+  context,
+  app
+}) => {
+  const page = await localPage(context, app)
+  const target = '/system/user'
+  await signIn(page, app, app.admin, target)
+  const openSettings = () => page.getByRole('button', { name: '应用设置', exact: true }).click()
+  const settings = page.getByRole('dialog', { name: '应用设置' })
+  const select = (group, option) =>
+    settings
+      .getByRole('radiogroup', { name: group })
+      .getByRole('radio', { name: option, exact: true })
+      .locator('xpath=ancestor::label[1]')
+      .click({ timeout: 5000 })
+  const toggle = (name) =>
+    settings.getByRole('switch', { name, exact: true }).locator('..').click({ timeout: 5000 })
+  const root = page.locator('html')
+  const sidebar = page.locator('.app-sidebar')
+  const topNavigation = page.locator('.app-layout__top-navigation')
+  const header = page.locator('.app-layout__header')
+  const watermark = page.locator('.app-layout__watermark')
+
+  await openSettings()
+  await expect(settings.getByRole('radiogroup', { name: '主题色' }).getByRole('radio')).toHaveCount(
+    8
+  )
+  await select('主题色', '青绿')
+  await expect(root).toHaveAttribute('data-np-accent', 'teal')
+  await toggle('灰色模式')
+  await expect(root).toHaveClass(/\bnp-grayscale\b/)
+  await toggle('色弱模式')
+  await expect(root).not.toHaveClass(/\bnp-color-vision\b/)
+  await toggle('灰色模式')
+  await expect(root).not.toHaveClass(/\bnp-grayscale\b/)
+  await expect(root).toHaveClass(/\bnp-color-vision\b/)
+
+  await select('菜单布局', '顶部')
+  await expect(topNavigation).toBeVisible()
+  await expect(header.locator('.app-layout__top-navigation')).toBeVisible()
+  await expect(header.getByRole('button', { name: '搜索菜单' })).toBeVisible()
+  await expect(sidebar).toHaveCount(0)
+  await select('菜单布局', '混合')
+  await expect(sidebar).toBeVisible()
+  await select('页签风格', '下划线')
+  await expect(page.locator('.app-tabs--underline')).toBeVisible()
+  await select('页签风格', '卡片')
+  await expect(page.locator('.app-tabs--card')).toBeVisible()
+  await toggle('全屏水印')
+  await expect(watermark).toBeVisible()
+  await expect(watermark).toHaveCSS('pointer-events', 'none')
+
+  await settings.press('Escape')
+  await expect(settings).toBeHidden()
+  await page.setViewportSize({ width: 640, height: 800 })
+  await expect(topNavigation).toHaveCount(0)
+  await expect(page.getByRole('button', { name: '打开菜单' })).toBeVisible()
+  await page.setViewportSize({ width: 1280, height: 800 })
+  await expect(topNavigation).toBeVisible()
+
+  await openSettings()
+  const clear = settings.getByRole('button', { name: '清空缓存', exact: true })
+  await clear.click()
+  const confirm = page.getByRole('dialog', { name: '清空缓存' })
+  await confirm.getByRole('button', { name: '取消', exact: true }).click()
+  await expect(settings).toBeVisible()
+  await clear.click()
+  await Promise.all([
+    page.waitForEvent('load'),
+    confirm.getByRole('button', { name: '清空缓存', exact: true }).click()
+  ])
+  await expect(page).toHaveURL(app.origin + target)
+  await expect(page.getByRole('heading', { name: '用户管理', exact: true })).toBeVisible()
+  await expect(root).toHaveAttribute('data-np-accent', 'teal')
+  await expect(page.locator('.app-tabs--card')).toBeVisible()
+  await expect(watermark).toBeVisible()
+})
+
+test('aligns management filter inputs, selects and buttons at every component size', async ({
+  context,
+  app
+}) => {
+  const page = await localPage(context, app)
+  await signIn(page, app, app.admin, '/system/department')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  const sizes = [
+    ['小', 24],
+    ['默认', 32],
+    ['大', 40]
+  ]
+  for (const [name, height] of sizes) {
+    await page.getByRole('button', { name: '应用设置', exact: true }).click()
+    const settings = page.getByRole('dialog', { name: '应用设置' })
+    await settings.getByText(name, { exact: true }).click()
+    await page.keyboard.press('Escape')
+    await expect(settings).toBeHidden()
+    for (const path of ['user', 'department', 'role', 'dict', 'audit-log']) {
+      await page.goto(`${app.origin}/system/${path}`)
+      const filters = page.locator('.management-page__filters').first()
+      const inputs = filters.locator('.el-input__wrapper, .el-select__wrapper, .el-range-editor')
+      const actions = filters.locator('.management-page__filter-actions .el-button')
+      await expect(inputs.first()).toBeVisible()
+      await expect(actions.first()).toBeVisible()
+      for (const control of [...(await inputs.all()), ...(await actions.all())]) {
+        expect((await control.boundingBox())?.height, `${path} [${name}]`).toBe(height)
+      }
+    }
+  }
+})
+
+test('searches only visible menus and opens a result with the keyboard', async ({
+  context,
+  app
+}) => {
+  const page = await localPage(context, app)
+  await signIn(page, app, app.viewer)
+  const trigger = page.getByRole('button', { name: '搜索菜单', exact: true })
+  await trigger.click()
+  const dialog = page.getByRole('dialog', { name: '搜索菜单' })
+  const search = dialog.getByRole('combobox', { name: '搜索菜单' })
+  await expect(search).toBeFocused()
+  await search.fill('角色管理')
+  await expect(dialog.getByText('没有匹配的菜单')).toBeVisible()
+  await search.fill('users')
+  const result = dialog.getByRole('option', { name: /用户管理/ })
+  await expect(result).toBeVisible()
+  await search.fill('/system/user')
+  await expect(result).toHaveAttribute('aria-selected', 'true')
+  await search.press('ArrowDown')
+  await search.press('Enter')
+  await expect(page).toHaveURL(app.origin + '/system/user')
+  await expect(dialog).toBeHidden()
+  await trigger.click()
+  await expect(search).toHaveValue('')
+  await search.press('Escape')
+  await expect(dialog).toBeHidden()
+})
+
+test('menu forms identify used components and persist a selected local SVG icon', async ({
+  context,
+  app
+}) => {
+  const page = await localPage(context, app)
+  await signIn(page, app, app.admin, '/system/menu')
+  await page.getByRole('button', { name: '新增节点', exact: true }).click()
+  const dialog = page.getByRole('dialog', { name: '新增节点' })
+  const components = dialog.getByRole('combobox', { name: /页面组件/ })
+  const component = page.getByRole('option', { name: /system\/user\/index/ })
+  await components.click()
+  await expect(component).toContainText('使用中')
+  await component.click()
+  await dialog.getByRole('textbox', { name: /^\*?\s*名称$/ }).fill('SVG fixture menu')
+  await dialog.getByRole('textbox', { name: /路由路径$/ }).fill('/svg-fixture')
+  await dialog.getByRole('textbox', { name: /路由名称$/ }).fill('SvgFixture')
+
+  const icons = dialog.getByRole('combobox', { name: '图标名称', exact: true })
+  await icons.fill('nova-workspace')
+  const svg = page.getByRole('option', { name: 'nova-workspace', exact: true })
+  await expect(svg.locator('svg')).toBeVisible()
+  await svg.click()
+  await expect(dialog.locator('.menu-icon-picker__preview svg')).toBeVisible()
+  const [saved] = await Promise.all([
+    page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === '/api/system/menus' &&
+        response.request().method() === 'POST'
+    ),
+    dialog.getByRole('button', { name: '保存', exact: true }).click()
+  ])
+  expect(saved.ok()).toBe(true)
+  await expect(dialog).toBeHidden()
+  const created = page.getByRole('row', { name: /SVG fixture menu/ })
+  await created.getByRole('button', { name: '编辑', exact: true }).click()
+  const edit = page.getByRole('dialog', { name: '编辑节点' })
+  await expect(edit.locator('.menu-icon-picker__preview svg')).toBeVisible()
+  await edit.getByRole('combobox', { name: '图标名称', exact: true }).fill('calendar')
+  const calendar = page.getByRole('option', { name: 'calendar', exact: true })
+  await expect(calendar.locator('svg')).toBeVisible()
+  await calendar.click()
+  const [updated] = await Promise.all([
+    page.waitForResponse(
+      (response) =>
+        /^\/api\/system\/menus\/\d+$/.test(new URL(response.url()).pathname) &&
+        response.request().method() === 'PUT'
+    ),
+    edit.getByRole('button', { name: '保存', exact: true }).click()
+  ])
+  expect(updated.ok()).toBe(true)
+  await expect(edit).toBeHidden()
+  await created.getByRole('button', { name: '编辑', exact: true }).click()
+  await expect(edit.getByText('calendar', { exact: true })).toBeVisible()
+  await edit.getByRole('button', { name: '取消', exact: true }).click()
+
+  const role = page.getByRole('row', { name: /角色管理.*system\/role\/index/ })
+  await role.getByRole('button', { name: '编辑', exact: true }).click()
+  await edit.getByRole('combobox', { name: /页面组件/ }).click()
+  await expect(page.getByRole('option', { name: /system\/role\/index/ })).toContainText('当前节点')
+})
+
 test('saving role grants updates both the menu and the API permissions', async ({
   browser,
   context,

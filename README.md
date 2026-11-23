@@ -1,6 +1,6 @@
 # Npora Admin Template
 
-基于 Vue 3、TypeScript、Element Plus、Pinia 和 Vite 的后台脚手架。提供动态菜单与按钮权限、用户和角色管理、字典、多语言、主题、会话管理和操作审计。
+基于 Vue 3、TypeScript、Element Plus、Pinia 和 Vite 的后台脚手架。提供动态菜单与搜索、按钮权限、系统管理、会话与审计，以及可配置的主题、菜单布局和页签样式。
 
 [在线展示](https://admin.npora.live) · [页面截图](docs/showcase/README.md) · [演示 API 健康检查](https://api.npora.live/health)
 

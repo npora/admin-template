@@ -80,7 +80,17 @@ for (const [kind, component, property, source] of [
       new URL(`../../src/views/system/${kind}/components/${component}.vue`, import.meta.url)
     )
     const { descriptor } = parse(await readFile(filename, 'utf8'), { filename })
-    await writeFile(path, compileScript(descriptor, { id: kind, inlineTemplate: true }).content)
+    const compiled = compileScript(descriptor, { id: kind, inlineTemplate: true }).content
+    // The renderer substitutes leaf inputs; the real icon selector is exercised in Chromium.
+    await writeFile(
+      path,
+      compiled
+        .replace(
+          "import MenuIconPicker from '@/components/MenuIconPicker/index.vue'",
+          "import { resolveComponent } from 'vue'"
+        )
+        .replace(/createVNode\(MenuIconPicker,/g, "createVNode(resolveComponent('MenuIconPicker'),")
+    )
     installMemoryStorage()
     const server = await createTestServer()
     let app
@@ -199,7 +209,14 @@ for (const [kind, component, property, source] of [
               h('button', attrs, slots.default?.())
         })
       )
-      for (const name of ['ElInput', 'ElSelect', 'ElTreeSelect', 'ElInputNumber', 'ElSwitch'])
+      for (const name of [
+        'ElInput',
+        'ElSelect',
+        'ElTreeSelect',
+        'ElInputNumber',
+        'ElSwitch',
+        'MenuIconPicker'
+      ])
         app.component(name, fields)
       for (const name of [
         'ElFormItem',
@@ -207,6 +224,7 @@ for (const [kind, component, property, source] of [
         'ElRadio',
         'ElAlert',
         'ElOption',
+        'ElTag',
         'ElCheckbox',
         'ElCheckboxGroup'
       ])

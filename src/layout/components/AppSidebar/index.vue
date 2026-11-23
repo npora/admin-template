@@ -3,9 +3,12 @@ import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 
 import { useAppStore } from '@/store/modules/app'
+import type { MenuItem } from '@/router/types'
 
 import AppLogo from '@/layout/components/AppLogo/index.vue'
 import AppMenu from '@/layout/components/AppMenu/index.vue'
+
+defineProps<{ items: MenuItem[]; section?: boolean }>()
 
 const appStore = useAppStore()
 
@@ -25,12 +28,12 @@ const menuCollapsed = computed(() => !isMobile.value && !sidebarOpened.value)
       'is-mobile-open': isMobile && sidebarOpened
     }"
   >
-    <div v-if="settings.layout.showLogo" class="app-sidebar__brand">
+    <div v-if="!section && settings.layout.showLogo" class="app-sidebar__brand">
       <AppLogo :collapsed="menuCollapsed" />
     </div>
 
     <ElScrollbar class="app-sidebar__scrollbar">
-      <AppMenu :collapse="menuCollapsed" />
+      <AppMenu :items="items" :collapse="menuCollapsed" :section="section" />
     </ElScrollbar>
   </aside>
 </template>

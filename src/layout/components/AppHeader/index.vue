@@ -2,10 +2,19 @@
 import LocaleSwitch from '@/components/LocaleSwitch/index.vue'
 import { useI18n } from 'vue-i18n'
 
-import { computed, ref } from 'vue'
+import { computed, defineAsyncComponent, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
-import { Expand, Fold, FullScreen, Menu, Setting, Moon, Sunny } from '@element-plus/icons-vue'
+import {
+  Expand,
+  Fold,
+  FullScreen,
+  Menu,
+  Search,
+  Setting,
+  Moon,
+  Sunny
+} from '@element-plus/icons-vue'
 
 import { appConfig } from '@/config/app'
 import { handleRequestError } from '@/api/errors/handling'
@@ -17,6 +26,8 @@ import AppBreadcrumb from '@/layout/components/AppBreadcrumb/index.vue'
 import AppSettings from '@/layout/components/AppSettings/index.vue'
 import AppUser from '@/layout/components/AppUser/index.vue'
 
+defineProps<{ showSidebarToggle: boolean }>()
+
 const { t } = useI18n({ useScope: 'global' })
 
 const appStore = useAppStore()
@@ -24,6 +35,11 @@ const appStore = useAppStore()
 const { sidebarOpened, isMobile, settings } = storeToRefs(appStore)
 
 const settingsVisible = ref(false)
+const searchMounted = ref(false)
+const searchVisible = ref(false)
+const AppMenuSearch = defineAsyncComponent(
+  () => import('@/layout/components/AppMenuSearch/index.vue')
+)
 
 const { isFullscreen, isSupported, toggleFullscreen } = useFullscreen()
 
@@ -65,6 +81,11 @@ function openSettings(): void {
   settingsVisible.value = true
 }
 
+function openSearch(): void {
+  searchMounted.value = true
+  searchVisible.value = true
+}
+
 function handleLogout(): void {
   void logout()
 }
@@ -73,16 +94,29 @@ function handleLogout(): void {
 <template>
   <header class="app-header">
     <div class="app-header__left">
-      <ElButton text circle :aria-label="sidebarLabel" @click="appStore.toggleSidebar">
+      <ElButton
+        v-if="showSidebarToggle"
+        text
+        circle
+        :aria-label="sidebarLabel"
+        @click="appStore.toggleSidebar"
+      >
         <ElIcon :size="20">
           <component :is="sidebarIcon" />
         </ElIcon>
       </ElButton>
 
-      <AppBreadcrumb v-if="!isMobile && settings.layout.showBreadcrumb" />
+      <slot name="navigation">
+        <AppBreadcrumb v-if="!isMobile && settings.layout.showBreadcrumb" />
+      </slot>
     </div>
 
     <div class="app-header__right">
+      <ElTooltip :content="t('ui.menuSearch')" placement="bottom">
+        <ElButton text circle :aria-label="t('ui.menuSearch')" @click="openSearch">
+          <ElIcon :size="18"><Search /></ElIcon>
+        </ElButton>
+      </ElTooltip>
       <LocaleSwitch />
       <span
         v-if="!isMobile && appConfig.demoEnabled"
@@ -134,6 +168,7 @@ function handleLogout(): void {
     </div>
 
     <AppSettings v-model="settingsVisible" />
+    <AppMenuSearch v-if="searchMounted" v-model="searchVisible" />
   </header>
 </template>
 

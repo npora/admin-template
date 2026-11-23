@@ -84,6 +84,45 @@
     }
   }
 
+  &.el-menu--horizontal {
+    flex: 1;
+    min-width: 0;
+    align-items: center;
+    gap: 4px;
+    border-bottom: 0;
+    --el-menu-horizontal-height: 44px;
+
+    > :deep(.el-menu-item),
+    > :deep(.el-sub-menu > .el-sub-menu__title) {
+      height: 36px;
+      margin: 0;
+      border-bottom: 0;
+      border-radius: 7px;
+      line-height: 36px;
+      font-size: 13px;
+    }
+
+    > :deep(.el-menu-item) {
+      padding-inline: 10px;
+    }
+
+    > :deep(.el-menu-item.is-active) {
+      box-shadow: none;
+    }
+
+    > :deep(.el-menu-item.is-active::after) {
+      display: none;
+    }
+
+    > :deep(.el-sub-menu > .el-sub-menu__title) {
+      padding-inline: 10px 26px;
+    }
+
+    :deep(.app-menu-item__label) {
+      padding-right: 0;
+    }
+  }
+
   // The collapse class belongs to this root, not to a descendant element.
   &.el-menu--collapse {
     width: 100%;

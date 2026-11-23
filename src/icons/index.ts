@@ -7,12 +7,26 @@ import {
   Lock,
   Grid,
   EditPen,
-  Collection
+  Collection,
+  Bell,
+  Calendar,
+  DataAnalysis,
+  Document,
+  Download,
+  Files,
+  FolderOpened,
+  Management,
+  Menu,
+  Notebook,
+  PieChart,
+  Search,
+  Tickets
 } from '@element-plus/icons-vue'
 
+import { localIcons } from './local'
 import type { IconComponent } from './types'
 
-const iconRegistry: Record<string, IconComponent> = {
+const elementIcons = {
   'office-building': OfficeBuilding,
   collection: Collection,
   lock: Lock,
@@ -21,13 +35,29 @@ const iconRegistry: Record<string, IconComponent> = {
   house: House,
   monitor: Monitor,
   setting: Setting,
-  user: User
+  user: User,
+  bell: Bell,
+  calendar: Calendar,
+  'data-analysis': DataAnalysis,
+  document: Document,
+  download: Download,
+  files: Files,
+  'folder-opened': FolderOpened,
+  management: Management,
+  menu: Menu,
+  notebook: Notebook,
+  'pie-chart': PieChart,
+  search: Search,
+  tickets: Tickets
 }
 
-export function getIcon(name?: string): IconComponent | undefined {
-  if (!name) {
-    return undefined
-  }
+const iconRegistry: Record<string, IconComponent> = { ...elementIcons, ...localIcons }
 
-  return iconRegistry[name]
+export const iconGroups = {
+  element: Object.entries(elementIcons),
+  local: Object.entries(localIcons)
+}
+
+export function getIcon(name?: string | null): IconComponent | undefined {
+  return name && Object.hasOwn(iconRegistry, name) ? iconRegistry[name] : undefined
 }

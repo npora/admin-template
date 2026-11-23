@@ -40,11 +40,19 @@ try {
       }
     ]
   }
-  const render = (activePath, menu = item) => {
+  const { containsMenuPath, firstMenuPage } = await server.ssrLoadModule('/src/layout/menu.ts')
+  item.children[0].children[0].routeQuery = { sort: 'updated' }
+  assert.equal(containsMenuPath(item, '/system/role'), true)
+  assert.equal(containsMenuPath(item, '/system/access'), true)
+  assert.equal(containsMenuPath(item, '/system/role-other'), false)
+  assert.equal(firstMenuPage(item), item.children[0].children[0])
+  assert.deepEqual(firstMenuPage(item).routeQuery, { sort: 'updated' })
+
+  const render = (activePath, menu = item, rootOnly = false) => {
     const app = createSSRApp({
       render: () =>
-        h(ElMenu, { collapse: true, defaultActive: activePath }, () =>
-          h(AppMenuItem, { item: menu, activePath })
+        h(ElMenu, { collapse: !rootOnly, defaultActive: activePath }, () =>
+          h(AppMenuItem, { item: menu, activePath, rootOnly })
         )
     })
     app.provide(ID_INJECTION_KEY, { prefix: 1, current: 0 })
@@ -66,6 +74,11 @@ try {
   const leaf = await render('/other', { path: '/other', title: 'Other', icon: 'unknown-icon' })
   assert.match(leaf, /aria-label="Other"/)
   assert.match(leaf, /<svg/)
+  const section = await render('/system', item, true)
+  assert.match(section, /class="el-menu-item is-active"/)
+  assert.match(section, /aria-label="系统管理"/)
+  assert.doesNotMatch(section, /class="el-sub-menu/)
+  assert.doesNotMatch(section, /角色管理/)
   console.log('通过：折叠菜单在子项未挂载时仍标记当前分组，且保留无障碍名称和缺省图标。')
 } finally {
   if (server) await server.close()

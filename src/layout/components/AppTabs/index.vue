@@ -6,6 +6,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 
+import { useAppStore } from '@/store/modules/app'
 import { useTabsStore } from '@/store/modules/tabs'
 
 import type { TabItem } from '@/store/modules/tabs/types'
@@ -18,6 +19,7 @@ const router = useRouter()
 const tabsStore = useTabsStore()
 
 const { tabs } = storeToRefs(tabsStore)
+const { settings } = storeToRefs(useAppStore())
 
 const activePath = computed(() => route.path)
 
@@ -120,7 +122,7 @@ async function handleContextCommand(
 </script>
 
 <template>
-  <div class="app-tabs">
+  <div class="app-tabs" :class="`app-tabs--${settings.layout.tabStyle}`">
     <ElScrollbar>
       <div class="app-tabs__list">
         <ElDropdown

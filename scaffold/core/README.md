@@ -1,6 +1,6 @@
 # Npora Admin
 
-Vue 3、TypeScript、Element Plus 和 Pinia 后台脚手架。包含动态菜单、系统管理、字典、会话管理、权限预览和操作审计。
+Vue 3、TypeScript、Element Plus 和 Pinia 后台脚手架。包含动态菜单与搜索、系统管理、字典、会话管理、权限预览和操作审计。主题、菜单布局和页签样式可在应用设置中调整。
 
 ## 开始开发
 

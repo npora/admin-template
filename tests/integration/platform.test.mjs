@@ -11,6 +11,15 @@ try {
   const load = (path) => server.ssrLoadModule(`/src/${path}`)
   const { createDefaultSettings, resolveAppSettings } = await load('store/modules/app/config.ts')
   const defaults = createDefaultSettings()
+  assert.deepEqual(defaults.theme, {
+    mode: 'system',
+    accent: 'indigo',
+    grayscale: false,
+    colorVision: false
+  })
+  assert.equal(defaults.layout.menuLayout, 'sidebar')
+  assert.equal(defaults.layout.tabStyle, 'pill')
+  assert.equal(defaults.layout.watermark, false)
   const changedDefaults = createDefaultSettings()
   changedDefaults.layout.showTabs = false
   assert.equal(defaults.layout.showTabs, true)
@@ -120,6 +129,19 @@ try {
   const { pinia } = await load('store/index.ts')
   const { useAppStore } = await load('store/modules/app/index.ts')
   const app = useAppStore(pinia)
+  const classes = new Set()
+  const dataset = {}
+  globalThis.document = {
+    documentElement: {
+      dataset,
+      classList: {
+        toggle(name, enabled) {
+          if (enabled) classes.add(name)
+          else classes.delete(name)
+        }
+      }
+    }
+  }
   app.setup()
   app.setup()
   assert.equal(
@@ -130,7 +152,21 @@ try {
   dark.matches = true
   dark.listeners.forEach((listener) => listener({ matches: true }))
   assert.equal(app.isDark, true)
+  assert.equal(classes.has('dark'), true)
   app.setTheme('light')
+  assert.equal(classes.has('dark'), false)
+  app.setThemeAccent('rose')
+  app.setThemeFlag('colorVision', true)
+  app.setThemeFlag('grayscale', true)
+  app.setMenuLayout('mixed')
+  app.setTabStyle('underline')
+  app.setLayoutFlag('watermark', true)
+  assert.equal(dataset.npAccent, 'rose')
+  assert.equal(classes.has('np-grayscale'), true)
+  assert.equal(classes.has('np-color-vision'), false)
+  app.setThemeFlag('grayscale', false)
+  assert.equal(classes.has('np-grayscale'), false)
+  assert.equal(classes.has('np-color-vision'), true)
   app.setComponentSize('small')
   app.setLayoutFlag('showTabs', false)
   app.setPageTransition('slide')
@@ -138,11 +174,36 @@ try {
   app.setComponentSize(true)
   app.setLayoutFlag('showTabs', 'false')
   app.setPageTransition(0)
+  app.setThemeAccent('constructor')
+  app.setMenuLayout('invalid')
+  app.setTabStyle(null)
+  app.setThemeFlag('colorVision', 0)
+  app.updateSettings({
+    theme: { accent: 'invalid', grayscale: 42, colorVision: null },
+    layout: { menuLayout: 0, tabStyle: undefined, watermark: 'false' },
+    componentSize: 'invalid'
+  })
   app.restoreSettings()
   assert.equal(app.settings.theme.mode, 'light')
   assert.equal(app.settings.componentSize, 'small')
   assert.equal(app.settings.layout.showTabs, false)
   assert.equal(app.settings.layout.pageTransition, 'slide')
+  assert.deepEqual(app.settings.theme, {
+    mode: 'light',
+    accent: 'rose',
+    grayscale: false,
+    colorVision: true
+  })
+  assert.equal(app.settings.layout.menuLayout, 'mixed')
+  assert.equal(app.settings.layout.tabStyle, 'underline')
+  assert.equal(app.settings.layout.watermark, true)
+  app.resetSettings()
+  assert.deepEqual(app.settings, defaults)
+  assert.equal(dataset.npAccent, 'indigo')
+  assert.equal(classes.has('np-color-vision'), false)
+  app.restoreSettings()
+  assert.deepEqual(app.settings, defaults)
+  delete globalThis.document
   app.dispose()
   assert.equal(
     [...media.values()].reduce((count, item) => count + item.listeners.size, 0),
