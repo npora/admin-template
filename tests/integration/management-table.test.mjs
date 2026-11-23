@@ -5,9 +5,12 @@ import { createPinia, setActivePinia } from 'pinia'
 import { createTestServer, installMemoryStorage } from '../helpers/environment.mjs'
 
 const deferred = () => {
-  let resolve
-  const promise = new Promise((done) => (resolve = done))
-  return { promise, resolve }
+  let resolve, reject
+  const promise = new Promise((done, fail) => {
+    resolve = done
+    reject = fail
+  })
+  return { promise, resolve, reject }
 }
 
 async function setup(t, resource) {
@@ -66,6 +69,48 @@ test('management queries abort superseded requests and ignore late results after
   requests[3].resolve({ list: [{ id: 4 }], total: 1 })
   await unmounted
   assert.deepEqual(table.rows.value, [{ id: 2 }])
+})
+
+test('losing list permission clears visible data and invalidates pending results', async (t) => {
+  const requests = []
+  const { table, permissions } = await setup(t, {
+    list(_query, signal) {
+      const pending = deferred()
+      requests.push({ signal, ...pending })
+      return pending.promise
+    }
+  })
+  const initial = table.load()
+  requests[0].resolve({ list: [{ id: 1 }], total: 1 })
+  await initial
+  assert.deepEqual(table.rows.value, [{ id: 1 }])
+
+  const pending = table.load()
+  permissions.setPermissions(['system:role:update'])
+  assert.equal(requests[1].signal.aborted, true)
+  assert.deepEqual(table.rows.value, [])
+  assert.equal(table.total.value, 0)
+  assert.equal(table.loading.value, false)
+  assert.equal(table.loadFailed.value, false)
+  await table.load()
+  assert.equal(requests.length, 2)
+
+  permissions.setPermissions(['system:role:list'])
+  requests[1].resolve({ list: [{ id: 2 }], total: 1 })
+  await pending
+  assert.deepEqual(table.rows.value, [])
+
+  const restored = table.load()
+  requests[2].resolve({ list: [{ id: 3 }], total: 1 })
+  await restored
+  assert.deepEqual(table.rows.value, [{ id: 3 }])
+
+  const failed = table.load()
+  requests[3].reject(new Error('Fixture list unavailable'))
+  await failed
+  assert.equal(table.loadFailed.value, true)
+  permissions.setPermissions([])
+  assert.equal(table.loadFailed.value, false)
 })
 
 test('management mutations share a busy guard, refresh once, retreat from empty pages and respect permissions', async (t) => {

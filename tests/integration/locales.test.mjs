@@ -163,13 +163,22 @@ try {
   // Check every registered language rather than maintaining another hard-coded locale list.
   const root = new URL('../../', import.meta.url)
   const namespaces = Object.keys(localeRegistry['zh-CN'].messages)
+  const messageEntries = (messages, prefix = '') =>
+    Object.entries(messages).flatMap(([key, value]) => {
+      const path = prefix + key
+      return typeof value === 'string' ? [[path, value]] : messageEntries(value, path + '.')
+    })
   const resources = Object.fromEntries(
     registeredLocales.map((locale) => [
       locale,
       Object.fromEntries(
         namespaces.map((namespace) => [
           namespace,
-          JSON.parse(fs.readFileSync(new URL(`src/locales/${locale}/${namespace}.json`, root)))
+          Object.fromEntries(
+            messageEntries(
+              JSON.parse(fs.readFileSync(new URL(`src/locales/${locale}/${namespace}.json`, root)))
+            )
+          )
         ])
       )
     ])

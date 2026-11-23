@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+import ErrorResult from './ErrorResult.vue'
+
+const { t } = useI18n({ useScope: 'global' })
+</script>
+
+<template>
+  <ErrorResult
+    :title="t('error.forbidden.title')"
+    :description="t('error.forbidden.description')"
+  />
+</template>

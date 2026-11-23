@@ -3,6 +3,7 @@ import type ui from './zh-CN/ui.json'
 import type routes from './zh-CN/routes.json'
 import type language from './zh-CN/language.json'
 import type errors from './zh-CN/errors.json'
+import type error from './zh-CN/error.json'
 import type table from './zh-CN/table.json'
 import type form from './zh-CN/form.json'
 import type profile from './zh-CN/profile.json'
@@ -15,6 +16,7 @@ export interface LocaleMessages {
   routes: typeof routes
   language: typeof language
   errors: typeof errors
+  error: typeof error
   table: typeof table
   form: typeof form
   profile: typeof profile

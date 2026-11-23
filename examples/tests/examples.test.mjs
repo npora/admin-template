@@ -97,10 +97,15 @@ try {
   assert.equal(await demo.save({ ...input, budget: -1 }), false)
   const writes = await Promise.all([demo.save(input), demo.save(input)])
   assert.deepEqual(writes, [true, false])
+  const pageBeforeFailure = demo.query.page
+  const totalBeforeFailure = demo.total.value
   await demo.simulateFailure()
   assert.equal(demo.failed.value, true)
+  assert.equal(demo.query.page, pageBeforeFailure)
+  assert.equal(demo.total.value, totalBeforeFailure)
   await demo.load()
   assert.equal(demo.failed.value, false)
+  assert.equal(demo.query.page, pageBeforeFailure)
   permissions.setPermissions(['system:table:list'])
   assert.equal(await demo.save(input), false)
   assert.equal(await demo.remove([added.id]), false)

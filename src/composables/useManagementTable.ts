@@ -1,4 +1,4 @@
-import { computed, onScopeDispose, ref, shallowReactive, shallowRef } from 'vue'
+import { computed, onScopeDispose, ref, shallowReactive, shallowRef, watch } from 'vue'
 import { usePermission } from '@/composables/usePermission'
 import { getTokenVersion } from '@/api/auth/token-storage'
 import { handleRequestError } from '@/api/errors/handling'
@@ -46,22 +46,41 @@ export function useManagementTable<
   let disposed = false,
     version = 0,
     controller: AbortController | undefined
+  const allowed = (action: string) => hasPermission(`system:${resource.permission}:${action}`)
+
+  function clearList() {
+    version++
+    controller?.abort()
+    controller = undefined
+    rows.value = []
+    total.value = 0
+    loading.value = false
+    loadFailed.value = false
+  }
+
+  const canList = computed(() => allowed('list'))
+  watch(
+    canList,
+    (granted) => {
+      if (!granted) clearList()
+    },
+    { flush: 'sync' }
+  )
+
   onScopeDispose(() => {
     disposed = true
     version++
     controller?.abort()
   })
-  const allowed = (action: string) => hasPermission(`system:${resource.permission}:${action}`)
   async function load(): Promise<void> {
+    if (disposed) return
+    if (!canList.value) {
+      clearList()
+      return
+    }
     const current = ++version,
       token = getTokenVersion()
     controller?.abort()
-    if (disposed || !allowed('list')) {
-      rows.value = []
-      total.value = 0
-      loading.value = false
-      return
-    }
     controller = new AbortController()
     loading.value = true
     loadFailed.value = false
@@ -83,7 +102,10 @@ export function useManagementTable<
       loadFailed.value = true
       handleRequestError(error)
     } finally {
-      if (!disposed && current === version) loading.value = false
+      if (!disposed && current === version) {
+        controller = undefined
+        loading.value = false
+      }
     }
   }
   function search() {

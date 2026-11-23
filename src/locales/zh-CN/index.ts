@@ -5,6 +5,7 @@ import ui from './ui.json'
 import routes from './routes.json'
 import language from './language.json'
 import errors from './errors.json'
+import error from './error.json'
 import table from './table.json'
 import form from './form.json'
 import profile from './profile.json'
@@ -14,7 +15,7 @@ import auditLog from './auditLog.json'
 
 export default {
   label: '简体中文',
-  messages: { ui, routes, language, errors, table, form, profile, dict, timezone, auditLog },
+  messages: { ui, routes, language, errors, error, table, form, profile, dict, timezone, auditLog },
   elementLocale,
   dayjsLocale: 'zh-cn',
   dateFormats: {

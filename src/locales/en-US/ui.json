@@ -89,7 +89,7 @@
   "accessHelp": "Pages and data follow your account permissions. Contact an administrator if you need additional access.",
   "workspaceFooter": "{value} · Everyday management, organized",
   "adjustYourPreferencesInTheSettingsMenu": "Adjust your preferences in the settings menu",
-  "thisPageDoesNotExistOrYourAccountCannotAccessIt": "This page does not exist or your account cannot access it.",
+  "thisPageDoesNotExist": "This page does not exist.",
   "backToDashboard": "Back to dashboard",
   "pageCacheExample": "Page cache example",
   "cacheExampleDescription": "Switch pages after entering text. Pages with keepAlive retain their input.",

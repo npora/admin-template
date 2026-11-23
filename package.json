@@ -1,7 +1,7 @@
 {
   "name": "admin-template",
   "private": true,
-  "version": "1.0.20",
+  "version": "1.0.21",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
-    "@npora/request": "^1.23.1",
+    "@npora/request": "^1.23.4",
     "dayjs": "^1.11.23",
     "element-plus": "^2.14.5",
     "pinia": "^4.0.3",

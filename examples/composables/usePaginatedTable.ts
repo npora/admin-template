@@ -58,7 +58,7 @@ export function usePaginatedTable<T, F extends object>(options: {
       if (!disposed && current === version) {
         failed.value = true
         rows.value = []
-        total.value = 0
+        // 保留上次成功的总数，避免分页组件在失败时回到第一页并触发新查询。
       }
     } finally {
       if (!disposed && current === version) loading.value = false

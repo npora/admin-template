@@ -89,7 +89,7 @@
   "accessHelp": "页面入口和可见数据随账号授权展示。需要更多访问权限时，请联系管理员调整角色。",
   "workspaceFooter": "{value} · 每一项管理，都井然有序",
   "adjustYourPreferencesInTheSettingsMenu": "界面偏好可在右上角设置中调整",
-  "thisPageDoesNotExistOrYourAccountCannotAccessIt": "页面不存在，或当前账号没有此页面的访问权限。",
+  "thisPageDoesNotExist": "页面不存在。",
   "backToDashboard": "返回首页",
   "pageCacheExample": "页面缓存示例",
   "cacheExampleDescription": "输入内容后切换页面，启用 keepAlive 的页面会保留输入。",

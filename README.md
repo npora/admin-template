@@ -52,4 +52,4 @@ npm run dev
 
 ## 本仓库开发
 
-`npm ci` 安装依赖，`npm run dev` 启动核心前端，`npm run dev:demo` 启动完整展示。提交前运行 `npm run check:all`。预设和构建命令见 [模板说明](scaffold/README.md)。
+`npm ci` 安装依赖，`npm run dev` 启动核心前端，`npm run dev:demo` 启动完整展示。提交前运行 `npm run check:all`。[开发检查](docs/development.md) · [预设与构建](scaffold/README.md)

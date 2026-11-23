@@ -1,5 +1,6 @@
 import type { RouteRecordRaw } from 'vue-router'
 import { demoDashboard, demoRoutes } from '@/router/extensions'
+import { isBuiltInSystemPage } from './system-pages'
 
 export const constantRoutes: RouteRecordRaw[] = [
   {
@@ -59,7 +60,8 @@ export const constantRoutes: RouteRecordRaw[] = [
   {
     path: '/:pathMatch(.*)*',
     name: 'RouteFallback',
-    component: () => import('@/views/error/404.vue'),
+    component: () => import('@/views/error/FallbackPage.vue'),
+    props: (route) => ({ forbidden: isBuiltInSystemPage(route.path) }),
     meta: { title: '404', hidden: true }
   }
 ]

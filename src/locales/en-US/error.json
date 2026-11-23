@@ -1,0 +1,6 @@
+{
+  "forbidden": {
+    "title": "403 Access denied",
+    "description": "Your account does not have permission to access this page."
+  }
+}

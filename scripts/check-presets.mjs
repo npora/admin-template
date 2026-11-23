@@ -71,6 +71,8 @@ try {
     assert.equal(pkg.scripts['release:prepare'], undefined)
     assert.equal(existsSync(join(directory, 'scripts/release')), false)
     assert.equal(existsSync(join(directory, '.github/workflows/release.yml')), false)
+    assert.equal(existsSync(join(directory, '.github/workflows/browser.yml')), false)
+    assert.equal(existsSync(join(directory, 'tests/browser')), false)
     for (const entry of [
       'LICENSE',
       'CHANGELOG.md',
@@ -118,6 +120,7 @@ try {
     for (const entry of [
       'src/views/login/index.vue',
       'src/views/dashboard/index.vue',
+      'src/views/error/403.vue',
       'src/views/system/audit-log/index.vue',
       'src/layout/index.vue'
     ])
