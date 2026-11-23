@@ -42,6 +42,8 @@ npm run dev:demo
 
 [会话管理与权限预览](docs/account-management.md) 介绍个人会话、用户权限和管理员撤销流程。
 
+从顶栏打开菜单搜索或应用设置，操作见 [本地偏好与缓存](docs/development.md#本地偏好与缓存)。
+
 [目录职责](docs/project-structure.md) · [接口契约](docs/api.md) · [权限](docs/rbac.md) · [多语言](docs/i18n.md) · [开发配置](docs/development.md) · [后端切换](docs/backend-replacement.md) · [正式 SQL](database/mysql/README.md)
 
 `npm run check` 检查核心；`npm run check:examples` 检查示例；`npm run check:backend` 检查测试后端；`npm run check:all` 执行完整回归。

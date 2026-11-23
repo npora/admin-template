@@ -20,6 +20,7 @@ npm run dev
 - [会话管理与权限预览](docs/account-management.md) · [登录与账号安全](docs/authentication.md)
 - [MySQL 新库初始化和迁移](database/mysql/README.md) · [权限模型](docs/rbac.md)
 - [开发配置](docs/development.md) · [新增业务页面](docs/new-business-page.md) · [目录职责](docs/project-structure.md)
+- [应用设置、菜单搜索与缓存](docs/development.md#本地偏好与缓存)
 
 [完整展示网站](https://admin.npora.live) 可使用公开演示账号 `admin`、密码 `123456` 登录。体验安全操作请使用自己创建的测试账号。
 

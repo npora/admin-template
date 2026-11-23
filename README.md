@@ -48,6 +48,7 @@ npm run dev
 - [会话管理与权限预览](docs/account-management.md) · [登录、改密和 Google Authenticator](docs/authentication.md)
 - [接口契约与操作审计](docs/api.md) · [权限模型](docs/rbac.md) · [MySQL 初始化和升级](database/mysql/README.md)
 - [开发配置](docs/development.md) · [新增业务页面](docs/new-business-page.md) · [目录职责](docs/project-structure.md)
+- [应用设置、菜单搜索与缓存](docs/development.md#本地偏好与缓存)
 - [生成器参数](https://github.com/npora/create-admin) · [npm 包](https://www.npmjs.com/package/@npora/create-admin)
 
 ## 本仓库开发
