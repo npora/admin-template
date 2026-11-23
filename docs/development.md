@@ -25,11 +25,11 @@ API 函数、DTO、协议分别位于 `src/api/modules/`、`src/api/types/`、`s
 
 ## 环境配置
 
-| 文件               | 用途                                                    | 提交 |
-| ------------------ | ------------------------------------------------------- | ---- |
-| `.env`             | 应用标题、前缀、Token 存储、构建选项和核心/展示默认开关 | 是   |
-| `.env.development` | 开发 API 代理目标，默认本机后端                         | 是   |
-| `.env.production`  | 生产模式说明；生产使用同源 API 转发                     | 是   |
+| 文件               | 用途                                                     | 提交 |
+| ------------------ | -------------------------------------------------------- | ---- |
+| `.env`             | 应用标题、前缀、Token 存储、构建选项和核心/展示默认开关  | 是   |
+| `.env.development` | 仓库默认连接公开展示 API，纯净和 Worker 预设连接本机后端 | 是   |
+| `.env.production`  | 生产模式说明；生产使用同源 API 转发                      | 是   |
 
 同名变量优先使用进程环境，其次是当前模式文件，最后是 `.env`。开发配置修改后重启 Vite。个人临时覆盖可通过启动进程的环境变量传入。
 
@@ -45,7 +45,7 @@ API 函数、DTO、协议分别位于 `src/api/modules/`、`src/api/types/`、`s
 | `VITE_BUILD_COMPRESS`         | 默认 true，生成 gzip 产物                          |
 | `VITE_BUILD_ANALYZE`          | 默认 false，启用后输出体积报告                     |
 
-`dev:demo` 和 `build:demo` 通过 `scripts/demo.mjs` 在进程环境开启展示功能，不改写环境文件。开发默认使用维护者的测试 API，可通过启动进程的 `VITE_API_URL` 覆盖。普通 `npm run dev` 读取开发配置，设置 `VITE_DEMO_ENABLED=true` 可进入展示模式。
+`dev:demo` 和 `build:demo` 通过 `scripts/demo.mjs` 在进程环境开启展示功能，不改写环境文件。开发默认使用维护者的测试 API，可通过启动进程的 `VITE_API_URL` 覆盖。本仓库的 `npm run dev` 从 `.env.development` 读取公开展示 API 地址。设置 `VITE_DEMO_ENABLED=true` 可进入展示模式。纯净和 Worker 预设的开发地址默认是 `http://localhost:8080`。
 
 开发与本地预览只转发 API 前缀本身和它的子路径，转发时去掉该前缀并保留查询参数。生产静态文件的反向代理由站点服务器或网关配置。任何 `VITE_*` 值都不能用于保存密码或服务端密钥。语言与 Element Plus 文案放在 `src/config/i18n.ts` 和 `src/locales/`；默认时区放在 `src/config/datetime.ts`，时区枚举放在 `src/types/timezone.ts`，均不需要环境变量或数据库。日期显示与时间区间用法见 [多语言与时区](i18n.md)。
 

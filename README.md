@@ -41,7 +41,7 @@ npm run dev
 | `worker`          | 核心前端和独立 Worker 后端参考实现  |
 | `demo`            | 完整展示和业务示例                  |
 
-纯净版默认关闭 Google Authenticator。对接自己的后端时，在 `.env.development` 设置 `VITE_API_URL`。新 MySQL 库可运行 `sh database/mysql/init.sh --user root --password npora_admin` 初始化。
+纯净版保留 `src/`、`public/`、MySQL 脚本及独立构建所需的配置、文档和测试。生成项目不包含演示页面、Workers 或部署工具。`VITE_AUTHENTICATOR_ENABLED` 默认关闭。对接自己的后端时，在 `.env.development` 设置 `VITE_API_URL`。新 MySQL 库可运行 `sh database/mysql/init.sh --user root --password npora_admin` 初始化。
 
 ## 使用指南
 
@@ -53,4 +53,4 @@ npm run dev
 
 ## 本仓库开发
 
-`npm ci` 安装依赖，`npm run dev` 启动核心前端，`npm run dev:demo` 启动完整展示。提交前运行 `npm run check:all`。[开发检查](docs/development.md) · [预设与构建](scaffold/README.md)
+`npm ci` 安装依赖，`npm run dev` 按 `.env.development` 和本机开关启动开发服务，`npm run dev:demo` 启动完整展示。提交前运行 `npm run check:all`。[开发检查](docs/development.md) · [预设与构建](scaffold/README.md)

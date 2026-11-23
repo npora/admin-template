@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-在 `.env.development` 设置 `VITE_API_URL`，按 [接口契约](docs/api.md) 对接自己的后端。账号由后端初始化。纯净版仅包含 MySQL 数据库文件，Google Authenticator 默认关闭。
+在 `.env.development` 设置 `VITE_API_URL`，按 [接口契约](docs/api.md) 对接自己的后端。账号由后端初始化。纯净版仅包含 MySQL 数据库文件，Google Authenticator 默认关闭。纯净版不提供 `VITE_DEMO_ENABLED`。
 
 `npm run build` 将应用构建到 `dist/`，生产环境请转发 `/api`。运行 `npm run check` 检查格式、类型和核心行为。
 
