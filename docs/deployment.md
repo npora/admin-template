@@ -15,7 +15,7 @@ npm run check:standalone
 
 将 `dist/` 的内容上传到静态站点目录。`npm run preview` 只用于本地检查构建产物，不作为线上服务；参见 [Vite 静态部署说明](https://vite.dev/guide/static-deploy.html)。
 
-构建默认加载 `.env`、可选的 `.env.local`、`.env.production` 和可选的 `.env.production.local`，不会加载 `.env.development.local`。环境值在构建时确定，部署后改服务器上的 `.env` 不会改变已有 JS，需要重新构建。具体规则见 [Vite 环境配置](https://vite.dev/guide/env-and-mode.html)。
+默认生产构建读取 `.env` 和 `.env.production`，进程环境变量优先。环境值在构建时确定，部署后改服务器上的 `.env` 不会改变已有 JS，需要重新构建。具体规则见 [Vite 环境配置](https://vite.dev/guide/env-and-mode.html)。
 
 ## 配置页面回退与 API 转发
 

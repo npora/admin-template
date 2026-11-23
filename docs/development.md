@@ -25,23 +25,19 @@ API 函数、DTO、协议分别位于 `src/api/modules/`、`src/api/types/`、`s
 
 ## 环境配置
 
-### 为什么有多个 `.env` 文件
+| 文件               | 用途                                                    | 提交 |
+| ------------------ | ------------------------------------------------------- | ---- |
+| `.env`             | 应用标题、前缀、Token 存储、构建选项和核心/展示默认开关 | 是   |
+| `.env.development` | 开发 API 代理目标，默认本机后端                         | 是   |
+| `.env.production`  | 生产模式说明；生产使用同源 API 转发                     | 是   |
 
-| 文件                             | 用途                                                    | 提交 |
-| -------------------------------- | ------------------------------------------------------- | ---- |
-| `.env`                           | 应用标题、前缀、Token 存储、构建选项和核心/展示默认开关 | 是   |
-| `.env.development`               | 开发 API 代理目标，默认本机后端                         | 是   |
-| `.env.production`                | 生产模式说明；生产使用同源 API 转发                     | 是   |
-| `.env.development.local`         | 本机覆盖，连接个人服务或选择本机默认展示模式            | 否   |
-| `.env.development.local.example` | 本机配置样例，不自动加载                                | 是   |
-
-开发优先级从低到高：`.env`、可选 `.env.local`、`.env.development`、`.env.development.local`；生产替换为对应 production 文件。进程环境变量最高。修改后重启开发服务。
+同名变量优先使用进程环境，其次是当前模式文件，最后是 `.env`。开发配置修改后重启 Vite。个人临时覆盖可通过启动进程的环境变量传入。
 
 | 变量                          | 用途                                               |
 | ----------------------------- | -------------------------------------------------- |
 | `VITE_APP_TITLE`              | 应用标题，默认 `Npora Admin`                       |
 | `VITE_API_PREFIX`             | 同源 API 前缀，默认 `/api`                         |
-| `VITE_API_URL`                | 仅开发代理的目标地址                               |
+| `VITE_API_URL`                | Vite 开发与本地预览代理的目标地址                  |
 | `VITE_DEMO_ENABLED`           | 默认 false；true 时加载 `examples/`                |
 | `VITE_TOKEN_STORAGE`          | `session`、`local`、`memory`，默认 session         |
 | `VITE_AUTHENTICATOR_ENABLED`  | 验证器界面入口，默认 `false`，后端独立校验绑定状态 |
@@ -49,9 +45,9 @@ API 函数、DTO、协议分别位于 `src/api/modules/`、`src/api/types/`、`s
 | `VITE_BUILD_COMPRESS`         | 默认 true，生成 gzip 产物                          |
 | `VITE_BUILD_ANALYZE`          | 默认 false，启用后输出体积报告                     |
 
-`dev:demo` 和 `build:demo` 通过 `scripts/demo.mjs` 在进程环境开启展示功能，不改写环境文件。开发默认使用维护者的测试 API，可通过启动进程的 `VITE_API_URL` 覆盖。普通 `npm run dev` 仍遵循本机配置；本机已有 `VITE_DEMO_ENABLED=true` 时会进入展示模式。
+`dev:demo` 和 `build:demo` 通过 `scripts/demo.mjs` 在进程环境开启展示功能，不改写环境文件。开发默认使用维护者的测试 API，可通过启动进程的 `VITE_API_URL` 覆盖。普通 `npm run dev` 读取开发配置，设置 `VITE_DEMO_ENABLED=true` 可进入展示模式。
 
-生产的 `VITE_API_URL` 不会创建反向代理。任何 `VITE_*` 值都不能用于保存密码或服务端密钥。语言与 Element Plus 文案放在 `src/config/i18n.ts` 和 `src/locales/`；默认时区放在 `src/config/datetime.ts`，时区枚举放在 `src/types/timezone.ts`，均不需要环境变量或数据库。日期显示与时间区间用法见 [多语言与时区](i18n.md)。
+开发与本地预览只转发 API 前缀本身和它的子路径，转发时去掉该前缀并保留查询参数。生产静态文件的反向代理由站点服务器或网关配置。任何 `VITE_*` 值都不能用于保存密码或服务端密钥。语言与 Element Plus 文案放在 `src/config/i18n.ts` 和 `src/locales/`；默认时区放在 `src/config/datetime.ts`，时区枚举放在 `src/types/timezone.ts`，均不需要环境变量或数据库。日期显示与时间区间用法见 [多语言与时区](i18n.md)。
 
 ## 新增页面
 

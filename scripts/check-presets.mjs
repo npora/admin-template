@@ -56,6 +56,14 @@ try {
       preset
     })
     const pkg = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'))
+    assert.deepEqual(
+      (await readdir(directory)).filter((name) => /^\.env(?:\.|$)/.test(name)).sort(),
+      ['.env', '.env.development', '.env.production'],
+      `${preset} must have only the three standard root environment files`
+    )
+    const developmentEnv = await readFile(join(directory, '.env.development'), 'utf8')
+    if (preset === 'demo') assert.match(developmentEnv, /^VITE_DEMO_ENABLED=true$/m)
+    else assert.doesNotMatch(developmentEnv, /^VITE_DEMO_ENABLED=true$/m)
     assert.equal(pkg.packageManager, undefined, 'Generated projects must not pin a manager')
     const lock = JSON.parse(await readFile(join(directory, 'package-lock.json'), 'utf8'))
     assert.equal(lock.name, pkg.name)

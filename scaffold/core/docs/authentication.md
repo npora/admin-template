@@ -1,6 +1,6 @@
 # 登录与账号安全
 
-界面配置集中在 `src/config/auth.ts`，环境差异写入 `.env.development.local`：
+界面配置集中在 `src/config/auth.ts`，环境差异写入 `.env.development`：
 
 ```dotenv
 VITE_AUTHENTICATOR_ENABLED=false

@@ -41,7 +41,7 @@ npm run dev
 | `worker`          | 核心前端和独立 Worker 后端参考实现  |
 | `demo`            | 完整展示和业务示例                  |
 
-纯净版默认关闭 Google Authenticator。对接自己的后端时，在 `.env.development.local` 设置 `VITE_API_URL`。新 MySQL 库可运行 `sh database/mysql/init.sh --user root --password npora_admin` 初始化。
+纯净版默认关闭 Google Authenticator。对接自己的后端时，在 `.env.development` 设置 `VITE_API_URL`。新 MySQL 库可运行 `sh database/mysql/init.sh --user root --password npora_admin` 初始化。
 
 ## 使用指南
 

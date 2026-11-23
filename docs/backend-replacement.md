@@ -6,7 +6,7 @@
 
 1. 在空 MySQL 数据库依次导入 [正式建表和基础权限 SQL](../database/mysql/README.md)。后端已有自己的表结构时，可以自行映射相同语义。
 2. 后端实现 [接口契约](api.md)，负责账号初始化、密码哈希、认证、接口授权、数据校验和事务。
-3. 在本机 `.env.development.local` 配置：
+3. 在本机 `.env.development` 配置：
 
    ```dotenv
    VITE_API_URL=http://localhost:8080

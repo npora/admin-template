@@ -17,8 +17,9 @@ export function coreConfig(
   const resolvePath = (path: string) => resolve(root, path)
   const isProd = mode === 'production'
 
-  // .env: API 请求前缀
   const apiPrefix = normalizeApiPrefix(env.VITE_API_PREFIX)
+  const escapedApiPrefix = apiPrefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const apiProxyPath = `^${escapedApiPrefix}(?=[/?]|$)`
 
   const componentRoot = resolve(
     dirname(createRequire(import.meta.url).resolve('element-plus/package.json')),
@@ -30,6 +31,7 @@ export function coreConfig(
     .map((name) => `element-plus/es/components/${name}/style/css`)
 
   return {
+    root,
     // 使用 Composition API，保留 JSON 词条所需的消息编译器。
     define: {
       __DEMO_ENABLED__: false,
@@ -56,14 +58,16 @@ export function coreConfig(
       open: false,
 
       proxy: {
-        [apiPrefix]: {
+        [apiProxyPath]: {
           // .env.development: 后端 API 地址
           target: env.VITE_API_URL?.trim() || 'http://localhost:8080',
 
           changeOrigin: true,
 
-          rewrite: (path: string) =>
-            path.startsWith(apiPrefix) ? path.slice(apiPrefix.length) || '/' : path
+          rewrite: (path) => {
+            const suffix = path.slice(apiPrefix.length)
+            return suffix.startsWith('/') ? suffix : `/${suffix}`
+          }
         }
       }
     },

@@ -4,7 +4,7 @@
 
 ## 前端配置
 
-界面配置集中在 `src/config/auth.ts`，环境差异写入 `.env.development.local` 或构建环境：
+界面配置集中在 `src/config/auth.ts`，环境差异写入 `.env.development` 或构建环境：
 
 ```dotenv
 VITE_AUTHENTICATOR_ENABLED=false
