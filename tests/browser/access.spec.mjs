@@ -53,6 +53,48 @@ async function apiStatus(page, { origin }, path, authorization) {
   }
 }
 
+test('login shows Retry-After and blocks submission until the countdown ends', async ({
+  context,
+  app
+}) => {
+  const page = await localPage(context, app)
+  let attempts = 0
+  await page.route(`${app.origin}/api/auth/login`, async (route) => {
+    attempts++
+    if (attempts !== 1) return route.continue()
+    await route.fulfill({
+      status: 429,
+      headers: { 'Retry-After': '3' },
+      json: { code: 429, message: 'Fixture rate limit', data: null }
+    })
+  })
+  await page.goto(`${app.origin}/login`)
+  await page.getByPlaceholder('用户名', { exact: true }).fill(app.admin.username)
+  const password = page.getByPlaceholder('密码', { exact: true })
+  const button = page.getByRole('button', { name: '登录', exact: true })
+  const timer = page.getByRole('timer')
+  let stage = 'submitting the fixture login'
+  try {
+    await password.fill(app.admin.password)
+    await button.click()
+    stage = 'displaying the server cooldown'
+    await expect(timer).toHaveText(/3 秒后重试/)
+    await expect(button).toBeDisabled()
+    await password.press('Enter')
+    expect(attempts).toBe(1)
+    await expect(timer).toHaveText(/1 秒后重试/)
+    stage = 'resuming login after the cooldown'
+    await expect(button).toBeEnabled()
+    await expect(timer).toHaveCount(0)
+    await button.click()
+    await expect(page).toHaveURL(`${app.origin}/dashboard`)
+  } catch {
+    await page.close().catch(() => {})
+    throw new Error(`Failed while ${stage}`)
+  }
+  expect(attempts).toBe(2)
+})
+
 test('restores an authorized deep link after login and browser reload', async ({
   context,
   app
@@ -327,12 +369,22 @@ test('saving role grants updates both the menu and the API permissions', async (
     const dialog = admin.getByRole('dialog', { name: /角色授权.*只读用户/ })
     const save = dialog.getByRole('button', { name: '保存授权', exact: true })
     await expect(save).toBeEnabled()
-    // The checked-in seed assigns 20 to the role page and 21 to its view permission.
-    for (const id of [20, 21]) {
-      const node = dialog.locator(`[role="treeitem"][data-key="${id}"]`)
-      await node.locator(':scope > .el-tree-node__content label').click()
-      await expect(node).toHaveAttribute('aria-checked', 'true')
-    }
+    const node = (id) => dialog.locator(`[role="treeitem"][data-key="${id}"]`)
+    const toggle = (id) => node(id).locator(':scope > .el-tree-node__content label').click()
+    const checked = (id, value) => expect(node(id)).toHaveAttribute('aria-checked', String(value))
+    // Opening the existing viewer grant must not select its ungranted create permission.
+    await checked(10, true)
+    await checked(12, false)
+    // The role page (20) contains view (21) and edit (23).
+    await toggle(20)
+    await checked(21, true)
+    await checked(23, true)
+    await toggle(20)
+    await checked(21, false)
+    await checked(23, false)
+    await toggle(21)
+    await checked(20, true)
+    await checked(23, false)
     const [grant] = await Promise.all([
       admin.waitForResponse(
         (response) =>
@@ -389,4 +441,64 @@ test('revoking other sessions invalidates the old browser while keeping the curr
   } finally {
     await oldContext.close()
   }
+})
+
+test('audit details show safe HTTP metadata and time filters use the app zone', async ({
+  context,
+  app
+}) => {
+  const page = await localPage(context, app)
+  await page.route(
+    (url) => url.pathname === '/api/system/audit-logs',
+    (route) =>
+      route.fulfill({
+        json: {
+          code: 0,
+          message: 'OK',
+          data: {
+            total: 1,
+            list: [
+              {
+                id: 42,
+                actorId: 1,
+                targetType: 'role',
+                targetId: 3,
+                action: 'role_grant',
+                result: 'success',
+                statusCode: 200,
+                createdAt: Date.UTC(2026, 0, 1)
+              }
+            ]
+          }
+        }
+      })
+  )
+  await signIn(page, app, app.admin, '/system/audit-log')
+  await expect(page.getByText(/时间范围.*Asia\/Shanghai/)).toBeVisible()
+  await page.getByRole('button', { name: '详情', exact: true }).click()
+  const dialog = page.getByRole('dialog', { name: '审计详情' })
+  await expect(dialog.getByText('PUT', { exact: true })).toBeVisible()
+  await expect(dialog.getByText('/system/roles/:id/menus', { exact: true })).toBeVisible()
+  await expect(dialog.getByText(/200.*成功/)).toBeVisible()
+  await dialog.getByRole('button', { name: '关闭', exact: true }).click()
+  await expect(dialog).toBeHidden()
+  const filters = page.locator('.audit-log__filters')
+  const start = filters.getByPlaceholder('开始时间')
+  const end = filters.getByPlaceholder('结束时间')
+  await start.fill('2026-01-01 08:00:00')
+  await end.fill('2026-01-01 09:00:00')
+  await end.press('Enter')
+  const [request] = await Promise.all([
+    page.waitForRequest(
+      (req) => {
+        const url = new URL(req.url())
+        return url.pathname === '/api/system/audit-logs' && url.searchParams.has('createdFrom')
+      },
+      { timeout: 5000 }
+    ),
+    page.getByRole('button', { name: '查询', exact: true }).click()
+  ])
+  const query = new URL(request.url()).searchParams
+  expect(query.get('createdFrom')).toBe(String(Date.UTC(2026, 0, 1)))
+  expect(query.get('createdTo')).toBe(String(Date.UTC(2026, 0, 1, 1)))
 })

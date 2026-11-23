@@ -33,9 +33,14 @@ async function derive(password, salt, pepper, rounds) {
     256
   )
 }
-export async function hashPassword(password, pepper, rounds = defaultIterations) {
-  if (typeof password !== 'string' || password.length < 12 || password.length > 128)
-    throw new Error('Password must contain 12–128 characters')
+export async function hashPassword(
+  password,
+  pepper,
+  rounds = defaultIterations,
+  { minimumLength = 12 } = {}
+) {
+  if (typeof password !== 'string' || password.length < minimumLength || password.length > 128)
+    throw new Error(`Password must contain ${minimumLength}–128 characters`)
   const salt = randomHex(16)
   return `npora-v1$${rounds}$${salt}$${hex(await derive(password, salt, pepper, rounds))}`
 }

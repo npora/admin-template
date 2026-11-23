@@ -69,6 +69,36 @@ watch(
 function close() {
   if (!saving.value) emit('update:modelValue', false)
 }
+
+function updateBranch(menu: ManagedMenu) {
+  const instance = treeRef.value
+  if (!instance || !ready.value || saving.value) return
+  const selected = new Set(checkedIds())
+  const checked = selected.has(menu.id)
+
+  function updateChildren(children: ManagedMenu[]) {
+    for (const child of children) {
+      if (checked) {
+        if (child.status === 0) continue
+        selected.add(child.id)
+      } else {
+        selected.delete(child.id)
+      }
+      if (child.children) updateChildren(child.children)
+    }
+  }
+
+  if (!checked || menu.status === 1) updateChildren(menu.children ?? [])
+  if (checked) {
+    let parent = instance.getNode(menu.id)?.parent
+    while (parent && parent.level > 0) {
+      selected.add(Number(parent.data.id))
+      parent = parent.parent
+    }
+  }
+  instance.setCheckedKeys([...selected])
+}
+
 async function submit() {
   if (
     !ready.value ||
@@ -133,7 +163,9 @@ async function submit() {
         check-strictly
         default-expand-all
         :expand-on-click-node="false"
+        :inert="saving"
         :class="{ 'grant-saving': saving }"
+        @check="updateBranch"
       >
         <template #default="{ data }"
           ><span class="grant-node"

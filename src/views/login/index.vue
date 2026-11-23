@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { appConfig } from '@/config/app'
 import { authConfig } from '@/config/auth'
 import { useRoute, useRouter } from 'vue-router'
-import { computed, reactive, ref } from 'vue'
+import { computed, onScopeDispose, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Lock, User } from '@element-plus/icons-vue'
 
@@ -33,6 +33,13 @@ const { signIn } = useSession(router)
 const formRef = ref<FormInstance>()
 
 const loading = ref(false)
+const retrySeconds = ref(0)
+let retryTimer: ReturnType<typeof setTimeout> | undefined
+let disposed = false
+onScopeDispose(() => {
+  disposed = true
+  clearTimeout(retryTimer)
+})
 const rememberMe = ref(false)
 const showAuthenticator = ref(authConfig.authenticatorEnabled)
 const appTitle = appConfig.title
@@ -67,14 +74,31 @@ const rules = computed<FormRules<LoginForm>>(() => ({
 
 const redirect = computed(() => getLoginRedirect(route.query.redirect))
 
+function showRetryCountdown(error: unknown): void {
+  if (disposed || !isRequestError(error) || error.status !== 429) return
+  const value = error.response?.headers.get('retry-after')?.trim()
+  if (!value) return
+  const now = Date.now()
+  const deadline = /^\d+$/.test(value) ? now + Number(value) * 1000 : Date.parse(value)
+  if (!Number.isSafeInteger(deadline) || deadline <= now) return
+
+  clearTimeout(retryTimer)
+  function tick() {
+    const remaining = Math.max(0, deadline - Date.now())
+    retrySeconds.value = Math.ceil(remaining / 1000)
+    if (remaining) retryTimer = setTimeout(tick, remaining % 1000 || 1000)
+  }
+  tick()
+}
+
 async function handleSubmit(): Promise<void> {
-  if (!formRef.value || loading.value) {
+  if (!formRef.value || loading.value || retrySeconds.value > 0) {
     return
   }
 
   const valid = await formRef.value.validate().catch(() => false)
 
-  if (!valid || loading.value) {
+  if (!valid || loading.value || retrySeconds.value > 0) {
     return
   }
 
@@ -92,6 +116,7 @@ async function handleSubmit(): Promise<void> {
 
     await router.replace(redirect.value)
   } catch (error) {
+    showRetryCountdown(error)
     if (
       (isApiError(error) && error.code === 10003) ||
       (isRequestError(error) &&
@@ -207,9 +232,14 @@ async function handleSubmit(): Promise<void> {
               </RouterLink>
             </div>
 
+            <p v-if="retrySeconds" id="sign-in-retry" class="login-page__retry" role="timer">
+              {{ t('ui.signInRetryAfter', { seconds: retrySeconds }) }}
+            </p>
             <ElButton
               class="login-page__submit"
               :loading="loading"
+              :disabled="retrySeconds > 0"
+              :aria-describedby="retrySeconds ? 'sign-in-retry' : undefined"
               native-type="submit"
               type="primary"
               >{{ t('ui.signIn') }}</ElButton

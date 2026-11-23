@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { AUDIT_ACTIONS, AUDIT_RESULTS, type AuditLogEntry } from '@/api/types/audit-log'
 import DataTable from '@/components/DataTable/index.vue'
@@ -6,6 +7,8 @@ import DateRangePicker from '@/components/DateRangePicker/index.vue'
 import TableToolbar from '@/components/TableToolbar/index.vue'
 import { formatDate } from '@/locales'
 import { useAppStore } from '@/store/modules/app'
+import { activeTimeZone } from '@/utils/datetime'
+import AuditLogDetailsDialog from './components/AuditLogDetailsDialog.vue'
 import { useAuditLogTable } from './useAuditLogTable'
 
 const { t } = useI18n({ useScope: 'global' })
@@ -27,6 +30,19 @@ const {
   changePage,
   changePageSize
 } = useAuditLogTable()
+const selectedEntry = shallowRef<AuditLogEntry>()
+const detailsOpen = ref(false)
+
+function showDetails(entry: AuditLogEntry) {
+  selectedEntry.value = entry
+  detailsOpen.value = true
+}
+
+watch(canList, (allowed) => {
+  if (allowed) return
+  detailsOpen.value = false
+  selectedEntry.value = undefined
+})
 </script>
 
 <template>
@@ -45,7 +61,7 @@ const {
       >
         <ElFormItem
           class="audit-log__time-range"
-          :label="t('auditLog.timeRange')"
+          :label="`${t('auditLog.timeRange')} · ${activeTimeZone}`"
           :error="filterErrors.timeRange ? t('auditLog.invalidTimeRange') : undefined"
         >
           <DateRangePicker
@@ -141,7 +157,21 @@ const {
             </template>
           </ElTableColumn>
           <ElTableColumn prop="statusCode" :label="t('auditLog.statusCode')" min-width="115" />
+          <!-- @vue-generic {AuditLogEntry} -->
+          <ElTableColumn :label="t('auditLog.action')" width="95">
+            <template #default="{ row }">
+              <ElButton link type="primary" @click="showDetails(row)">
+                {{ t('auditLog.details') }}
+              </ElButton>
+            </template>
+          </ElTableColumn>
         </DataTable>
+        <AuditLogDetailsDialog
+          v-if="selectedEntry"
+          v-model="detailsOpen"
+          :entry="selectedEntry"
+          @closed="!detailsOpen && (selectedEntry = undefined)"
+        />
       </div>
     </template>
     <ElResult v-else icon="warning" :title="t('auditLog.forbidden')" />

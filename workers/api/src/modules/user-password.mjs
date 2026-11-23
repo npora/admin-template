@@ -14,6 +14,8 @@ import { isProtectedDemoAccount } from '../config/auth.mjs'
 import { assertCredentialsWritable } from '../security/access.mjs'
 import { snapshot, commit, update, nowFields } from '../repositories/management.mjs'
 
+const NEW_PASSWORD_MIN_LENGTH = 6
+
 export async function resetUserPassword(request, env, userId) {
   const actor = await authenticate(request, env.DB)
   return auditOperation(env.DB, actor.id, userId, 'password_reset', (auditSuccess) =>
@@ -30,7 +32,7 @@ async function applyPasswordReset(request, env, userId, actor, auditSuccess) {
     input.currentPassword.length > 128 ||
     !validNewPassword(input.newPassword)
   )
-    throw new HttpError(400, '新密码需包含 12–128 个字符')
+    throw new HttpError(400, `新密码需包含 ${NEW_PASSWORD_MIN_LENGTH}–128 个字符`)
   if (
     !(await verifyPassword(
       input.currentPassword,
@@ -43,7 +45,8 @@ async function applyPasswordReset(request, env, userId, actor, auditSuccess) {
   const passwordHash = await hashPassword(
     input.newPassword,
     env.AUTH_PEPPER,
-    passwordIterations(env)
+    passwordIterations(env),
+    { minimumLength: NEW_PASSWORD_MIN_LENGTH }
   )
   const state = await snapshot(env.DB, actor, { userId })
   if (state.user.is_super_admin !== 1) throw new HttpError(403, '仅超级管理员可重置密码')
@@ -83,14 +86,16 @@ export async function resetOwnPassword(request, env) {
   if (!user || user.status !== 1 || !binding || step === null || isProtectedDemoAccount(user, env))
     throw invalid()
 
-  const passwordHash = await hashPassword(newPassword, env.AUTH_PEPPER, passwordIterations(env))
+  const passwordHash = await hashPassword(newPassword, env.AUTH_PEPPER, passwordIterations(env), {
+    minimumLength: NEW_PASSWORD_MIN_LENGTH
+  })
   if (!(await updatePassword(env.DB, user, binding, step, passwordHash, Date.now())))
     throw invalid()
   return success(null)
 }
 
 function validNewPassword(value) {
-  return typeof value === 'string' && value.length >= 12 && value.length <= 128
+  return typeof value === 'string' && value.length >= NEW_PASSWORD_MIN_LENGTH && value.length <= 128
 }
 
 export async function changeOwnPassword(request, env) {
@@ -103,7 +108,7 @@ export async function changeOwnPassword(request, env) {
     currentPassword.length > 128 ||
     !validNewPassword(newPassword)
   )
-    throw new HttpError(400, '请输入当前密码，新密码需包含 12–128 个字符')
+    throw new HttpError(400, `请输入当前密码，新密码需包含 ${NEW_PASSWORD_MIN_LENGTH}–128 个字符`)
   await limitLogin(request, env.DB, `password-change:${user.id}`, Date.now())
   if (
     !(await verifyPassword(
@@ -124,7 +129,9 @@ export async function changeOwnPassword(request, env) {
       )
     : -1
   if (step === null) throw new HttpError(400, '请输入有效的验证器动态码，验证码不能重复使用', 10003)
-  const passwordHash = await hashPassword(newPassword, env.AUTH_PEPPER, passwordIterations(env))
+  const passwordHash = await hashPassword(newPassword, env.AUTH_PEPPER, passwordIterations(env), {
+    minimumLength: NEW_PASSWORD_MIN_LENGTH
+  })
   if (!(await updatePassword(env.DB, user, binding, step, passwordHash, Date.now()))) {
     if (!(await findSession(env.DB, user.sessionHash, Date.now()))) throw unauthorized()
     throw new HttpError(409, '账号或验证器状态已变化，请重新操作')

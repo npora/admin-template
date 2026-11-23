@@ -4,7 +4,7 @@ import { digest } from '../src/security/crypto.mjs'
 import { service, password } from './helpers/service.mjs'
 import { createTotpSecret, encryptTotp, totpCode } from '../src/security/totp.mjs'
 
-const newPassword = 'Updated-test-password-2026'
+const newPassword = 'Fresh6'
 const now = Date.UTC(2026, 8, 1, 0, 0, 15)
 const step = Math.floor(now / 30000)
 
@@ -23,14 +23,15 @@ async function bindViewer(env, sqlite) {
 test('logged-in users change their own password and invalidate their old sessions', async (t) => {
   const { call, login, viewer, editor, env, sqlite } = await service(t)
   env.AUTH_PASSWORD_ITERATIONS = '600000'
-  const change = (token, currentPassword) =>
+  const change = (token, currentPassword, candidate = newPassword) =>
     call('/auth/password/change', {
       method: 'POST',
       token,
-      json: { currentPassword, newPassword }
+      json: { currentPassword, newPassword: candidate }
     })
   assert.equal((await change(null, password)).status, 401)
   assert.equal((await change(viewer, 'Wrong-password')).status, 400)
+  assert.equal((await change(viewer, password, 'short')).status, 400)
   const secondToken = (await login('viewer')).body.data.accessToken
   assert.equal((await change(viewer, password)).status, 200)
   assert.match(
@@ -70,12 +71,13 @@ test('password recovery hides account status and atomically consumes the dynamic
   const { call, env, sqlite, viewer, editor } = await service(t)
   const secret = await bindViewer(env, sqlite)
   const code = await totpCode(secret, step)
-  const reset = (username, totpCode) =>
+  const reset = (username, totpCode, candidate = newPassword) =>
     call('/auth/password/reset', {
       method: 'POST',
       token: null,
-      json: { username, totpCode, newPassword }
+      json: { username, totpCode, newPassword: candidate }
     })
+  assert.equal((await reset('viewer', code, 'short')).status, 400)
   const unbound = await reset('editor', code)
   const unknown = await reset('unknown_user', code)
   assert.equal(unbound.status, 400)

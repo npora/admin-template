@@ -23,7 +23,9 @@ const rules = computed<FormRules<typeof form>>(() => ({
   totpCode: requiresTotp.value
     ? [{ required: true, pattern: /^\d{6}$/, message: t('ui.enterAuthenticatorCode') }]
     : [],
-  newPassword: [{ required: true, min: 12, max: 128, message: t('ui.passwordLengthPlaceholder') }],
+  newPassword: [
+    { required: true, min: 6, max: 128, message: t('ui.passwordMustContain6128Characters') }
+  ],
   confirmation: [
     {
       validator: (_rule, value: string) => value === form.newPassword,
@@ -132,6 +134,7 @@ onScopeDispose(clear)
       <ElFormItem prop="newPassword" :label="t('ui.newPasswordLabel')">
         <ElInput
           v-model="form.newPassword"
+          :placeholder="t('ui.passwordMustContain6128Characters')"
           type="password"
           autocomplete="new-password"
           :maxlength="128"

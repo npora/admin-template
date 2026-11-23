@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onScopeDispose, reactive, ref } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
+import { ArrowLeft, Lock } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import LocaleSwitch from '@/components/LocaleSwitch/index.vue'
 import { resetPassword } from '@/api/modules/auth'
@@ -21,9 +22,12 @@ let controller: AbortController | undefined
 const rules = computed<FormRules<typeof form>>(() => ({
   username: [{ required: true, message: t('ui.enterYourUsername') }],
   totpCode: [{ required: true, pattern: /^\d{6}$/, message: t('ui.enterAuthenticatorCode') }],
-  newPassword: [{ required: true, min: 12, max: 128, message: t('ui.passwordLengthPlaceholder') }],
+  newPassword: [
+    { required: true, min: 6, max: 128, message: t('ui.passwordMustContain6128Characters') }
+  ],
   confirmation: [
     {
+      required: true,
       validator: (_rule, value: string) => value === form.newPassword,
       message: t('ui.passwordMismatch')
     }
@@ -69,8 +73,9 @@ async function submit() {
     <div class="login-page__decor login-page__decor--one" />
     <div class="login-page__decor login-page__decor--two" />
     <main class="login-page__content recovery-page__content">
-      <section class="login-page__card">
-        <header class="login-page__header">
+      <section class="login-page__card recovery-page__card">
+        <header class="login-page__header recovery-page__header">
+          <ElIcon class="recovery-page__icon" aria-hidden="true"><Lock /></ElIcon>
           <h1 class="login-page__title">{{ t('ui.recoverPassword') }}</h1>
           <p class="login-page__subtitle">{{ t('ui.recoverPasswordDescription') }}</p>
         </header>
@@ -96,6 +101,7 @@ async function submit() {
           <ElFormItem prop="newPassword" :label="t('ui.newPasswordLabel')">
             <ElInput
               v-model="form.newPassword"
+              :placeholder="t('ui.passwordMustContain6128Characters')"
               type="password"
               autocomplete="new-password"
               :maxlength="128"
@@ -122,17 +128,20 @@ async function submit() {
             >{{ t('ui.resetPassword') }}</ElButton
           >
         </ElForm>
-        <p class="login-page__subtitle">{{ t('ui.recoveryBindingRequired') }}</p>
-        <p class="login-page__subtitle">
-          {{
-            authConfig.passwordResetContact
-              ? t('ui.passwordResetContact', { contact: authConfig.passwordResetContact })
-              : t('ui.passwordResetAdministrator')
-          }}
-        </p>
-        <RouterLink class="login-page__link recovery-page__return" :to="{ name: 'Login' }">{{
-          t('ui.backToSignIn')
-        }}</RouterLink>
+        <div class="recovery-page__help">
+          <p>{{ t('ui.recoveryBindingRequired') }}</p>
+          <p>
+            {{
+              authConfig.passwordResetContact
+                ? t('ui.passwordResetContact', { contact: authConfig.passwordResetContact })
+                : t('ui.passwordResetAdministrator')
+            }}
+          </p>
+        </div>
+        <RouterLink class="login-page__link recovery-page__return" :to="{ name: 'Login' }">
+          <ElIcon aria-hidden="true"><ArrowLeft /></ElIcon>
+          {{ t('ui.backToSignIn') }}
+        </RouterLink>
       </section>
     </main>
   </div>
@@ -152,7 +161,49 @@ async function submit() {
   color: var(--el-color-danger);
 }
 
+.recovery-page__card {
+  max-width: 460px;
+
+  :deep(.el-input__wrapper) {
+    min-height: 38px;
+  }
+}
+
+.recovery-page__header {
+  margin-bottom: 20px;
+}
+
+.recovery-page__icon {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  font-size: 20px;
+  color: var(--el-color-primary);
+  background: var(--el-color-primary-light-9);
+}
+
+.recovery-page__help {
+  display: grid;
+  gap: 4px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--np-fill-color-light);
+  color: var(--np-text-regular);
+  font-size: var(--np-font-size-small);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+
+  p {
+    margin: 0;
+  }
+}
+
 .recovery-page__return {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   margin-top: 16px;
 }
 </style>

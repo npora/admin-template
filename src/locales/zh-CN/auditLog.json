@@ -1,4 +1,9 @@
 {
+  "details": "详情",
+  "detailsTitle": "审计详情",
+  "recordId": "记录 ID",
+  "httpMethod": "HTTP 方法",
+  "relatedEndpoints": "关联接口",
   "action": "操作",
   "result": "结果",
   "timeRange": "时间范围（不含结束时间）",

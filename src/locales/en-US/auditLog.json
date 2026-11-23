@@ -1,4 +1,9 @@
 {
+  "details": "Details",
+  "detailsTitle": "Audit details",
+  "recordId": "Record ID",
+  "httpMethod": "HTTP method",
+  "relatedEndpoints": "Related endpoints",
   "action": "Action",
   "result": "Result",
   "timeRange": "Time range (end exclusive)",

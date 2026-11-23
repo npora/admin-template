@@ -25,9 +25,11 @@ VITE_PASSWORD_RESET_CONTACT=
 
 登录页的“忘记密码”进入 `/forgot-password`。已绑定 Google Authenticator 的用户输入账号、当前动态码和新密码即可自助重置。未绑定或丢失验证器时联系管理员。参考后端按 IP 和账号限制尝试次数，账号不存在、未绑定和动态码错误使用相同的失败响应。
 
-个人中心的“修改密码”要求当前密码，已绑定验证器的账号还要输入动态码。新密码为 12–128 个字符。两种流程都在后端写入新密码哈希并撤销该账号的全部旧会话。使用过的动态码不能再用于登录或改密，验证器绑定继续生效。前端清理 Token、路由、权限、标签页和字典缓存后返回登录。
+个人中心的“修改密码”要求当前密码，已绑定验证器的账号还要输入动态码。两种流程的新密码均为 6–128 个字符。后端写入新密码哈希并撤销该账号的全部旧会话。使用过的动态码不能再用于登录或改密，验证器绑定继续生效。前端清理 Token、路由、权限、标签页和字典缓存后返回登录。
 
 超级管理员仍可在用户管理验证自己的当前密码后重置目标账号密码。此操作不能用于其他超级管理员。
+
+登录遇到 HTTP 429 时，页面读取 `Retry-After` 响应标头显示剩余等待时间。倒计时结束后可手动重试。
 
 | 接口                         | 请求                                                                              |
 | ---------------------------- | --------------------------------------------------------------------------------- |
@@ -76,14 +78,14 @@ Worker 可通过 `AUTH_PASSWORD_ITERATIONS=600000` 将新写入的 PBKDF2-HMAC-S
 
 ## 接口
 
-| 接口                              | 请求 / 返回                                                                     |
-| --------------------------------- | ------------------------------------------------------------------------------- |
-| `POST /auth/login`                | `{ username, password, rememberMe?, totpCode? }` → `{ accessToken, expiresAt }` |
-| `GET /auth/totp`                  | 登录后返回 `{ available, enabled }`，不返回密钥                                 |
-| `POST /auth/totp/setup`           | `{ password }` → `{ secret, uri }`，需开启绑定功能                              |
-| `POST /auth/totp/enable`          | `{ password, code }` 确认绑定并撤销旧会话                                       |
-| `POST /auth/totp/disable`         | `{ password, code }` 解绑并撤销旧会话                                           |
-| `POST /system/users/:id/password` | 超级管理员提交 `{ currentPassword, newPassword }`，重置密码并撤销目标账号旧会话 |
+| 接口                              | 请求 / 返回                                                                                        |
+| --------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `POST /auth/login`                | `{ username, password, rememberMe?, totpCode? }` → `{ accessToken, expiresAt }`                    |
+| `GET /auth/totp`                  | 登录后返回 `{ available, enabled }`，不返回密钥                                                    |
+| `POST /auth/totp/setup`           | `{ password }` → `{ secret, uri }`，需开启绑定功能                                                 |
+| `POST /auth/totp/enable`          | `{ password, code }` 确认绑定并撤销旧会话                                                          |
+| `POST /auth/totp/disable`         | `{ password, code }` 解绑并撤销旧会话                                                              |
+| `POST /system/users/:id/password` | 超级管理员提交 `{ currentPassword, newPassword }`，新密码为 6–128 个字符，成功后撤销目标账号旧会话 |
 
 动态码缺失、错误或重复使用返回 HTTP 400、业务码 `10003`；密码错误保持原有登录错误响应。接口通过现有 API 模块调用，不在页面直接访问后端。
 

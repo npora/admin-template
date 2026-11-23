@@ -44,8 +44,8 @@ export function useResetUserPassword() {
         {
           inputType: 'password',
           inputValidator: (value) =>
-            Boolean(value && value.length >= 12 && value.length <= 128) ||
-            t('ui.passwordMustContain12128Characters'),
+            Boolean(value && value.length >= 6 && value.length <= 128) ||
+            t('ui.passwordMustContain6128Characters'),
           confirmButtonText: t('ui.resetPassword'),
           cancelButtonText: t('ui.cancel')
         }

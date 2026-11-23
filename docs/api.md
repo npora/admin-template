@@ -37,6 +37,8 @@ HTTP 401，以及业务 code 为 `401`、`10002`（含字符串形式），表�
 
 Worker 登录签发随机不透明 Token，D1 只保存 Token 的哈希和到期时间。受保护接口要求 `Authorization: Bearer <accessToken>`，后端独立验证会话及接口权限。
 
+登录超过限制时返回 HTTP 429 和 `Retry-After`，前端据此显示剩余等待时间，等待期间暂停提交。
+
 当前前端优先读取 `/auth/session`。旧后端返回 HTTP 404 时，沿用 `/auth/user` 与 `/auth/routes`。
 
 完整类型见 `src/api/types/auth.ts` 与 `src/api/types/route.ts`；正式表与基础菜单见 `database/mysql/`。
@@ -122,6 +124,8 @@ Worker 登录签发随机不透明 Token，D1 只保存 Token 的哈希和到期
 每条记录包含数字 `id`、`actorId`、`targetId`、`statusCode`、`createdAt`，以及 `targetType`（`user` 或 `role`）、`action`、`result`。时间以 Unix 毫秒表示。成功状态码为 200，失败保存原操作的 HTTP 状态码。非法查询参数返回 400，缺少有效会话返回 401，权限不足返回 403，服务不可用返回 503，均沿用通用错误响应。
 
 记录范围是已认证的管理员密码重置、用户或管理员实际启停验证器、角色权限保存和管理员撤销用户会话。管理员为用户立即创建绑定计为启用，个人中心生成的待确认密钥在确认绑定后计为启用。落库字段只取服务端确认的 ID、固定枚举、状态码和时间，排除密码、验证码、验证器密钥、Token、请求内容、IP 地址和原始错误消息。成功记录与业务写入在同一事务提交。已认证的失败操作会尝试单独记录，审计存储不可用时仍返回原操作错误。
+
+列表中的「详情」展示已记录的 HTTP 状态码，以及按操作类型关联的 HTTP 方法和路由模板。验证器操作可能对应多个接口，旧记录同样可以查看。
 
 动态菜单位于“系统管理”下，路由名为 `SystemAuditLog`，相对路径为 `audit-log`，页面组件为 `system/audit-log/index`。给普通角色开放查询时，需同时授权对应目录、页面与查看权限。
 

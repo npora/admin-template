@@ -201,8 +201,8 @@ test('pending enrollment expires, and default versus remembered sessions have bo
 })
 
 test('administrator password reset requires fresh credentials, denies ordinary roles and revokes target sessions', async (t) => {
-  const { call, viewer, editor, env, sqlite } = await service(t)
-  const newPassword = 'New-test-password-2026'
+  const { call, login, viewer, editor, env, sqlite } = await service(t)
+  const newPassword = 'Reset6'
   for (const token of [viewer, editor])
     assert.equal(
       (
@@ -245,6 +245,7 @@ test('administrator password reset requires fresh credentials, denies ordinary r
   const stored = sqlite.prepare('SELECT password_hash FROM sys_user WHERE id=2').get().password_hash
   assert.equal(await verifyPassword(newPassword, stored, env.AUTH_PEPPER), true)
   assert.equal(await verifyPassword(password, stored, env.AUTH_PEPPER), false)
+  assert.equal((await login('viewer', newPassword)).status, 200)
   assert.equal((await call('/system/roles/2/password', { method: 'POST', json: {} })).status, 404)
 })
 
