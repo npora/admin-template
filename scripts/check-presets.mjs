@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os'
 import { resolve, join, dirname } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { spawnSync } from 'node:child_process'
+import { loadEnv } from 'vite'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
 const args = process.argv.slice(2).filter((arg) => arg !== '--')
@@ -20,6 +21,8 @@ assert.ok(positional.length <= 1, 'Provide at most one generator directory')
 const cli = resolve(positional[0] || join(root, '../create-nova-admin'))
 const { createProject } = await import(pathToFileURL(join(cli, 'src/create-project.js')).href)
 const temporary = await mkdtemp(join(tmpdir(), 'nova-presets-check-'))
+const fixtureApiURL = 'https://api.example.com/v1/$service'
+delete process.env.VITE_API_URL
 function run(directory, args) {
   const result = spawnSync(manager, args, {
     cwd: directory,
@@ -53,7 +56,8 @@ try {
       projectName: `check-${preset}`,
       cwd: temporary,
       templateDir: root,
-      preset
+      preset,
+      ...(preset === 'starter' ? { apiURL: fixtureApiURL } : {})
     })
     const pkg = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'))
     assert.deepEqual(
@@ -62,6 +66,8 @@ try {
       `${preset} must have only the three standard root environment files`
     )
     const developmentEnv = await readFile(join(directory, '.env.development'), 'utf8')
+    if (preset === 'starter')
+      assert.equal(loadEnv('development', directory).VITE_API_URL, fixtureApiURL)
     if (preset === 'demo') assert.match(developmentEnv, /^VITE_DEMO_ENABLED=true$/m)
     else assert.doesNotMatch(developmentEnv, /^VITE_DEMO_ENABLED=true$/m)
     assert.equal(pkg.packageManager, undefined, 'Generated projects must not pin a manager')
