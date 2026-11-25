@@ -6,12 +6,12 @@ Vue 3、TypeScript、Element Plus 和 Pinia 后台脚手架。包含动态菜单
 
 建议使用 Node.js 24 LTS，可使用 npm、pnpm 或 Yarn。
 
-```sh
-npm install
-npm run dev
-```
+1. 运行 `npm install` 安装依赖。
+2. 按 [MySQL 初始化说明](database/mysql/README.md) 准备表结构与基础权限，再由自有后端初始化首个管理员。
+3. 启动符合 [接口契约](docs/api.md) 的后端，在 `.env.development` 设置 `VITE_API_URL`。
+4. 运行 `npm run dev`，用刚创建的管理员账号登录。
 
-在 `.env.development` 设置 `VITE_API_URL`，按 [接口契约](docs/api.md) 对接自己的后端。账号由后端初始化。纯净版仅包含 MySQL 数据库文件，Google Authenticator 默认关闭。纯净版不提供 `VITE_DEMO_ENABLED`。
+纯净版仅包含 MySQL 数据库文件，Google Authenticator 默认关闭。纯净版不提供 `VITE_DEMO_ENABLED`。
 
 `npm run build` 将应用构建到 `dist/`，生产环境请转发 `/api`。运行 `npm run check` 检查格式、类型和核心行为。
 

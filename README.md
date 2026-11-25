@@ -32,7 +32,6 @@
 ```sh
 npx @npora/create-admin@latest my-admin --yes --install npm
 cd my-admin
-npm run dev
 ```
 
 | 预设              | 适用场景                            |
@@ -41,7 +40,7 @@ npm run dev
 | `worker`          | 核心前端和独立 Worker 后端参考实现  |
 | `demo`            | 完整展示和业务示例                  |
 
-纯净版保留 `src/`、`public/`、MySQL 脚本及独立构建所需的配置、文档和测试。生成项目不包含演示页面、Workers 或部署工具。`VITE_AUTHENTICATOR_ENABLED` 默认关闭。对接自己的后端时，在 `.env.development` 设置 `VITE_API_URL`。新 MySQL 库可运行 `sh database/mysql/init.sh --user root --password npora_admin` 初始化。
+纯净版保留 `src/`、`public/`、MySQL 脚本及独立构建所需的配置、文档和测试。生成项目不包含演示页面、Workers 或部署工具。`VITE_AUTHENTICATOR_ENABLED` 默认关闭。启动前，按 [MySQL 初始化说明](database/mysql/README.md) 准备数据库，在自有后端初始化首个管理员，并在 `.env.development` 设置 `VITE_API_URL`。后端就绪后，运行 `npm run dev`，用刚创建的管理员账号登录。
 
 ## 使用指南
 

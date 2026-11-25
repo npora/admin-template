@@ -3,6 +3,7 @@ import { t } from '@/locales'
 
 import { getSessionInfo, login, revokeSession } from '@/api/modules/auth'
 import type { LoginRequest } from '@/api/types/auth'
+import { clearScreenLock } from '@/utils/screen-lock'
 import { getTokenVersion, tokenStorage } from '@/api/auth/token-storage'
 import { transformDynamicRoutes } from '@/router/utils/dynamic-route'
 import { registerDynamicRoutes } from '@/router/utils/register-routes'
@@ -53,6 +54,7 @@ function createSession(router: Router) {
   function clearSession(): void {
     resetState()
     tokenStorage.remove()
+    clearScreenLock()
   }
 
   async function restoreSession(

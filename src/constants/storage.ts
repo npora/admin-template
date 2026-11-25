@@ -6,7 +6,8 @@ export const STORAGE_KEYS = {
   LOCALE: 'locale',
   APP_SETTINGS: 'app_settings',
   FORM_DRAFT: 'form_example_draft',
-  LOCAL_PROFILES: 'local_profiles'
+  LOCAL_PROFILES: 'local_profiles',
+  SCREEN_LOCK: 'screen_lock'
 } as const
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS]

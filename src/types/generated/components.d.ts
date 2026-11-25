@@ -11,6 +11,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AppPreferenceFields: typeof import('./../../components/AppPreferenceFields/index.vue')['default']
     AuthenticatorSettings: typeof import('./../../components/AuthenticatorSettings/index.vue')['default']
     DataTable: typeof import('./../../components/DataTable/index.vue')['default']
     DateRangePicker: typeof import('./../../components/DateRangePicker/index.vue')['default']

@@ -53,8 +53,8 @@ export function coreConfig(
 
     server: {
       host: '0.0.0.0',
-      port: 3000,
-      strictPort: false,
+      port: 8000,
+      strictPort: true,
       open: false,
 
       proxy: {
@@ -63,6 +63,21 @@ export function coreConfig(
           target: env.VITE_API_URL?.trim() || 'http://localhost:8080',
 
           changeOrigin: true,
+
+          configure(proxy) {
+            proxy.on('proxyReq', (upstream, incoming) => {
+              const host = incoming.headers.host
+              const origin = incoming.headers.origin
+              // 开发页同源请求由代理转发，其他来源交给上游校验。
+              if (
+                host &&
+                origin === `http://${host}` &&
+                ['localhost', '127.0.0.1', '[::1]'].includes(new URL(origin).hostname)
+              ) {
+                upstream.removeHeader('origin')
+              }
+            })
+          },
 
           rewrite: (path) => {
             const suffix = path.slice(apiPrefix.length)

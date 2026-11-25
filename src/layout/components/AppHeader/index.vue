@@ -2,8 +2,8 @@
 import LocaleSwitch from '@/components/LocaleSwitch/index.vue'
 import { useI18n } from 'vue-i18n'
 
-import { computed, defineAsyncComponent, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { computed, defineAsyncComponent, ref, useTemplateRef } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import {
   Expand,
@@ -23,6 +23,8 @@ import { useSession } from '@/composables/useSession'
 import { useAppStore } from '@/store/modules/app'
 
 import AppBreadcrumb from '@/layout/components/AppBreadcrumb/index.vue'
+import { localIcons } from '@/icons/local'
+import AppLockScreen from '@/layout/components/AppLockScreen/index.vue'
 import AppSettings from '@/layout/components/AppSettings/index.vue'
 import AppUser from '@/layout/components/AppUser/index.vue'
 
@@ -34,6 +36,7 @@ const appStore = useAppStore()
 
 const { sidebarOpened, isMobile, settings } = storeToRefs(appStore)
 
+const lockScreen = useTemplateRef<InstanceType<typeof AppLockScreen>>('lockScreen')
 const settingsVisible = ref(false)
 const searchMounted = ref(false)
 const searchVisible = ref(false)
@@ -86,8 +89,25 @@ function openSearch(): void {
   searchVisible.value = true
 }
 
-function handleLogout(): void {
-  void logout()
+const signingOut = ref(false)
+
+async function handleLogout(): Promise<void> {
+  if (signingOut.value) return
+  signingOut.value = true
+  try {
+    const confirmed = await ElMessageBox.confirm(t('ui.signOutConfirm'), t('ui.signOut'), {
+      type: 'warning',
+      confirmButtonText: t('ui.signOut'),
+      cancelButtonText: t('ui.cancel'),
+      closeOnClickModal: false
+    }).then(
+      () => true,
+      () => false
+    )
+    if (confirmed) await logout()
+  } finally {
+    signingOut.value = false
+  }
 }
 </script>
 
@@ -151,6 +171,12 @@ function handleLogout(): void {
         </ElButton>
       </ElTooltip>
 
+      <ElTooltip :content="t('ui.lockScreen')" placement="bottom">
+        <ElButton text circle :aria-label="t('ui.lockScreen')" @click="lockScreen?.lock()">
+          <ElIcon :size="18"><component :is="localIcons['nova-screen-lock']" /></ElIcon>
+        </ElButton>
+      </ElTooltip>
+
       <span class="app-header__separator" />
       <AppUser
         :refreshing="refreshingPermissions"
@@ -167,6 +193,7 @@ function handleLogout(): void {
       </ElTooltip>
     </div>
 
+    <AppLockScreen ref="lockScreen" />
     <AppSettings v-model="settingsVisible" />
     <AppMenuSearch v-if="searchMounted" v-model="searchVisible" />
   </header>

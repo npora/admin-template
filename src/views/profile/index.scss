@@ -81,30 +81,8 @@
   }
 }
 .profile-preferences {
-  display: grid;
-  gap: 28px;
   max-width: 460px;
   padding: 12px 0;
-  h3 {
-    font-size: 13px;
-    font-weight: 500;
-    margin-bottom: 12px;
-  }
-  :deep(.el-select) {
-    width: 100%;
-  }
-  :deep(.el-radio-group) {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-}
-.profile-preferences__switch {
-  display: flex;
-  justify-content: space-between;
-  gap: 14px;
-  align-items: center;
-  font-size: 13px;
 }
 @media (max-width: 1000px) {
   .profile-grid {

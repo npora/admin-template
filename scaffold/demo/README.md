@@ -11,7 +11,9 @@ npm install
 npm run dev:demo
 ```
 
-展示开发默认通过真实 HTTP 连接测试 API，需要网络。`npm run build:demo` 构建完整演示；`npm run build` 构建核心模式；`npm run dev` 是否启用演示取决于 `.env.development` 的 `VITE_DEMO_ENABLED`。使用自己的后端时在 `.env.development` 配置 `VITE_API_URL`；生产需要站点 API 转发。
+运行 `npm run dev:demo` 默认连接公开展示 API，需要网络。接入自有后端时，在 `.env.development` 设置 `VITE_API_URL`，保留 `VITE_DEMO_ENABLED=true`，然后用 `npm run dev` 启动，并使用自有后端初始化的账号登录。
+
+默认情况下，`npm run build:demo` 构建完整演示，`npm run build` 构建核心版。生产环境由站点转发同源 API 请求。
 
 [在线体验](https://admin.npora.live)，账号 `admin`，密码 `123456`。公开演示账号的密码和验证器仅供登录体验，可使用自行创建的测试账号体验账号安全功能。
 

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import { ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
@@ -25,9 +27,28 @@ const { isMobile } = storeToRefs(appStore)
 
 const { avatar, displayName } = storeToRefs(userStore)
 
+const clearingCache = ref(false)
+
+async function clearCache(): Promise<void> {
+  if (clearingCache.value) return
+  clearingCache.value = true
+  try {
+    await ElMessageBox.confirm(t('ui.clearCacheConfirm'), t('ui.clearCache'), {
+      type: 'warning',
+      confirmButtonText: t('ui.clearCache'),
+      cancelButtonText: t('ui.cancel')
+    })
+  } catch {
+    clearingCache.value = false
+    return
+  }
+  window.location.reload()
+}
+
 function handleCommand(command: string | number | object): void {
   if (command === 'profile') void router.push('/profile')
   if (command === 'refresh') emit('refresh')
+  if (command === 'clearCache') void clearCache()
   if (command === 'logout') {
     emit('logout')
   }
@@ -55,6 +76,9 @@ function handleCommand(command: string | number | object): void {
         <ElDropdownItem command="profile">{{ t('profile.title') }}</ElDropdownItem>
         <ElDropdownItem command="refresh" :disabled="refreshing">{{
           refreshing ? t('ui.refreshingPermissions') : t('ui.refreshPermissions')
+        }}</ElDropdownItem>
+        <ElDropdownItem command="clearCache" :disabled="clearingCache">{{
+          t('ui.clearCache')
         }}</ElDropdownItem>
         <ElDropdownItem command="logout">{{ t('ui.signOut') }}</ElDropdownItem>
       </ElDropdownMenu>

@@ -53,14 +53,15 @@ function installLocalApi(storage, pepper, requests) {
 }
 
 export const test = base.extend({
+  demoMode: [false, { option: true, scope: 'worker' }],
   dist: [
-    async ({}, use) => {
+    async ({ demoMode }, use) => {
       const outDir = await mkdtemp(join(tmpdir(), 'npora-browser-'))
       try {
         // Playwright runs this fixture in its worker process.
         Object.assign(process.env, {
           VITE_API_PREFIX: '/api',
-          VITE_DEMO_ENABLED: 'false',
+          VITE_DEMO_ENABLED: String(demoMode),
           VITE_AUTHENTICATOR_ENABLED: 'false',
           VITE_TOKEN_STORAGE: 'session',
           VITE_BUILD_COMPRESS: 'false',
@@ -76,7 +77,7 @@ export const test = base.extend({
     { scope: 'worker', timeout: 120_000 }
   ],
 
-  app: async ({ dist }, use) => {
+  app: async ({ dist, demoMode }, use) => {
     const storage = database()
     const pepper = randomBytes(32).toString('hex')
     const admin = { username: 'browser_admin', password: randomBytes(24).toString('hex') }
@@ -95,8 +96,9 @@ export const test = base.extend({
         .run(admin.username, adminHash, viewer.username, viewerHash)
       storage.sqlite.exec(`
         INSERT INTO sys_user_role(user_id,role_id) VALUES(1,1),(2,3);
-        UPDATE sys_menu SET status = 0 WHERE component LIKE 'examples/%';
       `)
+      if (!demoMode)
+        storage.sqlite.exec("UPDATE sys_menu SET status = 0 WHERE component LIKE 'examples/%'")
       server = await preview({
         root,
         configFile: false,

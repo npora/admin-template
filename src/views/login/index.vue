@@ -6,12 +6,14 @@ import { appConfig } from '@/config/app'
 import { authConfig } from '@/config/auth'
 import { useRoute, useRouter } from 'vue-router'
 import { computed, onScopeDispose, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElNotification } from 'element-plus'
+import 'element-plus/es/components/notification/style/css'
 import { Lock, User } from '@element-plus/icons-vue'
 
 import { getLoginRedirect } from '@/router/utils/path'
 import { handleRequestError } from '@/api/errors/handling'
 import { useSession } from '@/composables/useSession'
+import { useUserStore } from '@/store/modules/user'
 import { isApiError } from '@/api/errors/ApiError'
 import { isRequestError } from '@npora/request/core'
 
@@ -29,6 +31,7 @@ const route = useRoute()
 const router = useRouter()
 
 const { signIn } = useSession(router)
+const userStore = useUserStore()
 
 const formRef = ref<FormInstance>()
 
@@ -112,7 +115,11 @@ async function handleSubmit(): Promise<void> {
       ...(form.totpCode ? { totpCode: form.totpCode.trim() } : {})
     })
 
-    ElMessage.success(t('ui.signedInSuccessfully'))
+    ElNotification.success({
+      title: t('ui.signedInSuccessfully'),
+      message: t('ui.signInWelcome', { name: userStore.displayName }),
+      position: 'top-right'
+    })
 
     await router.replace(redirect.value)
   } catch (error) {

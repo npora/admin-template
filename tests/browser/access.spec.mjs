@@ -88,6 +88,9 @@ test('login shows Retry-After and blocks submission until the countdown ends', a
     await expect(timer).toHaveCount(0)
     await button.click()
     await expect(page).toHaveURL(`${app.origin}/dashboard`)
+    const notice = page.locator('.el-notification.right')
+    await expect(notice.getByText('登录成功', { exact: true })).toBeVisible()
+    await expect(notice.getByText(/^欢迎回来，.+！$/)).toBeVisible()
   } catch {
     await page.close().catch(() => {})
     throw new Error(`Failed while ${stage}`)
@@ -185,10 +188,20 @@ test('applies local appearance settings, falls back on narrow screens and keeps 
   await expect(sidebar).toHaveCount(0)
   await select('菜单布局', '混合')
   await expect(sidebar).toBeVisible()
-  await select('页签风格', '下划线')
-  await expect(page.locator('.app-tabs--underline')).toBeVisible()
-  await select('页签风格', '卡片')
-  await expect(page.locator('.app-tabs--card')).toBeVisible()
+  const tabStrip = page.locator('.app-tabs')
+  for (const [label, style] of [
+    ['胶囊', 'pill'],
+    ['下划线', 'underline'],
+    ['卡片', 'card']
+  ]) {
+    await select('页签风格', label)
+    await expect(tabStrip).toHaveClass(new RegExp(`app-tabs--${style}`))
+    await expect(tabStrip).toHaveCSS('overflow-y', 'hidden')
+    await expect(tabStrip).toHaveCSS('overflow-x', 'auto')
+    await expect
+      .poll(() => tabStrip.evaluate((strip) => strip.scrollHeight - strip.clientHeight))
+      .toBe(0)
+  }
   await toggle('全屏水印')
   await expect(watermark).toBeVisible()
   await expect(watermark).toHaveCSS('pointer-events', 'none')
@@ -202,11 +215,17 @@ test('applies local appearance settings, falls back on narrow screens and keeps 
   await expect(topNavigation).toBeVisible()
 
   await openSettings()
-  const clear = settings.getByRole('button', { name: '清空缓存', exact: true })
+  await expect(settings.getByRole('button', { name: '清空缓存', exact: true })).toHaveCount(0)
+  await settings.press('Escape')
+  await expect(settings).toBeHidden()
+  const userMenu = page.getByRole('button', { name: '用户菜单', exact: true })
+  const clear = page.getByRole('menuitem', { name: '清空缓存', exact: true })
+  await userMenu.click()
   await clear.click()
   const confirm = page.getByRole('dialog', { name: '清空缓存' })
   await confirm.getByRole('button', { name: '取消', exact: true }).click()
-  await expect(settings).toBeVisible()
+  await expect(confirm).toBeHidden()
+  await userMenu.click()
   await clear.click()
   await Promise.all([
     page.waitForEvent('load'),
@@ -502,3 +521,89 @@ test('audit details show safe HTTP metadata and time filters use the app zone', 
   expect(query.get('createdFrom')).toBe(String(Date.UTC(2026, 0, 1)))
   expect(query.get('createdTo')).toBe(String(Date.UTC(2026, 0, 1, 1)))
 })
+
+test('screen lock survives reload and clears on unlock or sign-in', async ({ context, app }) => {
+  const page = await localPage(context, app)
+  const authorization = await signIn(page, app, app.admin, '/system/user')
+  const lock = page.getByRole('button', { name: '锁定屏幕', exact: true })
+  const screen = page.getByRole('dialog', { name: '屏幕已锁定' })
+  const unlock = screen.getByRole('button', { name: '解锁', exact: true })
+  const relogin = screen.getByRole('button', { name: '重新登录', exact: true })
+  const lockPassword = 'fixture-lock'
+  const readVerifier = () => page.evaluate(() => sessionStorage.getItem('npora_admin_screen_lock'))
+
+  async function lockPage() {
+    await lock.click()
+    const prompt = page.getByRole('dialog', { name: '锁定屏幕', exact: true })
+    await prompt.locator('input[type=password]').fill(lockPassword)
+    await prompt.locator('.el-message-box__btns .el-button--primary').click()
+    await expect(screen).toBeVisible()
+  }
+
+  await lockPage()
+  await expect(screen.getByText('Asia/Shanghai', { exact: true })).toBeVisible()
+  const clock = screen.locator('time')
+  const initial = await clock.getAttribute('datetime')
+  await expect(clock).not.toHaveAttribute('datetime', initial)
+  expect(await readVerifier()).not.toContain(lockPassword)
+
+  await page.reload()
+  await page.setViewportSize({ width: 360, height: 640 })
+  await expect(unlock).toBeInViewport()
+  await expect(relogin).toBeInViewport()
+  const input = screen.getByLabel('锁屏密码')
+  await input.fill('wrong-lock-password')
+  await unlock.click()
+  await expect(screen.getByRole('alert')).toHaveText('锁屏密码不正确。')
+  await input.fill(lockPassword)
+  await unlock.click()
+  await expect(screen).toBeHidden()
+  expect(await readVerifier()).toBeNull()
+  await expect(page).toHaveURL(app.origin + '/system/user')
+  expect(await apiStatus(page, app, '/auth/user', authorization)).toBe(200)
+
+  await lockPage()
+  await relogin.click()
+  await expect(page).toHaveURL(app.origin + '/login')
+  expect(await readVerifier()).toBeNull()
+  await expect.poll(() => apiStatus(page, app, '/auth/user', authorization)).toBe(401)
+})
+
+test('manual sign-out requires confirmation', async ({ context, app }) => {
+  const page = await localPage(context, app)
+  const authorization = await signIn(page, app, app.admin)
+  const userMenu = page.getByRole('button', { name: '用户菜单', exact: true })
+  const signOut = page.getByRole('menuitem', { name: '退出登录', exact: true })
+  const confirm = page.getByRole('dialog', { name: '退出登录', exact: true })
+  await userMenu.click()
+  await signOut.click()
+  await confirm.getByRole('button', { name: '取消', exact: true }).click()
+  await expect(confirm).toBeHidden()
+  await expect(page).toHaveURL(app.origin + '/dashboard')
+  expect(await apiStatus(page, app, '/auth/user', authorization)).toBe(200)
+
+  await userMenu.click()
+  await signOut.click()
+  await confirm.getByRole('button', { name: '退出登录', exact: true }).click()
+  await expect(page).toHaveURL(app.origin + '/login')
+  await expect.poll(() => apiStatus(page, app, '/auth/user', authorization)).toBe(401)
+})
+
+const showcaseTest = test.extend({ demoMode: [true, { option: true, scope: 'worker' }] })
+
+showcaseTest(
+  'demo examples are a top-level menu and keep their existing deep links',
+  async ({ context, app }) => {
+    const page = await localPage(context, app)
+    await signIn(page, app, app.admin)
+    await expandSystemMenu(page)
+    const system = page.getByRole('menuitem', { name: '系统管理', exact: true })
+    const examples = page.getByRole('menuitem', { name: '操作示例', exact: true })
+    await expect(examples).toBeVisible()
+    await expect(system.getByText('操作示例', { exact: true })).toHaveCount(0)
+
+    await examples.getByText('操作示例', { exact: true }).click()
+    await page.getByRole('menuitem', { name: '表格示例', exact: true }).click()
+    await expect(page).toHaveURL(app.origin + '/system/operation/table')
+  }
+)

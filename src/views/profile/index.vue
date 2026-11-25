@@ -6,31 +6,23 @@ import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'elem
 import 'element-plus/es/components/message-box/style/css'
 import { UserFilled } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/modules/user'
-import { useAppStore } from '@/store/modules/app'
 import { useProfileStore } from '@/store/modules/profile'
-import { useLocale } from '@/composables/useLocale'
 import { formatNumber } from '@/locales'
 import { createLocalProfile, profileErrors, type LocalProfile } from '@/store/modules/profile/model'
 import { authConfig } from '@/config/auth'
+import AppPreferenceFields from '@/components/AppPreferenceFields/index.vue'
 import AuthenticatorSettings from '@/components/AuthenticatorSettings/index.vue'
 import ChangePasswordForm from './components/ChangePasswordForm.vue'
 import SessionSettings from './components/SessionSettings.vue'
-const { t } = useI18n({ useScope: 'global' })
+const { t, locale } = useI18n({ useScope: 'global' })
 const authenticatorEnabled = computed(() => authConfig.authenticatorEnabled)
 const user = useUserStore()
-const appStore = useAppStore()
-const { setTheme, setComponentSize, setLayoutFlag } = appStore
 const profiles = useProfileStore()
-const { enabled: localeEnabled, locale, localeOptions, setLocale } = useLocale()
-const languageEnabled = computed(() => localeEnabled)
-const { settings } = storeToRefs(appStore)
 const { userInfo, displayName, avatar } = storeToRefs(user)
 const form = ref(createLocalProfile())
 const formRef = ref<FormInstance>()
 const tab = ref('details')
 const saving = ref(false)
-const themeValues = ['light', 'dark', 'system'] as const
-const sizeValues = ['large', 'default', 'small'] as const
 const permissionCount = computed(() =>
   user.userInfo?.permissions.includes('*')
     ? t('profile.allPermissions')
@@ -189,49 +181,7 @@ async function reset() {
               </div>
             </ElForm> </ElTabPane
           ><ElTabPane :label="t('profile.preferences')" name="preferences">
-            <div class="profile-preferences">
-              <div>
-                <h3>{{ t('ui.themeMode') }}</h3>
-                <ElRadioGroup :model-value="settings.theme.mode" @change="setTheme"
-                  ><ElRadioButton v-for="value in themeValues" :key="value" :value="value">{{
-                    t(`ui.${value}`)
-                  }}</ElRadioButton></ElRadioGroup
-                >
-              </div>
-              <div v-if="languageEnabled">
-                <h3>{{ t('language.current') }}</h3>
-                <ElSelect
-                  :model-value="locale"
-                  :aria-label="t('language.current')"
-                  @change="setLocale"
-                  ><ElOption
-                    v-for="option in localeOptions"
-                    :key="option.value"
-                    :value="option.value"
-                    :label="option.label"
-                /></ElSelect>
-              </div>
-              <div>
-                <h3>{{ t('ui.componentSize') }}</h3>
-                <ElRadioGroup :model-value="settings.componentSize" @change="setComponentSize"
-                  ><ElRadioButton v-for="value in sizeValues" :key="value" :value="value">{{
-                    t(`ui.${value}`)
-                  }}</ElRadioButton></ElRadioGroup
-                >
-              </div>
-              <div class="profile-preferences__switch">
-                <span>{{ t('ui.showBreadcrumbs') }}</span><ElSwitch
-                  :model-value="settings.layout.showBreadcrumb"
-                  @change="setLayoutFlag('showBreadcrumb', $event)"
-                />
-              </div>
-              <div class="profile-preferences__switch">
-                <span>{{ t('ui.showTabs') }}</span><ElSwitch
-                  :model-value="settings.layout.showTabs"
-                  @change="setLayoutFlag('showTabs', $event)"
-                />
-              </div>
-            </div>
+            <AppPreferenceFields class="profile-preferences" show-reset />
           </ElTabPane>
           <ElTabPane :label="t('ui.changePassword')" name="password" lazy>
             <ChangePasswordForm :active="tab === 'password'" />

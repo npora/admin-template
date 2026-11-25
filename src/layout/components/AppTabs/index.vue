@@ -123,50 +123,48 @@ async function handleContextCommand(
 
 <template>
   <div class="app-tabs" :class="`app-tabs--${settings.layout.tabStyle}`">
-    <ElScrollbar>
-      <div class="app-tabs__list">
-        <ElDropdown
-          v-for="item in tabs"
-          :key="item.path"
-          trigger="contextmenu"
-          @command="(command) => handleContextCommand(command, item)"
-        >
-          <div class="app-tabs__item" :class="{ 'is-active': item.path === activePath }">
-            <button
-              class="app-tabs__trigger"
-              type="button"
-              :aria-current="item.path === activePath ? 'page' : undefined"
-              @click="handleClick(item.path)"
-            >
-              <span class="app-tabs__title">{{ translateRouteTitle(item.title, item.name) }}</span>
-            </button>
-            <button
-              v-if="!item.fixed"
-              class="app-tabs__close"
-              type="button"
-              :aria-label="t('ui.closeTab', { value: translateRouteTitle(item.title, item.name) })"
-              @click.stop="handleClose(item.path)"
-            >
-              ×
-            </button>
-          </div>
+    <div class="app-tabs__list">
+      <ElDropdown
+        v-for="item in tabs"
+        :key="item.path"
+        trigger="contextmenu"
+        @command="(command) => handleContextCommand(command, item)"
+      >
+        <div class="app-tabs__item" :class="{ 'is-active': item.path === activePath }">
+          <button
+            class="app-tabs__trigger"
+            type="button"
+            :aria-current="item.path === activePath ? 'page' : undefined"
+            @click="handleClick(item.path)"
+          >
+            <span class="app-tabs__title">{{ translateRouteTitle(item.title, item.name) }}</span>
+          </button>
+          <button
+            v-if="!item.fixed"
+            class="app-tabs__close"
+            type="button"
+            :aria-label="t('ui.closeTab', { value: translateRouteTitle(item.title, item.name) })"
+            @click.stop="handleClose(item.path)"
+          >
+            ×
+          </button>
+        </div>
 
-          <template #dropdown>
-            <ElDropdownMenu>
-              <ElDropdownItem command="refresh">{{ t('ui.refreshTab') }}</ElDropdownItem>
+        <template #dropdown>
+          <ElDropdownMenu>
+            <ElDropdownItem command="refresh">{{ t('ui.refreshTab') }}</ElDropdownItem>
 
-              <ElDropdownItem command="close" :disabled="item.fixed" divided>{{
-                t('ui.closeCurrentTab')
-              }}</ElDropdownItem>
+            <ElDropdownItem command="close" :disabled="item.fixed" divided>{{
+              t('ui.closeCurrentTab')
+            }}</ElDropdownItem>
 
-              <ElDropdownItem command="closeOthers">{{ t('ui.closeOtherTabs') }}</ElDropdownItem>
+            <ElDropdownItem command="closeOthers">{{ t('ui.closeOtherTabs') }}</ElDropdownItem>
 
-              <ElDropdownItem command="closeAll">{{ t('ui.closeAllTabs') }}</ElDropdownItem>
-            </ElDropdownMenu>
-          </template>
-        </ElDropdown>
-      </div>
-    </ElScrollbar>
+            <ElDropdownItem command="closeAll">{{ t('ui.closeAllTabs') }}</ElDropdownItem>
+          </ElDropdownMenu>
+        </template>
+      </ElDropdown>
+    </div>
   </div>
 </template>
 

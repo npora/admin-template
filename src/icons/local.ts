@@ -23,5 +23,6 @@ export const localIcons = {
   'nova-insights': svgIcon('M4 4v16h16M7 15l4-4 3 2 5-6m-4 0h4v4'),
   'nova-library': svgIcon('M5 4h5v16H5zm5 0h5v16h-5zm7 1 3-1 3 14-3 1M6.5 8h2m3 0h2'),
   'nova-shield': svgIcon('M12 3l7 3v5c0 4.2-2.5 7.6-7 10-4.5-2.4-7-5.8-7-10V6zm-3 9 2 2 4-4'),
+  'nova-screen-lock': svgIcon('M6 10h12v10H6zM8 10V7a4 4 0 0 1 8 0v3m-4 4v2'),
   'nova-archive': svgIcon('M4 4h16v4H4zm1 4v12h14V8m-9 4h4m-2 2v3')
 }

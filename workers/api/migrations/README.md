@@ -15,7 +15,8 @@
 11. `0011_audit_logs.sql`：新增操作审计表、查询索引、审计日志页面和独立查看权限。
 12. `0012_session_management.sql`：为既有会话补齐独立管理 ID，扩展操作审计约束，新增会话管理和权限预览权限。
 13. `0013_audit_lookup_indexes.sql`：增加操作者和目标 ID 的联合查询索引。
-14. `../.local/bootstrap.sql`：`npm run bootstrap` 在本机生成的随机账号哈希与关联角色。
+14. `0014_example_menu_root.sql`：将操作示例提到一级导航，保留原有访问路径和角色授权。
+15. `../.local/bootstrap.sql`：`npm run bootstrap` 在本机生成的随机账号哈希与关联角色。
 
 每份只执行一次；这些文件没有自动迁移执行器。后续已部署数据库的结构变更须新增编号迁移，执行前检查已应用版本，不改写旧文件、不重新初始化、不覆盖原表。
 
