@@ -154,31 +154,10 @@
   font-weight: 500;
 }
 
-.login-page__demo {
-  display: flex;
-  flex-wrap: wrap;
-  text-align: center;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 20px;
-  font-size: var(--np-font-size-small);
-  color: var(--np-text-secondary);
-}
-
 .login-page__retry {
   margin: 0 0 8px;
   color: var(--np-text-regular);
   font-size: 13px;
-}
-
-.login-page__demo-label {
-  padding: 2px 6px;
-  font-size: 11px;
-  line-height: 1.4;
-  color: var(--np-color-primary);
-  background-color: var(--np-fill-color-light);
-  border-radius: 4px;
 }
 
 :deep(.el-form-item) {

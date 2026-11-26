@@ -34,7 +34,6 @@ export function translateRouteTitle(title: string | undefined, name?: unknown): 
     if (title === zhRoutes[key]) return t(`routes.${key}`)
   }
   if (name == null && title === zhRoutes.System) return t('routes.System')
-  if (name == null && title === zhRoutes.Examples) return t('routes.Examples')
   return title ?? ''
 }
 

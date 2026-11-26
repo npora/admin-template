@@ -34,7 +34,6 @@ export function coreConfig(
     root,
     // 使用 Composition API，保留 JSON 词条所需的消息编译器。
     define: {
-      __DEMO_ENABLED__: false,
       __VUE_I18N_FULL_INSTALL__: true,
       __VUE_I18N_LEGACY_API__: false,
       __INTLIFY_PROD_DEVTOOLS__: false,

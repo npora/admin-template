@@ -33,11 +33,9 @@ export function installMemoryStorage() {
 }
 
 /** 仅用 Vite 转换真实源码，不打开浏览器、不监听 HTTP 或 WebSocket 端口。 */
-export async function createTestServer({ demo = false } = {}) {
-  const previousDemo = process.env.VITE_DEMO_ENABLED
+export async function createTestServer() {
   // 测试实例不能写开发服务的 node_modules/.vite，否则浏览器会请求过期的预构建依赖。
   const cacheDir = await mkdtemp(join(tmpdir(), 'npora-admin-tests-'))
-  process.env.VITE_DEMO_ENABLED = String(demo)
   try {
     const server = await createServer({
       root: fileURLToPath(new URL('../../', import.meta.url)),
@@ -66,9 +64,6 @@ export async function createTestServer({ demo = false } = {}) {
   } catch (error) {
     await rm(cacheDir, { recursive: true, force: true })
     throw error
-  } finally {
-    if (previousDemo === undefined) delete process.env.VITE_DEMO_ENABLED
-    else process.env.VITE_DEMO_ENABLED = previousDemo
   }
 }
 

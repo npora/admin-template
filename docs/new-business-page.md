@@ -1,6 +1,6 @@
 # 新增一个业务页面
 
-以新增“业务记录”列表为例。以下代码是开发片段，不会自动创建接口、数据库或菜单；先在自己的后端准备接口，再接入前端。纯净版、Worker 版和展示版使用同一套核心开发流程。
+以新增“业务记录”列表为例。以下代码是开发片段，不会自动创建接口、数据库或菜单；先在自己的后端准备接口，再接入前端。
 
 ## 1. 建立目录和 DTO
 
@@ -10,23 +10,11 @@ src/
   api/modules/record.ts
   views/business/record/
     index.vue
-    index.scss
     useRecordManagement.ts
     components/RecordForm.vue
-    components/RecordForm.scss
 ```
 
-页面入口使用 `index.vue`；局部弹窗和逻辑留在页面目录，存在跨页面复用后再提取公共组件。不要将业务页放进 `examples/`。
-
-页面与组件的样式放在同目录、同名的 `.scss` 文件中，Vue 文件只保留导入，原有作用域设置继续保留：
-
-```vue
-<style scoped lang="scss">
-@use './index.scss';
-</style>
-```
-
-例如 `RecordForm.vue` 导入 `./RecordForm.scss`。公共主题和管理页面样式放在 `src/assets/styles/`；需要共享管理样式时，在页面的 SCSS 文件中使用 `@use '@/assets/styles/management.scss';`。不需要样式的组件无需创建空文件。
+页面入口使用 `index.vue`；局部弹窗和逻辑留在页面目录，存在跨页面复用后再提取公共组件。
 
 在 `src/api/types/record.ts` 中声明后端真实返回的 DTO：
 
@@ -131,11 +119,11 @@ export function useRecordManagement() {
 </DataTable>
 ```
 
-`page`、`pageSize` 支持 `v-model`；有接口查询时使用上面的更新事件，每次事件由页面发起一次查询，组件不自行请求或重置页码。页码或条数没有变化、值不是正整数，以及加载或分页禁用时，不发出分页更新事件。
+`page`、`pageSize` 支持 `v-model`；有接口查询时使用上面的更新事件，每次事件由页面发起一次查询，组件不自行请求或重置页码。
 
-分页配置支持 Element Plus 分页的外观属性，包括 `pageSizes`、`pagerCount`、`layout`、`background`、`size`、`hideOnSinglePage`、`disabled`、`prevText`、`nextText`、`teleported` 等，以及 `align: 'left' | 'center' | 'right'`。默认条数选项为 `[10, 20, 50]`，按钮数量为 `5`，布局为 `total, sizes, prev, pager, next`。加载期间自动禁用分页，窄屏可横向滚动。页码、每页条数、总数仅由顶层 `page`、`pageSize`、`total` 控制，配置对象不接受原生的受控状态、默认状态或 `pageCount`，避免出现两套分页状态。
+分页配置支持 `pageSizes`、`pagerCount`、`layout`、`background`、`size`、`hideOnSinglePage`、`disabled`，以及 `align: 'left' | 'center' | 'right'`。默认条数选项为 `[10, 20, 50]`，按钮数量为 `5`，布局为 `total, sizes, prev, pager, next`。加载期间自动禁用分页，窄屏可横向滚动。
 
-表格的 `border`、`rowKey`、`emptyText` 可直接配置；其他 Element Plus 表格属性与事件透传，`class`、`style` 作用于外层容器。业务列使用 `ElTableColumn` 和插槽，支持 `empty`、`append` 插槽。`DataTableProps`、`DataTablePagination`、`DataTableSort` 和 `DataTableInstance` 类型统一位于 `src/components/DataTable/types.ts`；高级表格操作可通过组件实例的 `getTable()` 访问原生实例。
+表格的 `border`、`rowKey`、`emptyText` 可直接配置；其他 Element Plus 表格属性与事件透传，`class`、`style` 作用于外层容器。业务列使用 `ElTableColumn` 和插槽，支持 `empty`、`append` 插槽。类型位于 `src/components/DataTable/types.ts`。
 
 ## 4. 注册菜单与页面白名单
 
@@ -150,7 +138,7 @@ export function useRecordManagement() {
 
 父目录与页面组合后的访问地址为 `/business/record`；组件标识不包含 `src/views/` 和 `.vue`。名称与路径须唯一，按钮节点放在页面节点下，然后为角色授权。普通账号不会因为页面文件存在就自动获得访问权限。
 
-使用自己的后端时，在该后端的页面白名单和接口授权中同步新增。使用独立参考后端时，更新 `workers/api/src/config/pages.mjs`；维护完整模板仓库时，同时更新 `scaffold/worker/workers/api/src/config/pages.mjs`。不要让后端直接导入前端源码。
+使用自己的后端时，在该后端的页面白名单和接口授权中同步新增。不要让后端直接导入前端源码。
 
 数据库增量变更使用新的编号迁移。菜单 ID 由数据库生成，建立父子和授权关系时使用实际生成的 ID，不固定占用 60、100 等编号，也不重跑旧初始化文件。
 

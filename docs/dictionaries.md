@@ -21,7 +21,6 @@
 
 - 新 MySQL 数据库：使用 [新库初始化入口](../database/mysql/README.md#新库初始化) 安装基础结构、字典与索引。
 - 已执行前两份的数据库：仅按顺序执行新增的 `03-dictionaries.sql`、`04-query-indexes.sql`，每份一次。
-- 可选后端已有前四份迁移：按顺序增量执行 `workers/api/migrations/0005_dictionaries.sql`、`0006_query_indexes.sql`，每份一次；新库按编号执行全部迁移。
 
 迁移创建 `sys_dict_type`、`sys_dict_item`，增加菜单与八个按钮权限，向有效的 `admin` 角色授权，并初始化 `sys_notice_type`（通知类型）及两个选项。已有自定义账号仍按所分配角色授权。菜单由后端动态返回；数据库升级并更新接口后，通过用户菜单“刷新权限”或重新登录显示入口。
 

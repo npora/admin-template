@@ -12,13 +12,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  browser:
-    if: github.repository == 'npora/admin-template'
-    uses: ./.github/workflows/browser.yml
-
   release:
     if: github.repository == 'npora/admin-template'
-    needs: browser
     runs-on: ubuntu-latest
     timeout-minutes: 25
     permissions:
@@ -44,12 +39,9 @@ jobs:
           node-version: 24
           package-manager-cache: false
       - run: node scripts/release/verify.mjs "$RELEASE_TAG"
-      - run: npm ci --prefix ../create-nova-admin
       - run: npm ci
       - run: npm run check:all
       - run: npm run build
-      - run: npm run build:demo
-      - run: npm run check:presets -- --install
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}

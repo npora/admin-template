@@ -2,27 +2,8 @@ import { defineConfig, loadEnv } from 'vite'
 import { fileURLToPath } from 'node:url'
 import { pwaUpdate } from './build/pwa-update.ts'
 import { coreConfig } from './build/vite.ts'
-import { optionalExamples } from './build/optional-examples.ts'
-import { optionalTools } from './build/optional-tools.ts'
-
-export default defineConfig(async (context) => {
+export default defineConfig((context) => {
   const root = fileURLToPath(new URL('./', import.meta.url))
-  const env = loadEnv(context.mode, root)
-  const examples = optionalExamples(root, env.VITE_DEMO_ENABLED === 'true')
-  const cloudflarePlugin =
-    process.env.NPORA_CLOUDFLARE_BUILD === 'true'
-      ? (await import('@cloudflare/vite-plugin')).cloudflare()
-      : undefined
-  const core = coreConfig(root, context, env)
-  return {
-    ...core,
-    define: { ...core.define, __DEMO_ENABLED__: examples.enabled },
-    plugins: [
-      cloudflarePlugin,
-      examples.plugin,
-      ...(core.plugins ?? []),
-      pwaUpdate(),
-      ...optionalTools(env, context.command === 'build')
-    ]
-  }
+  const core = coreConfig(root, context, loadEnv(context.mode, root))
+  return { ...core, plugins: [...(core.plugins ?? []), pwaUpdate()] }
 })

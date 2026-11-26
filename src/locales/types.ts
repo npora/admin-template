@@ -4,8 +4,6 @@ import type routes from './zh-CN/routes.json'
 import type language from './zh-CN/language.json'
 import type errors from './zh-CN/errors.json'
 import type error from './zh-CN/error.json'
-import type table from './zh-CN/table.json'
-import type form from './zh-CN/form.json'
 import type profile from './zh-CN/profile.json'
 import type dict from './zh-CN/dict.json'
 import type timezone from './zh-CN/timezone.json'
@@ -17,8 +15,6 @@ export interface LocaleMessages {
   language: typeof language
   errors: typeof errors
   error: typeof error
-  table: typeof table
-  form: typeof form
   profile: typeof profile
   dict: typeof dict
   timezone: typeof timezone

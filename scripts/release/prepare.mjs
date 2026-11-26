@@ -1,5 +1,4 @@
 import { readFile, writeFile } from 'node:fs/promises'
-import { createHash } from 'node:crypto'
 import { resolve, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
@@ -22,15 +21,13 @@ async function releaseFiles(templateDir, generatorDir) {
   const paths = [
     join(templateDir, 'package.json'),
     join(templateDir, 'package-lock.json'),
-    join(templateDir, 'scaffold/core/package.json'),
-    join(templateDir, 'scaffold/core/package-lock.json'),
     join(generatorDir, 'package.json'),
     join(generatorDir, 'package-lock.json')
   ]
   const values = await Promise.all(paths.map(readJson))
   if (
     values[0].name !== 'admin-template' ||
-    values[4].name !== '@npora/create-admin' ||
+    values[2].name !== '@npora/create-admin' ||
     values[0].private !== true
   )
     throw new Error('请指定 admin-template 和 create-admin 的维护仓库目录')
@@ -49,16 +46,10 @@ export async function verifyRelease(templateDir, generatorDir, tag) {
     )
       throw new Error(`${paths[index]} 与发布版本 ${version} 不一致`)
   }
-  const metadata = await readJson(join(templateDir, 'scaffold/metadata.json'))
-  const hash = createHash('sha256')
-    .update(await readFile(paths[1]))
-    .digest('hex')
-  if (metadata.version !== 2 || metadata.sourceLockHash !== hash)
-    throw new Error('模板快照已过期，请运行 npm run update:presets')
   return version
 }
 
-/** 一次更新两个仓库及纯净版快照，不提交、打 Tag 或发布。 */
+/** 一次更新两个仓库，不提交、打 Tag 或发布。 */
 export async function prepareRelease(templateDir, generatorDir, increment = 'patch') {
   const { paths, values } = await releaseFiles(templateDir, generatorDir)
   const versions = values.map((value) => value.version)
@@ -81,17 +72,7 @@ export async function prepareRelease(templateDir, generatorDir, increment = 'pat
       value.packages[''].version = version
     }
   }
-  const metadataPath = join(templateDir, 'scaffold/metadata.json')
-  const metadata = await readJson(metadataPath)
-  if (metadata.version !== 2) throw new Error('发布工具要求 npm 版模板快照')
-  const previousHash = createHash('sha256')
-    .update(await readFile(paths[1]))
-    .digest('hex')
-  if (metadata.sourceLockHash !== previousHash)
-    throw new Error('模板快照已过期，请先运行 npm run update:presets')
-  metadata.sourceLockHash = createHash('sha256').update(json(values[1])).digest('hex')
   for (const [index, file] of paths.entries()) await writeFile(file, json(values[index]))
-  await writeFile(metadataPath, json(metadata))
   await verifyRelease(templateDir, generatorDir, `v${version}`)
   return version
 }
@@ -102,6 +83,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
   if (extra.length) throw new Error('用法：npm run release:prepare -- patch [生成器目录]')
   const version = await prepareRelease(templateDir, resolve(templateDir, generator), increment)
   console.log(
-    `两个仓库和模板快照已统一为 ${version}。检查并提交推送后，先推送模板 v${version}，再推送生成器同名 Tag。`
+    `两个仓库已统一为 ${version}。检查并提交推送后，先推送模板 v${version}，再推送生成器同名 Tag。`
   )
 }

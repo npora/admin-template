@@ -124,8 +124,6 @@ try {
   assert.match(document.title, /^Dashboard - /)
   assert.equal(translateRouteTitle('用户管理', 'SystemUser'), 'Users')
   assert.equal(translateRouteTitle('系统管理'), 'System management')
-  assert.equal(translateRouteTitle('操作示例'), 'Examples')
-  assert.equal(translateRouteTitle('下载示例', 'SystemDownload'), 'Downloads')
   assert.equal(translateRouteTitle('客户工作台', 'SystemUser'), '客户工作台')
   assert.equal(translateRouteTitle('自定义菜单', 'Unknown'), '自定义菜单')
   assert.equal(
@@ -247,18 +245,10 @@ try {
     }
   }
   collectReferences(new URL('src/', root))
-  if (fs.existsSync(new URL('examples/', root))) collectReferences(new URL('examples/', root))
   assert.deepEqual(
     [...references].filter((key) => !(key in baseline.ui)),
     [],
     'Frontend references must exist'
-  )
-  assert.deepEqual(
-    fs.existsSync(new URL('examples/', root))
-      ? Object.keys(baseline.ui).filter((key) => !references.has(key))
-      : [],
-    [],
-    'Remove unused UI keys'
   )
 
   i18n.global.mergeLocaleMessage('zh-CN', { ui: { fallbackTest: '回退词条' } })

@@ -16,7 +16,6 @@ import {
   Sunny
 } from '@element-plus/icons-vue'
 
-import { appConfig } from '@/config/app'
 import { handleRequestError } from '@/api/errors/handling'
 import { useFullscreen } from '@/composables/useFullscreen'
 import { useSession } from '@/composables/useSession'
@@ -138,12 +137,6 @@ async function handleLogout(): Promise<void> {
         </ElButton>
       </ElTooltip>
       <LocaleSwitch />
-      <span
-        v-if="!isMobile && appConfig.demoEnabled"
-        class="app-header__workspace"
-        :title="t('ui.demoWorkspace')"
-        >{{ t('ui.demoWorkspace') }}</span
-      >
       <ElTooltip
         :content="appStore.isDark ? t('ui.switchToLightMode') : t('ui.switchToDarkMode')"
         placement="bottom"

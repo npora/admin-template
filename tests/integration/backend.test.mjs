@@ -4,8 +4,6 @@ import { createTestServer } from '../helpers/environment.mjs'
 
 const server = await createTestServer()
 try {
-  const { appConfig } = await server.ssrLoadModule('/src/config/app.ts')
-  assert.equal(appConfig.demoEnabled, false)
   const { constantRoutes } = await server.ssrLoadModule('/src/router/routes/constant.ts')
   const recovery = constantRoutes.find((route) => route.name === 'ForgotPassword')
   assert.equal(recovery?.path, '/forgot-password')

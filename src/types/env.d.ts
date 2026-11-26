@@ -6,11 +6,6 @@ interface ImportMetaEnv {
   readonly VITE_TOKEN_STORAGE?: 'session' | 'local' | 'memory'
   readonly VITE_AUTHENTICATOR_ENABLED?: 'true' | 'false'
   readonly VITE_PASSWORD_RESET_CONTACT?: string
-
-  readonly VITE_BUILD_COMPRESS?: 'true' | 'false'
-  readonly VITE_BUILD_ANALYZE?: 'true' | 'false'
-
-  readonly VITE_DEMO_ENABLED?: 'true' | 'false'
 }
 
 interface ImportMeta {
@@ -18,4 +13,3 @@ interface ImportMeta {
 }
 
 /** 由构建层决定是否加载独立演示页面。 */
-declare const __DEMO_ENABLED__: boolean

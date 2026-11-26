@@ -10,7 +10,6 @@
 npm install
 npm run check
 npm run build
-npm run check:standalone
 ```
 
 将 `dist/` 的内容上传到静态站点目录。`npm run preview` 只用于本地检查构建产物，不作为线上服务；参见 [Vite 静态部署说明](https://vite.dev/guide/static-deploy.html)。
@@ -78,7 +77,7 @@ API 路径不要回退前端 HTML，也不要为 API 配置静态资源缓存。
 
 ## 接入自己的后端
 
-保留 `src/api/` 的请求与 DTO 契约，将开发代理目标改为自己的服务，生产配置对应的 `/api` 转发。无需删除演示目录；步骤和独立前端验证见 [后端替换说明](backend-replacement.md)。
+保留 `src/api/` 的请求与 DTO 契约，将开发代理目标改为自己的服务，生产配置对应的 `/api` 转发。配置步骤见 [后端替换说明](backend-replacement.md)。
 
 实际后端使用自身的账号体系；README 中的账号只用于展示站。前端环境文件不保存密码或服务端密钥。
 

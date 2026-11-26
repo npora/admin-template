@@ -27,15 +27,7 @@
   flex-shrink: 0;
   gap: 7px;
 }
-.app-header__workspace {
-  padding: 5px 9px;
-  border-radius: 5px;
-  background: var(--np-bg-subtle);
-  color: var(--np-text-secondary);
-  border: 1px solid var(--np-border-color-light);
-  font-size: 10px;
-  white-space: nowrap;
-}
+
 .app-header__separator {
   width: 1px;
   height: 22px;
@@ -58,8 +50,5 @@
   }
   .app-header__separator {
     margin: 0 4px;
-  }
-  .app-header__workspace {
-    display: none;
   }
 }

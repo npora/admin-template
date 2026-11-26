@@ -5,21 +5,16 @@
 Vite 开发服务器默认监听 `http://localhost:8000`，端口被占用时会提示错误。
 
 - `npm run dev`：核心模式，连接自己的后端。
-- `npm run dev:demo`：展示模式，加载独立演示模块并连接测试 API。
 - `npm run check`：格式、类型与核心回归。
-- `npm run check:examples`：演示页面测试。
-- `npm run check:backend`：可选后端构建与回归，需要 Node.js 22.13+。
 - `npm run check:all`：完整仓库维护检查。
-
-源码仓库的浏览器回归单独在 CI 运行，覆盖登录后的深层页面刷新、角色授权生效和会话撤销。测试使用本机隔离数据库，运行方法见源码仓库的 `tests/browser/README.md`。
 
 没有 Mock 模式或 Mock 开关；所有业务请求走同一 HTTP 客户端。页面内部的任务数据、表单草稿不属于后端模拟。
 
 ## 代码与目录
 
-核心业务页放在 `src/views/<业务>/<页面>/index.vue`，局部组件放在同目录 `components/`，局部逻辑放在 `useXxx.ts`。演示内容放在 `examples/pages/`，不直接加入核心静态路由。跨业务组件放在 `src/components/`，布局专属组件放在 `src/layout/components/`。
+核心业务页放在 `src/views/<业务>/<页面>/index.vue`，局部组件放在同目录 `components/`，局部逻辑放在 `useXxx.ts`。跨业务组件放在 `src/components/`，布局专属组件放在 `src/layout/components/`。
 
-API 函数、DTO、协议分别位于 `src/api/modules/`、`src/api/types/`、`src/api/protocol/`。界面选项放在 `constants/`，基础逻辑放在 `utils/`；展示专属的统计 API 和 CSV 工具放在 `examples/`。
+API 函数、DTO、协议分别位于 `src/api/modules/`、`src/api/types/`、`src/api/protocol/`。界面选项放在 `constants/`，基础逻辑放在 `utils/`。
 
 使用 `@/` 指向 `src/`，组件脚本 API 显式导入；Element Plus 模板组件按需注册。`src/types/generated/components.d.ts` 由开发服务或构建生成并提交，勿手改。服务式消息/弹窗需要确保样式已导入。
 
@@ -27,35 +22,30 @@ API 函数、DTO、协议分别位于 `src/api/modules/`、`src/api/types/`、`s
 
 ## 环境配置
 
-| 文件               | 用途                                                     | 提交 |
-| ------------------ | -------------------------------------------------------- | ---- |
-| `.env`             | 应用标题、前缀、Token 存储、构建选项和核心/展示默认开关  | 是   |
-| `.env.development` | 仓库默认连接公开展示 API，纯净和 Worker 预设连接本机后端 | 是   |
-| `.env.production`  | 生产模式说明；生产使用同源 API 转发                      | 是   |
+| 文件               | 用途                                           | 提交 |
+| ------------------ | ---------------------------------------------- | ---- |
+| `.env`             | 应用标题、前缀、Token 存储、构建选项和认证开关 | 是   |
+| `.env.development` | 开发默认连接本机后端                           | 是   |
+| `.env.production`  | 生产模式说明；生产使用同源 API 转发            | 是   |
 
-同名变量优先使用进程环境，其次是当前模式文件，最后是 `.env`。开发配置修改后重启 Vite。个人临时覆盖可通过启动进程的环境变量传入。
+同名变量优先使用进程环境，其次是当前模式文件，最后是 `.env`。开发默认连接 `http://localhost:8080`。开发配置修改后重启 Vite。个人临时覆盖可通过启动进程的环境变量、`.env.local` 或 `.env.development.local` 传入。
 
 | 变量                          | 用途                                               |
 | ----------------------------- | -------------------------------------------------- |
 | `VITE_APP_TITLE`              | 应用标题，默认 `Npora Admin`                       |
 | `VITE_API_PREFIX`             | 同源 API 前缀，默认 `/api`                         |
 | `VITE_API_URL`                | Vite 开发与本地预览代理的目标地址                  |
-| `VITE_DEMO_ENABLED`           | 默认 false；true 时加载 `examples/`                |
 | `VITE_TOKEN_STORAGE`          | `session`、`local`、`memory`，默认 session         |
 | `VITE_AUTHENTICATOR_ENABLED`  | 验证器界面入口，默认 `false`，后端独立校验绑定状态 |
 | `VITE_PASSWORD_RESET_CONTACT` | 忘记密码时展示的管理员联系方式，可留空             |
-| `VITE_BUILD_COMPRESS`         | 默认 true，生成 gzip 产物                          |
-| `VITE_BUILD_ANALYZE`          | 默认 false，启用后输出体积报告                     |
-
-`dev:demo` 和 `build:demo` 通过 `scripts/demo.mjs` 在进程环境开启展示功能，不改写环境文件。开发默认使用维护者的测试 API，可通过启动进程的 `VITE_API_URL` 覆盖。本仓库的 `npm run dev` 从 `.env.development` 读取公开展示 API 地址。设置 `VITE_DEMO_ENABLED=true` 可进入展示模式。纯净和 Worker 预设的开发地址默认是 `http://localhost:8080`。
 
 开发与本地预览只转发 API 前缀本身和它的子路径，转发时去掉该前缀并保留查询参数。生产静态文件的反向代理由站点服务器或网关配置。任何 `VITE_*` 值都不能用于保存密码或服务端密钥。语言与 Element Plus 文案放在 `src/config/i18n.ts` 和 `src/locales/`；默认时区放在 `src/config/datetime.ts`，时区枚举放在 `src/types/timezone.ts`，均不需要环境变量或数据库。日期显示与时间区间用法见 [多语言与时区](i18n.md)。
 
 ## 新增页面
 
-1. 核心业务页放在 `src/views/`，演示页放在 `examples/pages/`。
+1. 核心业务页放在 `src/views/`。
 2. 定义 DTO 和 API 函数；页面不直接发请求或判断后端实现。
-3. 核心动态菜单的 `component` 相对于 `src/views/`，例如 `system/user/index`。演示模块保留 `examples/table/index` 等兼容标识，映射到独立示例目录。
+3. 核心动态菜单的 `component` 相对于 `src/views/`，例如 `system/user/index`。
 4. 后端返回唯一的路由名称及该账号的实际权限；界面用 `v-permission` 或 `usePermission` 控制，接口权限由后端执行。
 5. 按需设置 `keepAlive`、`fixedTab`、`hidden`、`activeMenu`、`routeQuery` 和 `order`。
 6. 复杂行为增加适当回归。核心检查不要求演示后端可用，完整联调使用隔离测试数据库。
@@ -78,7 +68,7 @@ API 函数、DTO、协议分别位于 `src/api/modules/`、`src/api/types/`、`s
 
 ## 公共列表逻辑
 
-`src/composables/useManagementTable.ts` 管理带关键词、状态与分页的权限列表，统一查询取消、过期响应隔离、末页回退以及保存和删除互斥。角色页面只配置 API，用户页面保留账号字段过滤、超级管理员删除保护及角色/部门选项加载；字典页面通过 `useDictionaryTable.ts` 补充字典缓存失效回调。树形菜单、部门继续保留业务专属逻辑；用户筛选通过筛选工厂扩展。演示用的 `examples/composables/usePaginatedTable.ts` 支持本地数据、排序和自定义筛选，职责不同，不耦合系统权限。
+`src/composables/useManagementTable.ts` 管理带关键词、状态与分页的权限列表，统一查询取消、过期响应隔离、末页回退以及保存和删除互斥。角色页面只配置 API，用户页面保留账号字段过滤、超级管理员删除保护及角色/部门选项加载；字典页面通过 `useDictionaryTable.ts` 补充字典缓存失效回调。树形菜单、部门继续保留业务专属逻辑；用户筛选通过筛选工厂扩展。
 
 ## 新业务与编辑表单
 

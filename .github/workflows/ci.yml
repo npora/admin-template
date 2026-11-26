@@ -26,4 +26,3 @@ jobs:
       - run: npm ci
       - run: npm run check:all
       - run: npm run build
-      - run: npm run check:standalone

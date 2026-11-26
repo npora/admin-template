@@ -129,16 +129,6 @@ Worker 登录签发随机不透明 Token，D1 只保存 Token 的哈希和到期
 
 动态菜单位于“系统管理”下，路由名为 `SystemAuditLog`，相对路径为 `audit-log`，页面组件为 `system/audit-log/index`。给普通角色开放查询时，需同时授权对应目录、页面与查看权限。
 
-## 展示工作台概览（核心可不实现）
-
-`GET /system/dashboard` 要求登录，返回当前账号、可访问页面数及 `capabilities`。仅具有对应查询权限时返回 `users`、`roles`、`departments` 汇总；用户汇总包含最近五位用户、启用/禁用人数和部门分布，不提供密码字段。统计来自测试后端数据库，排除软删除记录。返回类型见 `examples/api/types.ts`。
-
-展示首页通过 `examples/pages/dashboard/useDashboard.ts` 加载数据，支持取消旧请求、刷新失败保留最近成功结果以及重试。页面、快捷入口和统计卡片均随当前权限展示，没有查询权限的汇总不会由统计接口返回。
-
-## 可选后端示例
-
-Worker 预设的 `workers/api/` 提供独立后端，不参与普通前端构建。所有预设均使用真实 HTTP；接入自己的后端时配置地址并执行 `npm run dev`。具体目录用途见 [项目目录说明](project-structure.md)。
-
 ## 字典
 
 类型、数据 CRUD、业务选项接口与 DTO 字段见 [字典管理接口契约](dictionaries.md#接口契约)。管理权限与业务选项读取分开，后端须独立校验登录和操作权限。

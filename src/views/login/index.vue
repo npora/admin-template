@@ -47,8 +47,6 @@ const rememberMe = ref(false)
 const showAuthenticator = ref(authConfig.authenticatorEnabled)
 const appTitle = appConfig.title
 
-const demoEnabled = appConfig.demoEnabled
-
 const appInitial = computed(() => appTitle.trim().charAt(0).toUpperCase())
 
 const form = reactive<LoginForm>({
@@ -252,12 +250,6 @@ async function handleSubmit(): Promise<void> {
               >{{ t('ui.signIn') }}</ElButton
             >
           </ElForm>
-
-          <div v-if="demoEnabled" class="login-page__demo">
-            <span class="login-page__demo-label"> Demo </span>
-
-            <span>{{ t('ui.demoCredentialsHint') }}</span>
-          </div>
         </div>
       </section>
     </div>

@@ -1,7 +1,7 @@
 {
   "name": "admin-template",
   "private": true,
-  "version": "1.0.25",
+  "version": "1.0.26",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,21 +12,10 @@
     "format:check": "prettier --check .",
     "test": "node scripts/run-tests.mjs",
     "check": "prettier --check . && vue-tsc -b && node scripts/run-tests.mjs",
+    "check:all": "npm run check && node --test scripts/release/release.test.mjs",
+    "release:prepare": "node scripts/release/prepare.mjs",
     "check:views": "node tests/integration/views.test.mjs",
-    "check:locales": "node --test tests/integration/locales.test.mjs",
-    "check:examples": "node scripts/run-tests.mjs --examples",
-    "check:standalone": "node scripts/check-standalone.mjs",
-    "build:cloudflare": "vue-tsc -p tsconfig.demo.json --noEmit && vue-tsc -p tsconfig.node.json --noEmit && node deploy/cloudflare/build.mjs",
-    "check:cloudflare": "cf deploy --prebuilt --dry-run",
-    "deploy:cloudflare": "cf deploy --prebuilt",
-    "dev:demo": "node scripts/demo.mjs",
-    "build:demo": "vue-tsc -p tsconfig.demo.json --noEmit && vue-tsc -p tsconfig.node.json --noEmit && node scripts/demo.mjs build",
-    "check:backend": "node scripts/check-backend.mjs",
-    "check:all": "prettier --check . && vue-tsc -p tsconfig.demo.json --noEmit && vue-tsc -p tsconfig.node.json --noEmit && node scripts/run-tests.mjs --all",
-    "typecheck:demo": "vue-tsc -p tsconfig.demo.json --noEmit && vue-tsc -p tsconfig.node.json --noEmit",
-    "update:presets": "node scripts/update-presets.mjs",
-    "check:presets": "node scripts/check-presets.mjs",
-    "release:prepare": "node scripts/release/prepare.mjs"
+    "check:locales": "node --test tests/integration/locales.test.mjs"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
@@ -39,18 +28,14 @@
     "vue-router": "^5.3.1"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "2.0.0-rc.1",
     "@types/node": "^24.13.3",
     "@vitejs/plugin-vue": "^6.0.8",
     "@vue/tsconfig": "^0.9.1",
-    "cf": "1.0.0-rc.2",
     "prettier": "3.10.1",
-    "rollup-plugin-visualizer": "^7.1.1",
     "sass": "^1.104.0",
     "typescript": "~6.0.2",
     "unplugin-vue-components": "^32.1.0",
     "vite": "^8.3.3",
-    "vite-plugin-compression2": "^2.5.3",
     "vue-tsc": "^3.3.11"
   },
   "engines": {

@@ -1,5 +1,4 @@
 import type { RouteRecordRaw } from 'vue-router'
-import { demoDashboard, demoRoutes } from '@/router/extensions'
 import { isBuiltInSystemPage } from './system-pages'
 
 export const constantRoutes: RouteRecordRaw[] = [
@@ -30,7 +29,7 @@ export const constantRoutes: RouteRecordRaw[] = [
       {
         path: 'dashboard',
         name: 'Dashboard',
-        component: demoDashboard ?? (() => import('@/views/dashboard/index.vue')),
+        component: () => import('@/views/dashboard/index.vue'),
         meta: {
           title: '首页',
           icon: 'house',
@@ -38,7 +37,6 @@ export const constantRoutes: RouteRecordRaw[] = [
           order: 0
         }
       },
-      ...demoRoutes,
       {
         path: 'profile',
         name: 'Profile',
