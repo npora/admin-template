@@ -29,7 +29,7 @@ GIF 使用隔离示例数据。公开演示通过 [Npora Online](https://github.
 
 ## 快速开始
 
-建议使用 Node.js 24 LTS。创建时可选择 npm、pnpm 或 Yarn 安装依赖。
+需要 Node.js 22.18 或更新的 22.x，或 Node.js 24.11 及以上版本；建议使用 Node.js 24 LTS。创建时可选择 npm、pnpm 或 Yarn 安装依赖。
 
 ```sh
 npx @npora/create-admin@latest my-admin --yes --framework vue --install npm
